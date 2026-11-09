@@ -1,0 +1,167 @@
+// Yappuccino's installer and uninstaller: one window, in the app's colours.
+// Its own small controls, so it needs no widget style.
+
+global Look {
+    out property <color> ground: #121316;
+    out property <color> raised: #1e1f24;
+    out property <color> line: #2c2d34;
+    out property <color> text: #eef0f4;
+    out property <color> secondary: #b5b8c1;
+    out property <color> muted: #8d919c;
+    out property <color> accent: #ffbf47;
+    out property <color> accent-hover: #ffcd70;
+    out property <color> on-accent: #1d1607;
+    out property <color> danger: #f0545e;
+    out property <color> danger-hover: #f46f77;
+    out property <color> live: #3ecf7e;
+}
+
+component Action inherits Rectangle {
+    in property <string> text;
+    in property <bool> primary;
+    in property <bool> danger;
+    in property <bool> enabled: true;
+    callback clicked;
+    height: 40px; width: max(120px, label.preferred-width + 36px); border-radius: 10px;
+    background: root.danger ? (touch.has-hover ? Look.danger-hover : Look.danger)
+        : root.primary ? (touch.has-hover ? Look.accent-hover : Look.accent)
+        : touch.has-hover ? #33343c : #26272e;
+    animate background { duration: 120ms; }
+    opacity: root.enabled ? 1 : 0.5;
+    transform-scale: touch.pressed ? 0.96 : 1;
+    animate transform-scale { duration: 50ms; }
+    border-width: keys.has-focus ? 2px : 0px; border-color: Look.text;
+    accessible-role: button; accessible-label: root.text; accessible-enabled: root.enabled;
+    accessible-action-default => { if root.enabled { root.clicked(); } }
+    forward-focus: keys;
+    label := Text {
+        text: root.text; font-size: 14px; font-weight: 700;
+        color: root.danger ? #ffffff : root.primary ? Look.on-accent : Look.text;
+    }
+    keys := FocusScope {
+        enabled: root.enabled;
+        key-pressed(event) => {
+            if event.text == "\n" || event.text == " " { root.clicked(); return accept; }
+            return reject;
+        }
+        touch := TouchArea { enabled: root.enabled; mouse-cursor: MouseCursor.pointer; clicked => { root.clicked(); } }
+    }
+}
+
+// A choice with a switch, as the app's settings have them.
+component Choice inherits Rectangle {
+    in property <string> text;
+    in property <string> note;
+    in-out property <bool> checked;
+    height: 52px; border-radius: 10px;
+    background: touch.has-hover ? #1a1b20 : transparent;
+    accessible-role: checkbox; accessible-label: root.text; accessible-checkable: true; accessible-checked: root.checked;
+    accessible-action-default => { root.checked = !root.checked; }
+    HorizontalLayout {
+        padding-left: 12px; padding-right: 12px; spacing: 12px;
+        VerticalLayout {
+            alignment: center; horizontal-stretch: 1;
+            Text { text: root.text; color: Look.text; font-size: 14px; font-weight: 600; }
+            if root.note != "": Text { text: root.note; color: Look.muted; font-size: 12px; }
+        }
+        VerticalLayout {
+            alignment: center;
+            Rectangle {
+                width: 40px; height: 22px; border-radius: 11px;
+                background: root.checked ? Look.live : #4e5058;
+                animate background { duration: 120ms; }
+                Rectangle {
+                    x: root.checked ? parent.width - self.width - 3px : 3px;
+                    width: 16px; height: 16px; border-radius: 8px; background: #ffffff;
+                    animate x { duration: 120ms; easing: ease-out; }
+                }
+            }
+        }
+    }
+    touch := TouchArea { mouse-cursor: MouseCursor.pointer; clicked => { root.checked = !root.checked; } }
+}
+
+export component SetupWindow inherits Window {
+    in property <bool> uninstall;
+    in property <string> version;
+    in property <string> install-dir;
+    /// 0 asks, 1 works, 2 is done, 3 failed.
+    in property <int> stage;
+    /// From 0 to 1.
+    in property <float> progress;
+    in property <string> detail;
+    in-out property <bool> autostart: true;
+    in-out property <bool> desktop;
+    callback start;
+    callback launch;
+    callback quit;
+    title: root.uninstall ? "Uninstall Yappuccino" : "Yappuccino Setup";
+    icon: @image-url("../../../packaging/icon.svg");
+    width: 620px; height: 400px;
+    background: Look.ground;
+    default-font-size: 14px;
+    HorizontalLayout {
+        // The brand side: the logo on a warm glow, and what's being installed.
+        Rectangle {
+            width: 220px;
+            background: @linear-gradient(160deg, #ffbf4740 0%, #ff8c4214 45%, Look.ground 100%);
+            VerticalLayout {
+                alignment: center; spacing: 14px; padding: 24px;
+                HorizontalLayout {
+                    alignment: center;
+                    Image { width: 96px; height: 96px; source: @image-url("../../../packaging/icon.svg"); }
+                }
+                Text { text: "Yappuccino"; color: Look.text; font-size: 24px; font-weight: 900; horizontal-alignment: center; }
+                Text { text: root.version != "" ? "Version " + root.version : ""; color: Look.muted; font-size: 13px; horizontal-alignment: center; }
+            }
+            Rectangle { x: parent.width - 1px; width: 1px; background: Look.line; }
+        }
+        VerticalLayout {
+            padding: 28px; spacing: 14px;
+            Text {
+                color: Look.text; font-size: 22px; font-weight: 800; wrap: word-wrap;
+                text: root.stage == 2 ? (root.uninstall ? "Yappuccino is gone" : "Yappuccino is ready")
+                    : root.stage == 3 ? "That didn't work"
+                    : root.stage == 1 ? (root.uninstall ? "Uninstalling..." : "Installing...")
+                    : root.uninstall ? "Uninstall Yappuccino?" : "Install Yappuccino";
+            }
+            Text {
+                color: root.stage == 3 ? Look.danger : Look.secondary; font-size: 14px; wrap: word-wrap;
+                text: root.stage == 3 ? root.detail
+                    : root.stage == 1 ? root.detail
+                    : root.stage == 2 ? (root.uninstall ? "Thanks for trying it. Your Discord account isn't touched." : "Open it and sign in with your Discord account.")
+                    : root.uninstall ? "It closes Yappuccino if it's running, removes it from this computer and gives discord:// links back to the app that had them."
+                    : "Discord without the web browser. It installs for you alone, without administrator rights, into:";
+            }
+            if root.stage == 0 && !root.uninstall: Rectangle {
+                height: 34px; border-radius: 8px; background: Look.raised; border-width: 1px; border-color: Look.line;
+                Text { x: 10px; width: parent.width - 20px; text: root.install-dir; color: Look.muted; font-size: 12px; overflow: elide; vertical-alignment: center; }
+            }
+            if root.stage == 0 && !root.uninstall: Choice { text: "Start when Windows starts"; note: "In the tray, ready for calls"; checked <=> root.autostart; }
+            if root.stage == 0 && !root.uninstall: Choice { text: "Shortcut on the desktop"; checked <=> root.desktop; }
+            if root.stage == 1: VerticalLayout {
+                spacing: 8px;
+                Rectangle {
+                    height: 8px; border-radius: 4px; background: Look.raised; clip: true;
+                    Rectangle {
+                        x: 0; width: parent.width * max(0.02, min(1, root.progress)); border-radius: 4px;
+                        background: @linear-gradient(90deg, Look.accent 0%, #ff8c42 100%);
+                        animate width { duration: 120ms; }
+                    }
+                }
+                Text { text: round(root.progress * 100) + "%"; color: Look.muted; font-size: 12px; horizontal-alignment: right; }
+            }
+            Rectangle { vertical-stretch: 1; }
+            HorizontalLayout {
+                alignment: end; spacing: 10px;
+                if root.stage == 0: Action { text: "Cancel"; clicked => { root.quit(); } }
+                if root.stage == 0 && !root.uninstall: Action { text: "Install"; primary: true; clicked => { root.start(); } }
+                if root.stage == 0 && root.uninstall: Action { text: "Uninstall"; danger: true; clicked => { root.start(); } }
+                if root.stage == 2 && !root.uninstall: Action { text: "Close"; clicked => { root.quit(); } }
+                if root.stage == 2 && !root.uninstall: Action { text: "Open Yappuccino"; primary: true; clicked => { root.launch(); } }
+                if root.stage == 2 && root.uninstall: Action { text: "Close"; primary: true; clicked => { root.quit(); } }
+                if root.stage == 3: Action { text: "Close"; clicked => { root.quit(); } }
+            }
+        }
+    }
+}

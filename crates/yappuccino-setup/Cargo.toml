@@ -1,0 +1,28 @@
+# Yappuccino's own Windows installer: one window, no administrator rights.
+# A workspace of its own, so its Slint (software renderer, no Skia) never
+# unifies features with the app's. See docs/packaging.md.
+[package]
+name = "yappuccino-setup"
+version = "0.3.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+license = "GPL-3.0-or-later"
+
+[workspace]
+
+[dependencies]
+miniz_oxide = "0.8"
+slint = { git = "https://github.com/slint-ui/slint", rev = "ac7d423f294ae12bda32c577b075a0f139457d1d", default-features = false, features = ["std", "compat-1-2", "backend-winit", "renderer-software", "software-renderer-systemfonts"] }
+# The logo is an SVG, which only the GPU renderers turn on by themselves.
+i-slint-core = { git = "https://github.com/slint-ui/slint", rev = "ac7d423f294ae12bda32c577b075a0f139457d1d", features = ["svg"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Security", "Win32_System_Registry"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -103,6 +103,39 @@ make the same file, and the release carries one. A prerelease is never
 releases, and takes a nightly AppImage to the latest stable release, not the
 next nightly.
 
+## Yappuccino's own Windows installer
+
+`crates/yappuccino-setup` is an installer written in Rust, beside the Inno
+Setup one: a single window in the app's colours, drawn by Slint's software
+renderer, so it needs no Skia and no GPU. It is a workspace of its own, so its
+Slint features never mix with the app's. Made on Windows, from the folder of
+the portable ZIP's files:
+
+```bash
+cargo build --release --manifest-path crates/yappuccino-setup/Cargo.toml
+crates/yappuccino-setup/target/release/yappuccino-pack.exe \
+  crates/yappuccino-setup/target/release/yappuccino-setup.exe \
+  <package folder> Yappuccino-<version>-windows-x64-setup.exe <version>
+```
+
+`yappuccino-pack` deflates each file, README.txt aside, into the
+installer's own archive format (`src/pack.rs`) and appends it to a copy of
+the setup program, with its length and `YAPSETUP` last. The setup program
+finds the archive in itself by that trailer, and refuses a file that would
+land outside the install folder.
+
+It does what `yappuccino.iss` does, under the same AppId, so either replaces
+the other: it installs for the person running it, without administrator
+rights, into `%LOCALAPPDATA%\Programs\Yappuccino`; ends a running Yappuccino
+first, since it keeps running in the tray; registers the uninstaller in
+Apps, the `yappuccino://` links and, if chosen, starting at sign-in; and
+makes a Start menu shortcut, and a desktop one if chosen. It copies itself
+without the archive into the folder as `Uninstall Yappuccino.exe`, which
+gives discord:// links back (`--release-discord-links`), removes what
+installing added and then the folder, once it has exited. It removes a
+folder only if it is named Yappuccino or holds `yappuccino.exe`. `--quiet`
+installs or uninstalls without the window.
+
 ## The app icon
 
 `packaging/icon.svg` is Yappuccino's icon: the logo in marigold, its dots in
