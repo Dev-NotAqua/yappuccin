@@ -77,7 +77,8 @@ copying them.
 
 Right-clicking someone in a server's call, or under a voice channel in the
 channel list, opens their volumes above their menu as a member
-of the server, with what Discord's client adds there, in its order:
+of the server; while either volume isn't 100%, Reset beside their name sets
+both back to it. Below, what Discord's client adds there, in its order:
 
 - After Add note: Mute, a box that mutes them for this account alone and
   keeps their volume for when it's unticked, and Mute Soundboard, a box

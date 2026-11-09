@@ -87,6 +87,25 @@ Opus comes from the libopus inside Yappuccino's libwebrtc archive, called direct
 libopus of its own: two copies of the same symbols risk a clash when
 linking, particularly with MSVC on Windows.
 
+## The call's stage
+
+The stage (`ParticipantGrid` in `ui/voice.slint`) gives each person a tile.
+Without a camera, a tile is washed in the person's own colour, with their
+avatar in the middle; muted or deafened, a red badge sits on the avatar as
+well as the icon in the name's chip, darker when the server did it. Whoever
+speaks has a green ring on the tile's edge and around the avatar. Both only
+fade in and out, so speaking redraws the call for a frame or two, not on
+every frame. A stream not watched yet shows whose it is, in their colour,
+and a red Watch stream pill; a stream or a shared screen waiting for its
+first picture shows a spinner over why, the one thing on the stage that
+redraws every frame, and only while it waits.
+
+Under the stage, the call's controls are one floating bar
+(`CallControls`): mute and deafen, then the camera, sharing and the
+soundboard, then leaving, wide and red, apart. A button is plain while off,
+light while what it starts is on, and red while it warns, as muted or
+deafened; its name shows above it, and Enter or Space press it.
+
 ## The call's channel line
 
 As in Discord's voice panel, the dock's line under the status ("gen ·
@@ -278,8 +297,9 @@ one, haven't been checked by hand yet.
 
 ## Soundboard
 
-The soundboard button, before the camera in the dock and among the call's
-controls, opens Discord's sounds: the account's favourites first, then the
+The soundboard button, before the camera in the dock and after sharing in
+the call's bar, opens Discord's sounds, which its X, Escape or a click
+outside closes: the account's favourites first, then the
 call's server's, then with Nitro the account's other servers', then
 Discord's own, each with its emoji. A click plays one for everyone in the
 call. Hovering over one offers hearing it first, here only, and a star that
