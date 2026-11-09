@@ -22,12 +22,12 @@ from pathlib import Path
 Payloads = dict[str, object]
 ArchiveMembers = dict[str, Payloads]
 
-native_target: str = os.environ.get('YAPFAST_SKIA_TARGET', 'linux')
+native_target: str = os.environ.get('YAPPUCCINO_SKIA_TARGET', 'linux')
 pins: dict[str, tuple[str, str | None]] = {
     'linux': ('x86_64-unknown-linux-gnu-ftembed-ganesh-gl-jpegd-jpege-pdf-textlayout',
               'd5ea4666b67f4ff74a2c9dccf9cbb069fc991552caa9ed26fd4379572ddfe3b1'),
     'windows': ('x86_64-pc-windows-msvc-d3d-ganesh-gl-jpegd-jpege-pdf-static',
-                os.environ.get('YAPFAST_SKIA_STATIC_SHA256')),
+                os.environ.get('YAPPUCCINO_SKIA_STATIC_SHA256')),
 }
 suffix, source_sha256 = pins[native_target]
 if not source_sha256:
@@ -35,15 +35,15 @@ if not source_sha256:
 key: str = '30669978c3f39a73e8a7-' + suffix
 package: str = 'skia-binaries-' + key + '.tar.gz'
 old_symbol: str = 'jpeg_natural_order'
-new_symbol: str = 'yapfast_skia_jpeg_natural_order'
-target: Path = Path(os.environ['YAPFAST_SKIA_OUTPUT'])
+new_symbol: str = 'yappuccino_skia_jpeg_natural_order'
+target: Path = Path(os.environ['YAPPUCCINO_SKIA_OUTPUT'])
 archive_path: Path = target / package
 upstream_path: Path = target / 'upstream' / package
-stamp_path: Path = target / 'yapfast-skia-native.json'
+stamp_path: Path = target / 'yappuccino-skia-native.json'
 script_sha256: str = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-objcopy: str | None = os.environ.get('YAPFAST_SKIA_OBJCOPY') or shutil.which('llvm-objcopy')
+objcopy: str | None = os.environ.get('YAPPUCCINO_SKIA_OBJCOPY') or shutil.which('llvm-objcopy')
 if not objcopy:
-    raise SystemExit('Needs LLVM 21 or later objcopy, from the development shell or YAPFAST_SKIA_OBJCOPY')
+    raise SystemExit('Needs LLVM 21 or later objcopy, from the development shell or YAPPUCCINO_SKIA_OBJCOPY')
 objcopy_version: str = subprocess.check_output([objcopy, '--version'], text=True).strip()
 # Nix pins 21.1.7, but a native host's LLVM is often newer; the checks for the
 # symbols and sections below, not the version string, are what keep the
@@ -74,7 +74,7 @@ if stamp_path.is_file() and archive_path.is_file() and upstream_path.is_file():
         raise SystemExit(0)
 
 def symbols(path: Path) -> list[str]:
-    result = subprocess.run([os.environ.get('YAPFAST_SKIA_NM', 'nm'), '-A', str(path)], check=True, text=True, capture_output=True)
+    result = subprocess.run([os.environ.get('YAPPUCCINO_SKIA_NM', 'nm'), '-A', str(path)], check=True, text=True, capture_output=True)
     # Ignore the varying archive path; preserve each member and its symbol table.
     return sorted(line[len(str(path)):] for line in result.stdout.splitlines())
 
@@ -161,7 +161,7 @@ target.parent.mkdir(parents=True, exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='skia-native-prepare-', dir=target.parent) as temporary_directory:
     temporary: Path = Path(temporary_directory)
     # Download from the upstream release, rather than modifying a Cargo build output.
-    source: bytes = Path(os.environ['YAPFAST_SKIA_SOURCE']).read_bytes()
+    source: bytes = Path(os.environ['YAPPUCCINO_SKIA_SOURCE']).read_bytes()
     if hashlib.sha256(source).hexdigest() != source_sha256:
         raise SystemExit('Pinned Skia native archive checksum mismatch')
     with tarfile.open(fileobj=io.BytesIO(source)) as archive:

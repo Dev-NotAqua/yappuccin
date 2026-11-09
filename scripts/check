@@ -57,7 +57,7 @@ steps=(fmt doc-links clippy test build smoke)
 
 run fmt cargo fmt --all -- --check
 run doc-links scripts/check-doc-links
-# yapfast-ui is outside the workspace (see Cargo.toml), so Clippy checks it
+# yappuccino-ui is outside the workspace (see Cargo.toml), so Clippy checks it
 # only as a dependency, with plain rustc: it neither lints the generated
 # interface nor checks it a second time in test mode, as --all-targets would
 # a member despite its `test = false`.
@@ -65,9 +65,9 @@ run clippy "${clippy[@]}" "${workspace[@]}" -- -D warnings
 run test cargo test --locked "${profile[@]}" "${workspace[@]}"
 run build cargo build --locked "${profile[@]}" "${workspace[@]}"
 # The binary the build step made: `cargo run` would resolve the dependencies'
-# features for yapfast alone, not the workspace, and compile it again.
+# features for yappuccino alone, not the workspace, and compile it again.
 if [[ "$(cat "$logs/build.rc")" == 0 ]]; then
-  run smoke "target/$profile_dir/yapfast" --smoke-test
+  run smoke "target/$profile_dir/yappuccino" --smoke-test
 else
   echo "=== smoke: skipped, as the build failed"
 fi
@@ -81,15 +81,15 @@ fi
 # compile of the UI crate takes several GiB, and two or three at once ran the
 # machine out of memory.
 if [[ $matrix ]]; then
-  full=(--features yapfast/matrix,yapfast-core/matrix)
+  full=(--features yappuccino/matrix,yappuccino-core/matrix)
   run clippy-matrix "${clippy[@]}" --workspace "${full[@]}" -- -D warnings
   run test-matrix cargo test --locked "${profile[@]}" --workspace "${full[@]}"
-  run clippy-matrix-only "${clippy[@]}" -p yapfast -p yapfast-core -p feature-union \
-    --no-default-features --features yapfast/desktop,yapfast/matrix,yapfast-core/matrix -- -D warnings
+  run clippy-matrix-only "${clippy[@]}" -p yappuccino -p yappuccino-core -p feature-union \
+    --no-default-features --features yappuccino/desktop,yappuccino/matrix,yappuccino-core/matrix -- -D warnings
   # The headless build, in a target directory of its own, so its binary stays
   # out of target/<profile>/.
   export CARGO_TARGET_DIR=target/check-combinations
-  run clippy-headless "${clippy[@]}" -p yapfast --no-default-features --features matrix,discord -- -D warnings
+  run clippy-headless "${clippy[@]}" -p yappuccino --no-default-features --features matrix,discord -- -D warnings
   run smoke-headless cargo run --locked "${profile[@]}" --no-default-features --features matrix,discord -- --smoke-test
   steps+=(clippy-matrix test-matrix clippy-matrix-only clippy-headless smoke-headless)
 fi

@@ -6,7 +6,7 @@ use super::*;
 /// A bio with each custom emoji as its glyph where the emoji's picture has
 /// arrived already, and as a blank of an emoji's width where it has not, so
 /// the bio doesn't show `:name:` and then jump when the picture comes.
-fn bio_with_emoji(bio: &str, emoji: &[yapfast_core::chat::CustomEmoji]) -> String {
+fn bio_with_emoji(bio: &str, emoji: &[yappuccino_core::chat::CustomEmoji]) -> String {
     let mut out = crate::custom_emoji::text(bio, emoji);
     for each in emoji {
         if crate::custom_emoji::glyph(&each.id).is_none() {
@@ -51,15 +51,15 @@ pub(super) fn finished_ago(at_ms: u64, now_ms: u64) -> String {
 /// server the last answer shows until this one's comes.
 #[cfg(feature = "discord")]
 pub(super) fn activity_panel(
-    state: &yapfast_core::application::AppState,
+    state: &yappuccino_core::application::AppState,
     room: &str,
-    members: &[yapfast_core::chat::ChatMember],
+    members: &[yappuccino_core::chat::ChatMember],
     now_ms: u64,
 ) -> Vec<MemberActivityRow> {
-    use yapfast_core::{
+    use yappuccino_core::{
         chat::{ActivityKind, FeedEntry, Presence},
         discord::parse_room,
-        yapfast_discord::activity_feed::Kind,
+        yappuccino_discord::activity_feed::Kind,
     };
     let Some((asked, people)) = &state.activity_people else {
         return Vec::new();
@@ -69,7 +69,7 @@ pub(super) fn activity_panel(
         return Vec::new();
     }
     // What their presence says of it, which is more than the feed does.
-    let doing = |member: &yapfast_core::chat::ChatMember, entry: &FeedEntry| {
+    let doing = |member: &yappuccino_core::chat::ChatMember, entry: &FeedEntry| {
         member
             .activities
             .iter()
@@ -133,7 +133,7 @@ pub(super) fn activity_panel(
                 live,
                 game: (*entry.title).into(),
                 since: since.into(),
-                thumb_url: yapfast_core::yapfast_discord::activity::small_picture(picture)
+                thumb_url: yappuccino_core::yappuccino_discord::activity::small_picture(picture)
                     .as_ref()
                     .into(),
             })
@@ -142,19 +142,19 @@ pub(super) fn activity_panel(
 }
 
 /// The icon, bullet and replacing words of the line under a name for what
-/// someone is doing; see `yapfast_discord::activity::subline`.
+/// someone is doing; see `yappuccino_discord::activity::subline`.
 #[cfg(feature = "discord")]
 pub(super) fn subline(
-    activities: &yapfast_core::chat::Activities,
+    activities: &yappuccino_core::chat::Activities,
     line: Option<&str>,
 ) -> (i32, bool, Option<String>) {
-    let subline = yapfast_core::yapfast_discord::activity::subline(activities, line);
+    let subline = yappuccino_core::yappuccino_discord::activity::subline(activities, line);
     (i32::from(subline.icon), subline.bullet, subline.name)
 }
 
 #[cfg(not(feature = "discord"))]
 pub(super) fn subline(
-    _activities: &yapfast_core::chat::Activities,
+    _activities: &yappuccino_core::chat::Activities,
     _line: Option<&str>,
 ) -> (i32, bool, Option<String>) {
     (0, false, None)
@@ -162,9 +162,9 @@ pub(super) fn subline(
 
 #[cfg(not(feature = "discord"))]
 pub(super) fn activity_panel(
-    _state: &yapfast_core::application::AppState,
+    _state: &yappuccino_core::application::AppState,
     _room: &str,
-    _members: &[yapfast_core::chat::ChatMember],
+    _members: &[yappuccino_core::chat::ChatMember],
     _now_ms: u64,
 ) -> Vec<MemberActivityRow> {
     Vec::new()
@@ -199,10 +199,10 @@ pub(super) fn friend_offer(relation: Relation) -> i32 {
 /// The custom status as the account panel shows it: its words on one line,
 /// after its emoji when that's Unicode, and the address of its custom emoji's
 /// picture.
-pub(super) fn status_line(status: &yapfast_core::chat::CustomStatus) -> (String, Option<String>) {
+pub(super) fn status_line(status: &yappuccino_core::chat::CustomStatus) -> (String, Option<String>) {
     let text = one_line(&status.text);
     match (&status.emoji, &status.emoji_id) {
-        (_, Some(id)) => (text, yapfast_core::discord::emoji_picture(id)),
+        (_, Some(id)) => (text, yappuccino_core::discord::emoji_picture(id)),
         (Some(emoji), None) if text.is_empty() => (emoji.clone(), None),
         (Some(emoji), None) => (format!("{emoji} {text}"), None),
         (None, None) => (text, None),
@@ -212,7 +212,7 @@ pub(super) fn status_line(status: &yapfast_core::chat::CustomStatus) -> (String,
 /// A custom status or what someone is doing, as a row shows it: its words on
 /// one line, and the address of its custom emoji's picture.
 pub(super) fn activity_line(activity: Option<&str>) -> (SharedString, SharedString) {
-    let (emoji, words) = activity.map_or((None, ""), yapfast_core::discord::status_parts);
+    let (emoji, words) = activity.map_or((None, ""), yappuccino_core::discord::status_parts);
     (one_line(words).into(), emoji.unwrap_or_default().into())
 }
 
@@ -230,7 +230,7 @@ fn activity_now() -> i32 {
 }
 
 /// Someone's activities as their profile's cards show them.
-pub(super) fn activity_rows(activities: &yapfast_core::chat::Activities) -> ModelRc<ActivityRow> {
+pub(super) fn activity_rows(activities: &yappuccino_core::chat::Activities) -> ModelRc<ActivityRow> {
     if activities.is_empty() {
         return ModelRc::default();
     }
@@ -242,7 +242,7 @@ pub(super) fn activity_rows(activities: &yapfast_core::chat::Activities) -> Mode
 }
 
 #[cfg(feature = "discord")]
-fn activity_row(activity: &yapfast_core::chat::Activity) -> ActivityRow {
+fn activity_row(activity: &yappuccino_core::chat::Activity) -> ActivityRow {
     let seconds = |ms: Option<u64>| {
         ms.map_or(0, |ms| {
             i32::try_from((ms / 1000).saturating_sub(ACTIVITY_EPOCH)).unwrap_or(0)
@@ -254,7 +254,7 @@ fn activity_row(activity: &yapfast_core::chat::Activity) -> ActivityRow {
         Some(emoji) => format!("{emoji} {}", activity.name),
         None => activity.name.to_string(),
     };
-    let (name_emoji, name) = yapfast_core::discord::status_parts(&name);
+    let (name_emoji, name) = yappuccino_core::discord::status_parts(&name);
     let state = match (&activity.state, activity.party) {
         (Some(state), Some((size, most))) => format!("{state} ({size} of {most})"),
         (None, Some((size, most))) => format!("{size} of {most}"),
@@ -296,7 +296,7 @@ fn activity_row(activity: &yapfast_core::chat::Activity) -> ActivityRow {
 }
 
 /// Whether a line under a name only says what one of the activities does.
-pub(super) fn names_an_activity(line: &str, activities: &yapfast_core::chat::Activities) -> bool {
+pub(super) fn names_an_activity(line: &str, activities: &yappuccino_core::chat::Activities) -> bool {
     #[cfg(feature = "discord")]
     return activities
         .iter()
@@ -311,7 +311,7 @@ pub(super) fn names_an_activity(line: &str, activities: &yapfast_core::chat::Act
 impl Adapter {
     /// Keeps ActivityClock current, once a second, while a profile on
     /// screen times an activity, and leaves it be otherwise.
-    pub(super) fn tick_activities(&mut self, window: &YapfastWindow) {
+    pub(super) fn tick_activities(&mut self, window: &YappuccinoWindow) {
         let timed = |data: ProfileData| {
             data.activities
                 .iter()
@@ -341,7 +341,7 @@ impl Adapter {
 }
 
 /// The picker's key for the custom status's emoji: the emoji, or `name:id`.
-pub(super) fn status_key(status: &yapfast_core::chat::CustomStatus) -> Option<String> {
+pub(super) fn status_key(status: &yappuccino_core::chat::CustomStatus) -> Option<String> {
     match (&status.emoji, &status.emoji_id) {
         (Some(name), Some(id)) => Some(format!("{name}:{id}")),
         (Some(emoji), None) => Some(emoji.clone()),
@@ -385,7 +385,7 @@ pub(super) fn changed_profile(shown: &ProfileData, mut data: ProfileData) -> Opt
 }
 
 /// A Discord board as its tab shows it.
-fn widget_rows(widgets: &[yapfast_core::chat::ProfileWidget]) -> ModelRc<ProfileWidgetRow> {
+fn widget_rows(widgets: &[yappuccino_core::chat::ProfileWidget]) -> ModelRc<ProfileWidgetRow> {
     let rows: Vec<ProfileWidgetRow> = widgets
         .iter()
         .map(|widget| ProfileWidgetRow {
@@ -411,9 +411,9 @@ fn widget_rows(widgets: &[yapfast_core::chat::ProfileWidget]) -> ModelRc<Profile
 /// A Discord wishlist as its tab shows it: its items, and a line about it. An
 /// empty list has no line, as the tab says that itself.
 fn wishlist_rows(
-    profile: &yapfast_core::chat::Profile,
+    profile: &yappuccino_core::chat::Profile,
 ) -> (ModelRc<ProfileWishlistRow>, &'static str) {
-    use yapfast_core::chat::Wishlist;
+    use yappuccino_core::chat::Wishlist;
     let private = profile
         .wishlist_place
         .as_ref()
@@ -462,7 +462,7 @@ pub(super) fn same_widget_rows(
 
 /// How long ago a time in Unix milliseconds was, as the Activity tab says it.
 fn time_ago(at: u64) -> String {
-    let minutes = yapfast_core::clock::now_ms().saturating_sub(at) / 60_000;
+    let minutes = yappuccino_core::clock::now_ms().saturating_sub(at) / 60_000;
     match minutes {
         0 => "Just now".to_owned(),
         1..60 => format!("{minutes}m ago"),
@@ -472,7 +472,7 @@ fn time_ago(at: u64) -> String {
 }
 
 /// A profile effect's layers as the card plays them, in the order they lie.
-fn effect_layers(effect: &yapfast_core::chat::ProfileEffect) -> Vec<EffectLayer> {
+fn effect_layers(effect: &yappuccino_core::chat::ProfileEffect) -> Vec<EffectLayer> {
     let millis = |time: u32| i32::try_from(time).unwrap_or(i32::MAX);
     effect
         .layers
@@ -510,7 +510,7 @@ pub(super) fn profile_data(
         .activity
         .as_deref()
         .filter(|line| !names_an_activity(line, &profile.activities))
-        .map_or((None, ""), yapfast_core::discord::status_parts);
+        .map_or((None, ""), yappuccino_core::discord::status_parts);
     let cosmetics = state.cosmetics;
     let effect = cosmetics.effect(profile.effect.as_deref()).and_then(|sku| {
         state
@@ -761,7 +761,7 @@ pub(super) fn role_rows(roles: &[ProfileRole], width: f32) -> ModelRc<ProfileRol
     const GAP: f32 = 4.;
     // Padding, the colour dot and the space after it.
     const CHROME: f32 = 8. + 10. + 6. + 8.;
-    let mut rows: Vec<Vec<yapfast_ui::ProfileRole>> = Vec::new();
+    let mut rows: Vec<Vec<yappuccino_ui::ProfileRole>> = Vec::new();
     let mut used = width;
     for role in roles {
         let chip = CHROME + 7. * role.name.chars().count() as f32;
@@ -772,7 +772,7 @@ pub(super) fn role_rows(roles: &[ProfileRole], width: f32) -> ModelRc<ProfileRol
             used += GAP + chip;
         }
         if let Some(row) = rows.last_mut() {
-            row.push(yapfast_ui::ProfileRole {
+            row.push(yappuccino_ui::ProfileRole {
                 name: role.name.clone().into(),
                 color: role_color(role.color),
                 has_color: role.color.is_some(),
@@ -848,12 +848,12 @@ pub(super) fn dominant_color(picture: &slint::Image) -> Option<u32> {
 }
 
 /// A server tag's letters for Slint, or nothing for one who wears none.
-pub(super) fn tag_text(tag: Option<&yapfast_core::chat::ServerTag>) -> slint::SharedString {
+pub(super) fn tag_text(tag: Option<&yappuccino_core::chat::ServerTag>) -> slint::SharedString {
     tag.map_or_else(Default::default, |tag| (&*tag.text).into())
 }
 
 /// The address of a server tag's badge for Slint, or nothing without one.
-pub(super) fn tag_badge(tag: Option<&yapfast_core::chat::ServerTag>) -> slint::SharedString {
+pub(super) fn tag_badge(tag: Option<&yappuccino_core::chat::ServerTag>) -> slint::SharedString {
     tag.and_then(|tag| tag.badge.as_deref())
         .unwrap_or_default()
         .into()
@@ -873,11 +873,11 @@ const ACTIVE_NOW_MOST: usize = 30;
 /// channel, streams first, for the friends page's Active Now column.
 #[cfg(feature = "discord")]
 pub(super) fn active_now_rows(
-    state: &yapfast_core::application::AppState,
+    state: &yappuccino_core::application::AppState,
     in_voice: &std::collections::HashMap<&str, super::refresh::VoicePlace<'_>>,
     now_ms: u64,
 ) -> Vec<ActiveNowRow> {
-    use yapfast_core::chat::{ActivityKind, Presence};
+    use yappuccino_core::chat::{ActivityKind, Presence};
     let mut rows: Vec<(bool, ActiveNowRow)> = Vec::new();
     for friend in &state.friends {
         let presence = friend.presence.unwrap_or(Presence::Offline);
@@ -922,7 +922,7 @@ pub(super) fn active_now_rows(
                         .start
                         .map(|start| running_for(start, now_ms))
                         .unwrap_or_default(),
-                    yapfast_core::yapfast_discord::activity::small_picture(text(
+                    yappuccino_core::yappuccino_discord::activity::small_picture(text(
                         &activity.large_image,
                     ))
                     .into_owned(),
@@ -972,7 +972,7 @@ pub(super) fn active_now_rows(
 
 #[cfg(not(feature = "discord"))]
 pub(super) fn active_now_rows(
-    _state: &yapfast_core::application::AppState,
+    _state: &yappuccino_core::application::AppState,
     _in_voice: &std::collections::HashMap<&str, super::refresh::VoicePlace<'_>>,
     _now_ms: u64,
 ) -> Vec<ActiveNowRow> {

@@ -1,6 +1,6 @@
-//! A colour bitmap font, built when Yapfast runs for Discord's custom emoji and
+//! A colour bitmap font, built when Yappuccino runs for Discord's custom emoji and
 //! when it's built for Twemoji's: each emoji is a PNG in a CBDT table, the format
-//! of the Noto Color Emoji build Yapfast already draws, at a Private Use Area code
+//! of the Noto Color Emoji build Yappuccino already draws, at a Private Use Area code
 //! point. The font's vertical metrics are the UI typeface's, Atkinson Hyperlegible
 //! Next's, so a line with an emoji keeps its baseline. `build.rs` builds this file
 //! too, so it names nothing of the program's.
@@ -26,7 +26,7 @@ pub struct Strike {
     pub advance: u8,
 }
 
-/// The side of the pictures of the fonts built as Yapfast runs.
+/// The side of the pictures of the fonts built as Yappuccino runs.
 pub const SIDE: u32 = 136;
 
 /// The transparent margin each of those pictures has in its bitmap. Skia scales a

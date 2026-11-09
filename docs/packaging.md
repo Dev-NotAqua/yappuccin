@@ -1,22 +1,22 @@
 # Packaging and releases
 
 How the Linux and Windows releases are made and published. Building and
-checking Yapfast for development is in [building](building.md).
+checking Yappuccino for development is in [building](building.md).
 
 ## Linux AppImage
 
 `scripts/build-appimage` makes the Linux release in `target/dist/linux`:
-`Yapfast-VERSION-x86_64.AppImage`, its `.zsync` file, the source snapshot and
+`Yappuccino-VERSION-x86_64.AppImage`, its `.zsync` file, the source snapshot and
 `SHA256SUMS.txt`. All four go on the release page. AppImageUpdate, and AppImage
 managers such as Gear Lever, find a newer release through the `.zsync` file,
 named by the update information in the runtime:
-`gh-releases-zsync|yapfast|yapfast|latest|Yapfast-*-x86_64.AppImage.zsync`.
+`gh-releases-zsync|yappuccino|yappuccino|latest|Yappuccino-*-x86_64.AppImage.zsync`.
 The first build compiles every dependency in the Nix sandbox; packing takes
 about 10 seconds after that.
 
 Nix builds the binary, `nix/package.nix`'s Discord-only release build, and
 `nix/appimage.nix` puts it in an AppDir with the desktop file, the icons and
-the AppStream metainfo, `packaging/linux/io.github.yapfast.Yapfast.metainfo.xml`.
+the AppStream metainfo, `packaging/linux/io.github.yappuccino.Yappuccino.metainfo.xml`.
 It sets the binary's interpreter to `/lib64/ld-linux-x86-64.so.2` and removes
 Nix's RUNPATH, so the binary runs on the host's loader, glibc and libstdc++, as
 one built on a distribution would. That's what lets the host's GPU driver,
@@ -36,7 +36,7 @@ such as Ubuntu 22.04, would need a build against their own glibc.
 `scripts/package-linux.py`, which runs in the development shell, with
 squashfs-tools and zsync added from the shell's nixpkgs, adds the
 licenses and notices, `THIRD-PARTY.json`, `SOURCE.txt` and `BUILD.json` to
-`usr/share/doc/yapfast`, as the Windows package has them, through the helpers
+`usr/share/doc/yappuccino`, as the Windows package has them, through the helpers
 in `scripts/release_package.py` that both packaging scripts use. Skia's
 prebuilt Linux archive carries only Skia's own license, so the notices of its
 third-party code come from the pinned Skia source,
@@ -65,12 +65,12 @@ or later. Nothing builds this PKGBUILD automatically: build it in a clean
 
 The releases carry a package of their own binary instead. `scripts/package-arch`,
 run after `scripts/build-appimage`, packs the AppImage's binary, desktop file,
-icon, metainfo and notices into `yapfast-VERSION-1-x86_64.pkg.tar.zst` beside
+icon, metainfo and notices into `yappuccino-VERSION-1-x86_64.pkg.tar.zst` beside
 it, through `packaging/arch/release.PKGBUILD`, and adds it to
 `SHA256SUMS.txt`. It's the AppImage's binary, which runs on the host's loader
 and libraries, so the two packages can't differ. The script runs makepkg in an
 `archlinux:base-devel` container with Docker, then installs the package there
-and runs `yapfast --smoke-test`, in about 20 seconds. A nightly's version
+and runs `yappuccino --smoke-test`, in about 20 seconds. A nightly's version
 becomes `0.2.0nightly.20261020.5`, which pacman sorts after 0.1.0 and before
 0.2.0, as SemVer sorts the nightly; with a dot before `nightly`, pacman would
 sort it after 0.2.0. `sudo pacman -U` installs the file or its link; there's no
@@ -82,7 +82,7 @@ Releases are built locally, but a nightly of `main` builds on GitHub: Actions,
 Nightly, Run workflow. `.github/workflows/nightly.yml` names it after the next
 minor version, the day (UTC) and the workflow's run number, such as
 `v0.2.0-nightly.20261020.5`, and titles it as the stable releases are, with the
-commit: `Yapfast 0.2.0-nightly.20261020.5 (396abe2)`. The run number puts two
+commit: `Yappuccino 0.2.0-nightly.20261020.5 (396abe2)`. The run number puts two
 nightlies of one day in order, as a commit hash wouldn't, and gives a second
 run on one commit a tag of its own. `scripts/set-version` writes that version
 into `Cargo.toml` and `Cargo.lock` before building, so the app reports it and
@@ -105,16 +105,16 @@ next nightly.
 
 ## The app icon
 
-`packaging/icon.svg` is Yapfast's icon: the logo in marigold, its dots in
+`packaging/icon.svg` is Yappuccino's icon: the logo in marigold, its dots in
 on-accent ink, so it reads on a light taskbar as well as a dark one. The UI
 keeps drawing `ui/icons/logo.svg`.
 
-On Linux the window's app ID is `io.github.yapfast.Yapfast` (`src/icon.rs`).
+On Linux the window's app ID is `io.github.yappuccino.Yappuccino` (`src/icon.rs`).
 Wayland desktops show a window's icon only through the desktop entry of that
-name, `packaging/linux/io.github.yapfast.Yapfast.desktop`;
+name, `packaging/linux/io.github.yappuccino.Yappuccino.desktop`;
 `scripts/install-desktop-entry [EXECUTABLE]` installs it and the icon for
-this user, running `target/release/yapfast` unless told otherwise. The
-AppImage installs nothing, so Yapfast run from one writes the entry and the
+this user, running `target/release/yappuccino` unless told otherwise. The
+AppImage installs nothing, so Yappuccino run from one writes the entry and the
 icon to `~/.local/share` itself before it opens its window
 (`src/desktop_entry.rs`), with Exec and TryExec naming the AppImage. It
 rewrites them when the AppImage has moved, and leaves them alone when a package
@@ -123,9 +123,9 @@ made one that runs the same file. On X11 the window also carries the icon
 itself. Notifications name the entry, so the notification server shows the
 same name and icon.
 
-On Windows, `build.rs` compiles `packaging/windows/yapfast.rc` with `llvm-rc`,
+On Windows, `build.rs` compiles `packaging/windows/yappuccino.rc` with `llvm-rc`,
 or the Windows SDK's `rc.exe` where there is none,
-and links the icon into `yapfast.exe`, for Explorer and shortcuts; the window
+and links the icon into `yappuccino.exe`, for Explorer and shortcuts; the window
 loads it from there for its title bar and the taskbar, each at the size
 Windows draws it. After changing `icon.svg`, run `scripts/make-windows-icon`
-to draw `yapfast.ico` again.
+to draw `yappuccino.ico` again.

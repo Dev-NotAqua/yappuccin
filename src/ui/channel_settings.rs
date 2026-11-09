@@ -1,7 +1,7 @@
 //! A Discord channel's or category's settings, as their screen shows them;
 //! see `ui/channel_settings.slint`.
 
-use yapfast_core::{
+use yappuccino_core::{
     application::{
         ChannelInput, ChannelSection, OverwriteConfirm, OverwriteState, Overwrites, SLOWMODES,
         channel_groups, channel_permission,
@@ -37,7 +37,7 @@ fn state_id(state: OverwriteState) -> i32 {
 
 impl Adapter {
     /// The open channel's settings, as their screen shows them.
-    pub(super) fn show_channel_settings(&mut self, window: &YapfastWindow) {
+    pub(super) fn show_channel_settings(&mut self, window: &YappuccinoWindow) {
         let app = &self.app;
         let Some(screen) = app.state.channel_settings.as_ref() else {
             if window.get_channel_settings_open() {
@@ -363,7 +363,7 @@ fn channel_input(
     })
 }
 
-pub(super) fn bind(window: &YapfastWindow, adapter: &Rc<RefCell<Adapter>>) {
+pub(super) fn bind(window: &YappuccinoWindow, adapter: &Rc<RefCell<Adapter>>) {
     let state = adapter.clone();
     let weak = window.as_weak();
     window.on_channel_settings_input(move |what, text, number| {

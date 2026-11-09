@@ -62,7 +62,10 @@ def source_snapshot(metadata, base, temporary, destination):
     # a nightly's Linux and Windows jobs, zip the same snapshot.
     committed = int(subprocess.check_output(["git", "log", "-1", "--format=%ct"], cwd=ROOT, timeout=30))
     for path in source.rglob("*"):
-        os.utime(path, (committed, committed), follow_symlinks=False)
+        try:
+            os.utime(path, (committed, committed), follow_symlinks=False)
+        except (NotImplementedError, OSError, ValueError):
+            os.utime(path, (committed, committed))
     zip_directory(source, destination)
     return rtc is not None
 
@@ -80,7 +83,7 @@ def dependency_notices(metadata, package, licenses, skia_archive, skia_source, w
             shutil.copy2(path, font_notices / path.name)
     shutil.copy2(ROOT / "src/LICENSE-emojibase.txt", licenses / "LICENSE-emojibase.txt")
     for item in sorted(metadata["packages"], key=lambda value: (value["name"], value["version"])):
-        if item["name"] == "yapfast":
+        if item["name"] == "yappuccino":
             continue
         directory = Path(item["manifest_path"]).parent
         target = licenses / (item["name"] + "-" + item["version"])
@@ -113,10 +116,10 @@ def dependency_notices(metadata, package, licenses, skia_archive, skia_source, w
             shutil.copy2(notice, destination)
     shutil.copy2(webrtc / "LICENSE.md", licenses / "libwebrtc-LICENSE.md")
     # Twemoji's pictures, which the picker's and reactions' emoji are drawn from:
-    # CC-BY 4.0, which asks for the attribution its README.yapfast.md carries.
+    # CC-BY 4.0, which asks for the attribution its README.yappuccino.md carries.
     twemoji = ROOT / "vendor" / "twemoji"
     twemoji_licenses = []
-    for name in ["LICENSE-GRAPHICS", "LICENSE", "README.md", "README.yapfast.md"]:
+    for name in ["LICENSE-GRAPHICS", "LICENSE", "README.md", "README.yappuccino.md"]:
         target = licenses / ("twemoji-" + name)
         shutil.copy2(twemoji / name, target)
         twemoji_licenses.append(target.relative_to(package).as_posix())

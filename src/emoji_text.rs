@@ -19,7 +19,7 @@ const LAST: u32 = TWEMOJI_LAST;
 
 /// The link an emoji's glyph opens, then the emoji's code points in lower-case
 /// hexadecimal, such as `1f62d`, or `c/` and a custom emoji's id.
-pub const LINK: &str = "yapfast:emoji/";
+pub const LINK: &str = "yappuccino:emoji/";
 
 thread_local! {
     /// The pictures the cards showed, by the emoji.
@@ -81,7 +81,7 @@ pub fn register() {
     static REGISTERED: Once = Once::new();
     REGISTERED.call_once(|| {
         let font = fontique::Blob::new(std::sync::Arc::new(twemoji::FONT));
-        if !emoji_font::register_blob("Yapfast Twemoji", font) {
+        if !emoji_font::register_blob("Yappuccino Twemoji", font) {
             tracing::warn!("could not register a font of Twemoji");
         }
     });
@@ -314,7 +314,7 @@ mod tests {
         );
         assert_eq!(target("https://example.com"), None);
         assert_eq!(target(LINK), None);
-        assert_eq!(target("yapfast:emoji/c/"), None);
+        assert_eq!(target("yappuccino:emoji/c/"), None);
     }
 
     #[test]
@@ -327,7 +327,7 @@ mod tests {
 
     #[test]
     fn keeps_the_emoji_of_links_and_code_as_typed() {
-        let text = "a [😭](<yapfast:emoji/1f62d>) `😭` 😭 [x](<https://example.com/a_(b)>) 😭";
+        let text = "a [😭](<yappuccino:emoji/1f62d>) `😭` 😭 [x](<https://example.com/a_(b)>) 😭";
         let mut found = Vec::new();
         let mut out = String::new();
         rewrite(text, &mut out, |emoji| {
@@ -337,7 +337,7 @@ mod tests {
         assert_eq!(found, ["😭", "😭"]);
         assert_eq!(
             out,
-            "a [😭](<yapfast:emoji/1f62d>) `😭` EMOJI [x](<https://example.com/a_(b)>) EMOJI"
+            "a [😭](<yappuccino:emoji/1f62d>) `😭` EMOJI [x](<https://example.com/a_(b)>) EMOJI"
         );
     }
 

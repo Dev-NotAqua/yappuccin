@@ -15,7 +15,7 @@ const KEPT_ROWS: usize = 8;
 /// `last`, and of those that have none yet. The picker brings the rest as it
 /// scrolls them into sight, since a server list can hold more emoji than fit in
 /// memory at once.
-fn fetch_shown_pictures(adapter: &mut Adapter, window: &YapfastWindow, first: usize, last: usize) {
+fn fetch_shown_pictures(adapter: &mut Adapter, window: &YappuccinoWindow, first: usize, last: usize) {
     let wanted = custom_keys_without_pictures(&adapter.models.emoji_rows, first, last);
     if wanted.is_empty() {
         return;
@@ -35,7 +35,7 @@ fn fetch_shown_pictures(adapter: &mut Adapter, window: &YapfastWindow, first: us
 /// Gives the picker's grid the emoji it shows between `first` and `last` rows a
 /// picture each, drawn once, so scrolling draws a bitmap instead of walking the
 /// colour font's paint graph for every emoji on screen; see [`crate::emoji_glyphs`].
-fn fill_shown_glyphs(window: &YapfastWindow, adapter: &mut Adapter, first: usize, last: usize) {
+fn fill_shown_glyphs(window: &YappuccinoWindow, adapter: &mut Adapter, first: usize, last: usize) {
     let scale = window.window().scale_factor();
     let_go_of_far_glyphs(adapter, first, last);
     let rows = &adapter.models.emoji_rows;
@@ -167,7 +167,7 @@ pub(super) fn custom_keys_without_pictures(
 
 /// Gives the picker's grid the emoji `query` finds, `columns` to a row, and
 /// fetches the pictures of the custom emoji it shows.
-fn show_emoji(adapter: &Rc<RefCell<Adapter>>, window: &YapfastWindow, query: &str, columns: usize) {
+fn show_emoji(adapter: &Rc<RefCell<Adapter>>, window: &YappuccinoWindow, query: &str, columns: usize) {
     let mut adapter = adapter.borrow_mut();
     let (rows, sections) = {
         let custom = adapter.app.emoji_sets();
@@ -183,14 +183,14 @@ fn show_emoji(adapter: &Rc<RefCell<Adapter>>, window: &YapfastWindow, query: &st
         // uses most, or reacts with most for a reaction, as its other clients
         // keep them, and those this device reacts with.
         let (favorites, frequent) = if query.trim().trim_matches(':').is_empty() {
-            let by_id: HashMap<&str, &yapfast_core::chat::CustomEmoji> = custom
+            let by_id: HashMap<&str, &yappuccino_core::chat::CustomEmoji> = custom
                 .iter()
                 .flat_map(|set| &set.emoji)
                 .map(|emoji| (emoji.id.as_str(), emoji))
                 .collect();
             let lists = &adapter.app.state.discord_emojis;
             let item = window.get_react_item();
-            let used = if item.is_empty() || item.starts_with("yapfast:") {
+            let used = if item.is_empty() || item.starts_with("yappuccino:") {
                 &lists.frequent
             } else {
                 &lists.reactions
@@ -223,7 +223,7 @@ fn show_emoji(adapter: &Rc<RefCell<Adapter>>, window: &YapfastWindow, query: &st
     fill_shown_glyphs(window, &mut adapter, 0, GRID_ROWS);
 }
 
-pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapter>>) {
+pub(super) fn bind_callbacks(window: &YappuccinoWindow, adapter: &Rc<RefCell<Adapter>>) {
     super::games::bind(window, adapter);
     super::gifs::bind(window, adapter);
     super::polls::bind(window, adapter);
@@ -246,7 +246,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
     window
         .global::<EmojiAnimations>()
         .on_frame(|key, _revision| {
-            i_slint_core::yapfast_emoji::frame_of_key(key.as_str()).unwrap_or_default()
+            i_slint_core::yappuccino_emoji::frame_of_key(key.as_str()).unwrap_or_default()
         });
     window
         .global::<PictureStore>()
@@ -467,7 +467,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
     let state = adapter.clone();
     let weak = window.as_weak();
     window.on_profile_tab_opened(move |page| {
-        use yapfast_core::application::ProfileTab;
+        use yappuccino_core::application::ProfileTab;
         // ProfileModal's pages: 0 Activity, 3 Board, 4 Wishlist; the mutual
         // ones ask for nothing.
         let tab = match page {
@@ -512,7 +512,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
                 &window,
                 Action::ChangeRelationship {
                     user: user.to_string(),
-                    change: yapfast_core::chat::RelationshipChange::Unblock,
+                    change: yappuccino_core::chat::RelationshipChange::Unblock,
                 },
             );
         }
@@ -875,7 +875,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
                             &window,
                             Action::AskPerson {
                                 user,
-                                ask: yapfast_core::application::PersonAsk::Note,
+                                ask: yappuccino_core::application::PersonAsk::Note,
                             },
                         );
                     }
@@ -904,7 +904,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             .on_row(|font, effect, key, text| {
                 let colours = key_colours(&key);
                 super::name_style::row(
-                    Some(&yapfast_core::chat::NameStyle::new(
+                    Some(&yappuccino_core::chat::NameStyle::new(
                         u8::try_from(font).unwrap_or(11),
                         u8::try_from(effect.max(1)).unwrap_or(1),
                         if colours.is_empty() {
@@ -1134,7 +1134,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
     {
         let (adapter, weak) = (adapter.clone(), window.as_weak());
         window.on_new_thread(move |item, from| {
-            use yapfast_core::application::ThreadFrom;
+            use yappuccino_core::application::ThreadFrom;
             let from = match from.as_str() {
                 "message" => ThreadFrom::Message,
                 "list" => ThreadFrom::List,
@@ -1519,8 +1519,8 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
     let weak = window.as_weak();
     window.on_open_link(move |link| {
         // An app's button under a message presses it on Discord.
-        if link.starts_with(yapfast_core::chat::PRESS_LINK)
-            || link.starts_with(yapfast_core::chat::PICK_LINK)
+        if link.starts_with(yappuccino_core::chat::PRESS_LINK)
+            || link.starts_with(yappuccino_core::chat::PICK_LINK)
         {
             let Some(window) = weak.upgrade() else { return };
             state
@@ -1565,7 +1565,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         // An emoji in a message's text opens its card, below it.
         if let Some(target) = emoji_text::target(&link) {
             let Some(window) = weak.upgrade() else { return };
-            if let Some(rect) = i_slint_core::yapfast_selection::clicked_link() {
+            if let Some(rect) = i_slint_core::yappuccino_selection::clicked_link() {
                 window.invoke_anchor_link(
                     rect.origin.x,
                     rect.origin.y,
@@ -1594,7 +1594,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             .map(|user| mention::Target::User(user.to_owned()));
         if let Some(target) = author.or_else(|| mention::target(&link)) {
             let Some(window) = weak.upgrade() else { return };
-            if let Some(rect) = i_slint_core::yapfast_selection::clicked_link() {
+            if let Some(rect) = i_slint_core::yappuccino_selection::clicked_link() {
                 window.invoke_anchor_link(
                     rect.origin.x,
                     rect.origin.y,
@@ -1616,12 +1616,12 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             state.borrow_mut().action(&window, action);
             return;
         }
-        // Discord's own links open their place here, when Yapfast can show
+        // Discord's own links open their place here, when Yappuccino can show
         // it, and in the browser otherwise. An invite shows its server
         // first and joins only when asked, whatever the text says.
         #[cfg(feature = "discord")]
         if let Some(route) =
-            yapfast_core::discord::discord_route(links::masked(&link).unwrap_or(&link))
+            yappuccino_core::discord::discord_route(links::masked(&link).unwrap_or(&link))
                 .filter(|route| state.borrow().app.state.opens_discord_route(route))
         {
             if let Some(window) = weak.upgrade() {
@@ -1718,6 +1718,27 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             state.borrow_mut().delete_theme(&window);
         }
     });
+    let state = adapter.clone();
+    let weak = window.as_weak();
+    window.on_export_theme(move || {
+        if let Some(window) = weak.upgrade() {
+            state.borrow_mut().theme_export(&window);
+        }
+    });
+    let state = adapter.clone();
+    let weak = window.as_weak();
+    window.on_import_theme(move || {
+        if let Some(window) = weak.upgrade() {
+            state.borrow_mut().theme_import(&window);
+        }
+    });
+    let state = adapter.clone();
+    let weak = window.as_weak();
+    window.on_pick_background(move || {
+        if let Some(window) = weak.upgrade() {
+            state.borrow_mut().theme_pick_background(&window);
+        }
+    });
     let weak = window.as_weak();
     window.on_call_volumes_changed(move || {
         if let Some(window) = weak.upgrade() {
@@ -1746,6 +1767,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         layout.reply_ping = Some(window.get_reply_ping_default());
         layout.strip_tracking = Some(window.get_strip_tracking());
         layout.nameplates = Some(window.get_show_nameplates());
+        layout.animations = Some(window.global::<Theme>().get_interface_animations());
         layout.collapse_long = window.get_collapse_long();
         layout.animate = chosen(&ANIMATES, window.get_animate());
         ANIMATE.set(layout.animate);
@@ -1755,19 +1777,19 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         layout.unmute_on_join = Some(window.get_unmute_on_join());
         layout.deafen_on_join = window.get_deafen_on_join();
         layout.level_voice = Some(window.get_level_voice());
-        yapfast_core::leveling::set_enabled(window.get_level_voice());
+        yappuccino_core::leveling::set_enabled(window.get_level_voice());
         layout.noise_suppression = chosen(&SUPPRESSORS, window.get_noise_suppression());
         layout.noise_strength = chosen(&STRENGTHS, window.get_noise_strength());
-        yapfast_core::noise::set(layout.noise_suppression);
-        yapfast_core::noise::set_strength(layout.noise_strength);
+        yappuccino_core::noise::set(layout.noise_suppression);
+        yappuccino_core::noise::set_strength(layout.noise_strength);
         layout.reduce_room_echo = window.get_dereverb();
-        yapfast_core::noise::set_dereverb(layout.reduce_room_echo);
+        yappuccino_core::noise::set_dereverb(layout.reduce_room_echo);
         layout.input_sensitivity = Some(window.get_sensitivity());
-        yapfast_core::noise::set_sensitivity(layout.sensitivity() as f32);
+        yappuccino_core::noise::set_sensitivity(layout.sensitivity() as f32);
         layout.input_mode = chosen(&INPUT_MODES, window.get_input_mode());
-        yapfast_core::push_to_talk::set_on(layout.input_mode == InputMode::PushToTalk);
+        yappuccino_core::push_to_talk::set_on(layout.input_mode == InputMode::PushToTalk);
         layout.push_to_talk_release_delay = Some(window.get_talk_delay().max(0) as u32);
-        yapfast_core::push_to_talk::set_release_delay(layout.release_delay());
+        yappuccino_core::push_to_talk::set_release_delay(layout.release_delay());
         layout.microphone_volume = Some(window.get_microphone_volume().clamp(0, 200) as u8);
         layout.speaker_volume = Some(window.get_speaker_volume().clamp(0, 200) as u8);
         play_call_volumes(&window);
@@ -1781,7 +1803,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         layout.gpu_rendering = window.get_gpu_rendering();
         layout.gpu_encoding = Some(window.get_gpu_encoding());
         #[cfg(feature = "discord")]
-        yapfast_core::stream_worker::set_hardware_encoding(window.get_gpu_encoding());
+        yappuccino_core::stream_worker::set_hardware_encoding(window.get_gpu_encoding());
         layout.close_to_tray = Some(window.get_close_to_tray());
         layout.multiple_windows = window.get_multiple_windows();
         layout.developer_mode = window.get_developer_mode();
@@ -1852,27 +1874,27 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
     });
     window.on_volume_of(|person, stream| {
         let kind = if stream {
-            yapfast_core::volume::Kind::Stream
+            yappuccino_core::volume::Kind::Stream
         } else {
-            yapfast_core::volume::Kind::Voice
+            yappuccino_core::volume::Kind::Voice
         };
-        yapfast_core::volume::to_slider(yapfast_core::volume::get(kind, &person)).round() as i32
+        yappuccino_core::volume::to_slider(yappuccino_core::volume::get(kind, &person)).round() as i32
     });
     let state = adapter.clone();
     window.on_volume_changed(move |person, stream, value, done| {
         let kind = if stream {
-            yapfast_core::volume::Kind::Stream
+            yappuccino_core::volume::Kind::Stream
         } else {
-            yapfast_core::volume::Kind::Voice
+            yappuccino_core::volume::Kind::Voice
         };
         // Within a step of the default is the default, as Discord snaps it.
         let default = kind.default_gain();
-        let volume = if (value as f32 - yapfast_core::volume::to_slider(default)).abs() < 1.0 {
+        let volume = if (value as f32 - yappuccino_core::volume::to_slider(default)).abs() < 1.0 {
             default
         } else {
-            yapfast_core::volume::from_slider(value as f32)
+            yappuccino_core::volume::from_slider(value as f32)
         };
-        yapfast_core::volume::set(kind, &person, volume);
+        yappuccino_core::volume::set(kind, &person, volume);
         // The drag's last step is remembered, rather than every one.
         if done {
             let mut adapter = state.borrow_mut();
@@ -2001,13 +2023,13 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         }
     });
     window.on_selection_at(|x, y| {
-        i_slint_core::yapfast_selection::copied_at(i_slint_core::lengths::LogicalPoint::new(x, y))
+        i_slint_core::yappuccino_selection::copied_at(i_slint_core::lengths::LogicalPoint::new(x, y))
             .unwrap_or_default()
             .into()
     });
     window.on_link_at(|x, y| {
         let point = i_slint_core::lengths::LogicalPoint::new(x, y);
-        i_slint_core::yapfast_selection::pressed_link_at(point)
+        i_slint_core::yappuccino_selection::pressed_link_at(point)
             .as_deref()
             .and_then(web_address)
             .unwrap_or_default()
@@ -2461,12 +2483,12 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
         }
     });
     #[cfg(feature = "discord")]
-    window.set_share_lists(yapfast_core::stream_worker::LISTS_SOURCES);
+    window.set_share_lists(yappuccino_core::stream_worker::LISTS_SOURCES);
     #[cfg(feature = "discord")]
     let weak = window.as_weak();
     #[cfg(feature = "discord")]
     window.on_list_share_sources(move || {
-        use yapfast_core::stream_worker::{Report, Source, Worker};
+        use yappuccino_core::stream_worker::{Report, Source, Worker};
         // A picture fills a card in the share menu, in pixels.
         let scale = weak
             .upgrade()
@@ -2480,7 +2502,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             let mut screens = vec![];
             let mut windows = vec![];
             let mut cameras = vec![];
-            for listed in yapfast_core::stream_worker::shareable() {
+            for listed in yappuccino_core::stream_worker::shareable() {
                 match listed.source {
                     Source::Display(_) => screens.push(listed),
                     Source::Camera(_) => cameras.push(listed),
@@ -2502,7 +2524,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
                         picture: Default::default(),
                     })
                     .collect();
-                let titles = |listed: &[yapfast_core::stream_worker::Shareable]| {
+                let titles = |listed: &[yappuccino_core::stream_worker::Shareable]| {
                     let titles: Vec<SharedString> = listed
                         .iter()
                         .map(|listed| listed.title.as_str().into())
@@ -2515,7 +2537,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
                 // Where the system's dialog picks a screen or window, the
                 // menu's first choice asks it, before the cameras.
                 let dialog =
-                    (!yapfast_core::stream_worker::LISTS_SOURCES).then_some(Source::Screen);
+                    (!yappuccino_core::stream_worker::LISTS_SOURCES).then_some(Source::Screen);
                 SHAREABLE.with_borrow_mut(|shareable| {
                     *shareable = screens
                         .into_iter()
@@ -2595,8 +2617,8 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             {
                 let picked =
                     SHAREABLE.with_borrow(|shareable| shareable.get(source as usize).cloned());
-                yapfast_core::stream_worker::pick(
-                    picked.unwrap_or(yapfast_core::stream_worker::Source::Screen),
+                yappuccino_core::stream_worker::pick(
+                    picked.unwrap_or(yappuccino_core::stream_worker::Source::Screen),
                 );
             }
             #[cfg(not(feature = "discord"))]
@@ -2624,7 +2646,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             if let Some(picked) =
                 SHAREABLE.with_borrow(|shareable| shareable.get(source as usize).cloned())
             {
-                yapfast_core::stream_worker::pick(picked);
+                yappuccino_core::stream_worker::pick(picked);
             }
             #[cfg(not(feature = "discord"))]
             let _ = source;
@@ -2893,7 +2915,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
                 #[cfg(feature = "discord")]
                 if adapter.gate_meter.is_some() {
                     adapter.gate_meter =
-                        Some(yapfast_core::discord_audio::GateMeter::start(Some(&id)));
+                        Some(yappuccino_core::discord_audio::GateMeter::start(Some(&id)));
                 }
                 adapter.action(&window, Action::Voice(voice::Command::Microphone(id)));
             }
@@ -3111,7 +3133,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             window.set_meter_note(SharedString::from(if !meter::AVAILABLE {
                 "The level meter isn't available on this system yet."
             } else if meter.failed() {
-                "Yapfast can't read this microphone. Check that it's connected, or choose another."
+                "Yappuccino can't read this microphone. Check that it's connected, or choose another."
             } else {
                 ""
             }));
@@ -3124,7 +3146,7 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
             let mut adapter = state.borrow_mut();
             let microphone = adapter.app.state.voice.microphone.clone();
             adapter.gate_meter =
-                on.then(|| yapfast_core::discord_audio::GateMeter::start(microphone.as_deref()));
+                on.then(|| yappuccino_core::discord_audio::GateMeter::start(microphone.as_deref()));
         });
         let state = adapter.clone();
         let weak = window.as_weak();
@@ -3133,10 +3155,10 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
                 window.set_gate_level(meter.level().max(-100.0));
                 window.set_gate_sending(meter.sending());
                 window.set_gate_meter_note(SharedString::from(
-                    if !yapfast_core::discord_audio::AVAILABLE {
+                    if !yappuccino_core::discord_audio::AVAILABLE {
                         "Discord voice and its level aren't available on this system yet."
                     } else if meter.failed() {
-                        "Yapfast can't read this microphone. Check that it's connected, or choose another."
+                        "Yappuccino can't read this microphone. Check that it's connected, or choose another."
                     } else {
                         ""
                     },
@@ -3149,12 +3171,12 @@ pub(super) fn bind_callbacks(window: &YapfastWindow, adapter: &Rc<RefCell<Adapte
 #[cfg(feature = "discord")]
 thread_local! {
     /// What the share menu lists to share, in its order.
-    static SHAREABLE: RefCell<Vec<yapfast_core::stream_worker::Source>> = const { RefCell::new(Vec::new()) };
+    static SHAREABLE: RefCell<Vec<yappuccino_core::stream_worker::Source>> = const { RefCell::new(Vec::new()) };
 }
 
 /// Puts the cursor at a byte offset in the channel's composer, or the
 /// thread's beside it, and the keyboard there.
-fn place_composer_caret(window: &YapfastWindow, (aside, caret): (bool, usize)) {
+fn place_composer_caret(window: &YappuccinoWindow, (aside, caret): (bool, usize)) {
     let caret = i32::try_from(caret).unwrap_or(i32::MAX);
     if aside {
         window.invoke_place_aside_composer_caret(caret);
@@ -3168,7 +3190,7 @@ fn place_composer_caret(window: &YapfastWindow, (aside, caret): (bool, usize)) {
 /// it with `aside`: the `:name` and `@` or `#` words it suggests for.
 fn composer_caret(
     adapter: &mut Adapter,
-    window: &YapfastWindow,
+    window: &YappuccinoWindow,
     text: &str,
     offset: i32,
     aside: bool,
@@ -3241,12 +3263,12 @@ fn composer_caret(
 
 /// Films with the chosen camera into the voice settings' preview, which is
 /// about 400 by 225 points.
-fn start_camera_test(adapter: &mut Adapter, window: &YapfastWindow) {
+fn start_camera_test(adapter: &mut Adapter, window: &YappuccinoWindow) {
     let scale = window.window().scale_factor();
-    let feed = yapfast_core::picture::Feed::new();
+    let feed = yappuccino_core::picture::Feed::new();
     feed.show_at(Some(((400.0 * scale) as u32, (225.0 * scale) as u32)));
     let camera = adapter.app.state.voice.camera.clone();
-    match yapfast_core::camera::Camera::open(camera.as_deref(), Box::new(feed.sink())) {
+    match yappuccino_core::camera::Camera::open(camera.as_deref(), Box::new(feed.sink())) {
         Ok(camera) => adapter.camera_test = Some((camera, feed)),
         Err(error) => window.set_camera_note(error.to_string().into()),
     }
@@ -3256,7 +3278,7 @@ fn start_camera_test(adapter: &mut Adapter, window: &YapfastWindow) {
 /// so pictures are made only for tiles in sight, at their size, and
 /// whether it's the tile in focus. With the call off screen, the camera in
 /// the corner shows there.
-fn place_videos(adapter: &Adapter, window: &YapfastWindow) {
+fn place_videos(adapter: &Adapter, window: &YappuccinoWindow) {
     let voice = &adapter.app.state.voice;
     let shown = window.get_grid_shown() && voice.active();
     let scale = window.window().scale_factor();
@@ -3298,7 +3320,7 @@ const PIP_HEIGHT: f32 = 180.0;
 /// Opens a web page in the browser. Only web pages open: a message can't
 /// start other programs.
 /// The web address a link in a message leads to: a masked link's, behind
-/// the question asked before leaving. A mention or Yapfast's own link has none.
+/// the question asked before leaving. A mention or Yappuccino's own link has none.
 pub(super) fn web_address(link: &str) -> Option<&str> {
     let link = links::masked(link).unwrap_or(link);
     (links::openable(link) && mention::target(link).is_none()).then_some(link)
@@ -3307,7 +3329,7 @@ pub(super) fn web_address(link: &str) -> Option<&str> {
 /// What opening one of Discord's own links does. A profile link anchors
 /// its card to the clicked words, or the pointer, as a mention does.
 #[cfg(feature = "discord")]
-fn discord_link_action(window: &YapfastWindow, route: discord::DiscordRoute) -> Action {
+fn discord_link_action(window: &YappuccinoWindow, route: discord::DiscordRoute) -> Action {
     match route {
         discord::DiscordRoute::Invite { code } => Action::OpenInviteLink(code),
         discord::DiscordRoute::Authorize { query } => Action::OpenOAuthLink(query),
@@ -3329,7 +3351,7 @@ fn discord_link_action(window: &YapfastWindow, route: discord::DiscordRoute) -> 
             item: format!("d:{message}"),
         },
         discord::DiscordRoute::User { user } => {
-            if let Some(rect) = i_slint_core::yapfast_selection::clicked_link() {
+            if let Some(rect) = i_slint_core::yappuccino_selection::clicked_link() {
                 window.invoke_anchor_link(
                     rect.origin.x,
                     rect.origin.y,

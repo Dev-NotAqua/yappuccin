@@ -2,7 +2,7 @@
 //! pictures are made only for tiles in sight, at their size; which tile
 //! shows large; and what the corner shows while the call is off screen.
 
-use yapfast_core::voice::Participant;
+use yappuccino_core::voice::Participant;
 
 /// The call grid's layout, in logical pixels, as `ParticipantGrid` reports it.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
@@ -245,7 +245,7 @@ mod tests {
             connected: true,
             problem: None,
             streaming,
-            video: filming.then(yapfast_core::picture::Feed::new),
+            video: filming.then(yappuccino_core::picture::Feed::new),
             avatar: None,
         }
     }

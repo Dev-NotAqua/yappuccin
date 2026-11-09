@@ -301,7 +301,7 @@ fn direct3d_wgpu_surface_factory(
     )
 }
 
-/// Yapfast: the surface of a wgpu renderer when Skia is built without wgpu. The
+/// Yappuccino: the surface of a wgpu renderer when Skia is built without wgpu. The
 /// winit backend still names those renderers, and their surfaces fail to start.
 #[cfg(not(feature = "wgpu-30"))]
 fn no_wgpu_surface_factory(
@@ -584,7 +584,7 @@ impl SkiaRenderer {
         )
     }
 
-    // Yapfast: the wgpu renderers the winit backend names, when Skia is built
+    // Yappuccino: the wgpu renderers the winit backend names, when Skia is built
     // without wgpu; see `no_wgpu_surface_factory`.
     #[cfg(not(feature = "wgpu-30"))]
     pub fn default_wgpu_30(context: &SkiaSharedContext) -> Self {
@@ -1104,7 +1104,7 @@ impl i_slint_core::renderer::RendererSealed for SkiaRenderer {
         if size.width == 0 || size.height == 0 {
             return Ok(());
         }
-        // Yapfast: a resize draws the whole window in the next frame. Windows throws away a
+        // Yappuccino: a resize draws the whole window in the next frame. Windows throws away a
         // minimized window's pixels and, restoring it, resizes it to the size it had; partial
         // rendering then presented only what changed, leaving the rest black.
         if let Some(state) = self.partial_rendering_state() {

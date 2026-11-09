@@ -943,29 +943,29 @@ impl WindowInner {
         // handle multiple press release
         event = self.click_state.check_repeat(event, self.context());
 
-        // Yapfast: a left press ends a selection; one in text starts another.
+        // Yappuccino: a left press ends a selection; one in text starts another.
         if matches!(
             event,
             MouseEvent::Pressed { button: crate::items::PointerEventButton::Left, .. }
         ) {
-            crate::yapfast_selection::pressed();
+            crate::yappuccino_selection::pressed();
         }
 
-        // Yapfast: an autoscroll takes the pointer's events until it ends; see
-        // `crate::yapfast_autoscroll`.
-        match crate::yapfast_autoscroll::handle(&event) {
-            crate::yapfast_autoscroll::Handling::Dispatch => {}
-            crate::yapfast_autoscroll::Handling::Take(cursor) => {
+        // Yappuccino: an autoscroll takes the pointer's events until it ends; see
+        // `crate::yappuccino_autoscroll`.
+        match crate::yappuccino_autoscroll::handle(&event) {
+            crate::yappuccino_autoscroll::Handling::Dispatch => {}
+            crate::yappuccino_autoscroll::Handling::Take(cursor) => {
                 self.show_cursor(cursor);
                 return Some(MouseDispatchResult { drag_action: None, accepted: true });
             }
-            crate::yapfast_autoscroll::Handling::Ended => {
+            crate::yappuccino_autoscroll::Handling::Ended => {
                 self.show_cursor(BuiltInMouseCursor::Default)
             }
         }
         let middle_press = match event {
             MouseEvent::Pressed { position, button: PointerEventButton::Middle, .. } => {
-                crate::yapfast_autoscroll::pressing();
+                crate::yappuccino_autoscroll::pressing();
                 Some(position)
             }
             _ => None,
@@ -1227,10 +1227,10 @@ impl WindowInner {
             matches!(event, MouseEvent::Drop { .. }).then(|| event.position()).flatten();
         let accepted = dispatch_accepted | grab_accepted;
 
-        // Yapfast: a middle press that a flickable can autoscroll for starts it there, and the
+        // Yappuccino: a middle press that a flickable can autoscroll for starts it there, and the
         // items it reached let go of it.
         if let Some(position) = middle_press
-            && let Some(cursor) = crate::yapfast_autoscroll::start(&window_adapter, position)
+            && let Some(cursor) = crate::yappuccino_autoscroll::start(&window_adapter, position)
         {
             let mut released = MouseInputState::default();
             crate::input::send_exit_events(
@@ -1460,25 +1460,25 @@ impl WindowInner {
         internal_key_event.key_event.modifiers =
             self.context().modifiers().get().modifiers_for(&internal_key_event);
 
-        // Yapfast: copies or clears a selection of text; see `crate::yapfast_selection`. Escape still
+        // Yappuccino: copies or clears a selection of text; see `crate::yappuccino_selection`. Escape still
         // goes on to the focused item.
         if internal_key_event.event_type == KeyEventType::KeyPressed {
             if matches!(internal_key_event.shortcut(), Some(crate::input::StandardShortcut::Copy))
-                && crate::yapfast_selection::copy(self)
+                && crate::yappuccino_selection::copy(self)
             {
                 return crate::input::KeyEventResult::EventAccepted;
             }
             let escape = char::from(crate::input::key_codes::Key::Escape);
             let escaped = internal_key_event.key_event.text.chars().eq([escape]);
-            // Yapfast: a key ends an autoscroll, and Escape does nothing else.
-            if crate::yapfast_autoscroll::stop() {
+            // Yappuccino: a key ends an autoscroll, and Escape does nothing else.
+            if crate::yappuccino_autoscroll::stop() {
                 self.show_cursor(BuiltInMouseCursor::Default);
                 if escaped {
                     return crate::input::KeyEventResult::EventAccepted;
                 }
             }
             if escaped {
-                crate::yapfast_selection::clear();
+                crate::yappuccino_selection::clear();
             }
         }
 
@@ -1542,8 +1542,8 @@ impl WindowInner {
             || internal_key_event.key_event.modifiers.meta
             || internal_key_event.key_event.modifiers.alt;
 
-        // Yapfast: a key nothing took, with no popup open, may go to the app; see
-        // `crate::yapfast_typing`.
+        // Yappuccino: a key nothing took, with no popup open, may go to the app; see
+        // `crate::yappuccino_typing`.
         if internal_key_event.event_type == KeyEventType::KeyPressed
             && !extra_mod
             && !(internal_key_event.key_event.modifiers.shift
@@ -1551,16 +1551,16 @@ impl WindowInner {
             && self.active_popups.borrow().is_empty()
         {
             let nothing_focused = self.focus_item.borrow().upgrade().is_none();
-            match crate::yapfast_typing::offer(&internal_key_event.key_event.text, nothing_focused) {
-                crate::yapfast_typing::Offer::Declined => {}
-                crate::yapfast_typing::Offer::Taken => {
+            match crate::yappuccino_typing::offer(&internal_key_event.key_event.text, nothing_focused) {
+                crate::yappuccino_typing::Offer::Declined => {}
+                crate::yappuccino_typing::Offer::Taken => {
                     self.ensure_tree_instantiated();
                     return crate::input::KeyEventResult::EventAccepted;
                 }
-                crate::yapfast_typing::Offer::Deliver => {
+                crate::yappuccino_typing::Offer::Deliver => {
                     // A composer beside the channel takes the focus in a change handler.
                     crate::properties::ChangeTracker::run_change_handlers();
-                    return crate::yapfast_typing::delivering(|| {
+                    return crate::yappuccino_typing::delivering(|| {
                         self.process_key_input(internal_key_event)
                     });
                 }
@@ -1908,14 +1908,14 @@ impl WindowInner {
         // should not assume that the modifiers are in the same state.
         if !have_focus {
             self.context().modifiers().take();
-            // Yapfast: an autoscroll ends with the window's focus.
-            if crate::yapfast_autoscroll::stop() {
+            // Yappuccino: an autoscroll ends with the window's focus.
+            if crate::yappuccino_autoscroll::stop() {
                 self.show_cursor(BuiltInMouseCursor::Default);
             }
         }
     }
 
-    /// Yapfast: shows the pointer as `cursor` until the items under it show it otherwise.
+    /// Yappuccino: shows the pointer as `cursor` until the items under it show it otherwise.
     fn show_cursor(&self, cursor: BuiltInMouseCursor) {
         let mut state = self.mouse_input_state.take();
         let cursor = MouseCursorInner::BuiltIn(cursor);

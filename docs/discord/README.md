@@ -1,4 +1,4 @@
-# Discord in Yapfast
+# Discord in Yappuccino
 
 | Area | Works on Linux | Open |
 | --- | --- | --- |
@@ -19,11 +19,11 @@ authentication, and [DMs, friends and profiles](people.md) with presence and
 game detection. The [later list](#later) has what's left to do, and
 [adding a feature](adding-a-feature.md) walks a new one through each layer.
 
-Yapfast connects to Discord directly, so a person who links their Discord account
-doesn't need the Discord desktop app. Yapfast joins Discord voice as that person,
-shows their servers, channels and DMs, and sends and receives messages. Yapfast must still be complete without Discord: nothing
+Yappuccino connects to Discord directly, so a person who links their Discord account
+doesn't need the Discord desktop app. Yappuccino joins Discord voice as that person,
+shows their servers, channels and DMs, and sends and receives messages. Yappuccino must still be complete without Discord: nothing
 Discord-related appears until someone links an account, and Discord work doesn't
-replace beta features of Yapfast itself.
+replace beta features of Yappuccino itself.
 
 Protocol references: Discord doesn't document what its own client sends. The
 community's
@@ -38,59 +38,59 @@ The settings protobuf is in
 
 Discord's terms don't allow third-party clients to use personal accounts.
 Bans are uncommon, but they happen, and Discord can change its protocol and
-break Yapfast at any time. Linking is opt-in per person. Yapfast shows this warning
+break Yappuccino at any time. Linking is opt-in per person. Yappuccino shows this warning
 before linking, and each person decides for their own account.
 
 Behave like the official client to keep the risk low. Respect rate limits,
 never act without a user action behind it, and don't poll. Keep all Discord code
-in one crate, so a protocol change breaks only that part and Yapfast can disable it
+in one crate, so a protocol change breaks only that part and Yappuccino can disable it
 without affecting Matrix.
 
 ### Staying within Discord's limits
 
-Yapfast follows the rules Discord documents for every client:
+Yappuccino follows the rules Discord documents for every client:
 
 - **HTTP rate limits.** Each request's route maps to the bucket Discord names in
   `X-RateLimit-Bucket`. Discord counts a bucket apart for each major ID, the
-  channel, server or webhook, so Yapfast keys its count by both: sending in one
-  channel doesn't hold back another. Yapfast waits for an empty bucket to reset
+  channel, server or webhook, so Yappuccino keys its count by both: sending in one
+  channel doesn't hold back another. Yappuccino waits for an empty bucket to reset
   before it asks again. It also waits after a global 429, marked so in the
-  headers or the body. If Discord still answers 429, Yapfast waits the body's
+  headers or the body. If Discord still answers 429, Yappuccino waits the body's
   `retry_after`, or `Retry-After`, or a second when Discord names neither, and
   tries once more. A wait longer than a minute fails at once, with a message to
   try again later.
 - **Invalid requests.** Discord bans an IP that sends 10,000 requests in a
-  10-minute window answered 401, 403 or 429. Yapfast doesn't ask for what it knows
+  10-minute window answered 401, 403 or 429. Yappuccino doesn't ask for what it knows
   will be refused: a channel the account's roles hide shows a notice instead
   of fetching messages.
-- **Gateway resume.** When the connection drops, Yapfast resumes the session at
+- **Gateway resume.** When the connection drops, Yappuccino resumes the session at
   READY's `resume_gateway_url` with op 6 and the last sequence number, and
-  Discord replays what was missed. Yapfast also resumes after op 7, after op 9
+  Discord replays what was missed. Yappuccino also resumes after op 7, after op 9
   with `d: true`, and when a heartbeat goes unacknowledged. It identifies again
   only when Discord won't resume: op 9 with `d: false`, close codes 4007 and
   4009, or three failed attempts. After op 9 it waits a random one to five
   seconds first, or longer when sessions keep ending. Opening a connection,
   Discord's HELLO and each send give up after 10 seconds, so a dead connection
-  fails rather than hangs. Yapfast drops a connection without a close frame,
+  fails rather than hangs. Yappuccino drops a connection without a close frame,
   because a close with 1000 or 1001 ends the session.
 - **Gateway send limit.** A connection may send 120 commands a minute and is
-  closed with 4008 past that. Yapfast holds commands back at 110, so heartbeats
+  closed with 4008 past that. Yappuccino holds commands back at 110, so heartbeats
   always fit. The connection runs in a task of its own, so heartbeats go on
   time while commands wait.
 - **Backoff.** Reconnects back off from 2 to 60 seconds, and start over only
   once a session has stayed up for a minute. Each wait is a random 50% to 100%
-  of the step, so clients cut off together don't return together. Yapfast sends
+  of the step, so clients cut off together don't return together. Yappuccino sends
   at most 10 IDENTIFYs an hour: an account that keeps identifying gets flagged,
-  so past that Yapfast stops reconnecting and says so until it restarts. The first
+  so past that Yappuccino stops reconnecting and says so until it restarts. The first
   heartbeat comes after a random part of the interval, as Discord asks.
 - **Typing.** Mention search waits 300 ms after the last key before it asks
   Discord for members, so typing a name sends one search, not one per letter.
-- **Cookies.** Yapfast keeps the cookies Discord's servers set and sends them
+- **Cookies.** Yappuccino keeps the cookies Discord's servers set and sends them
   back where they apply, as any HTTP client with a cookie jar does. These are
   Discord's device cookies and Cloudflare's rate limiting and bot management
   cookies. One jar serves the whole process. Persistent cookies are saved,
   readable only by the user, in `discord-cookies.json` in the data directory,
-  so Yapfast stays the same device across restarts. Yapfast can't pass a Cloudflare
+  so Yappuccino stays the same device across restarts. Yappuccino can't pass a Cloudflare
   challenge or captcha, so it never has a `cf_clearance` cookie.
 - **Downloads.** Pictures and files from Discord's CDN download eight at a
   time, over one HTTP/2 connection, as a browser's requests to one host go.
@@ -116,48 +116,48 @@ calls.
 
 A Discord bot relaying voice into a Matrix room, like
 [matrix-discord-voice-bridge](https://github.com/lukacsi/matrix-discord-voice-bridge),
-follows Discord's rules. But Discord users would hear every Yapfast user as one bot,
+follows Discord's rules. But Discord users would hear every Yappuccino user as one bot,
 it only works in servers that install the bot, and bots can't join DM calls.
 
 ## Account linking
 
-Link by QR code, the method mautrix-discord uses. Yapfast shows a code from
+Link by QR code, the method mautrix-discord uses. Yappuccino shows a code from
 Discord's remote login service, and the person scans it with the Discord phone
 app. Pasting a token and email/password login aren't offered. A build with
 Matrix links from Settings, under Discord; one without Matrix links on its
-sign-in screen, and signing out there unlinks. Either way, Yapfast first says
+sign-in screen, and signing out there unlinks. Either way, Yappuccino first says
 that Discord doesn't allow third-party clients, so linking puts the account at
 risk, and shows the code only when asked.
 
 HTTPS requests and WebSockets alike trust the certificates the system trusts,
 through `rustls-platform-verifier`, so a reverse proxy whose CA is in the
 system's store works. The WebSockets share one TLS setup,
-`yapfast_discord::websocket`.
+`yappuccino_discord::websocket`.
 
 The remote login gateway (`wss://remote-auth-gateway.discord.gg/?v=2`, with
 Discord's web origin) works as Discord's own login page does,
-`yapfast_discord::remote_auth`:
+`yappuccino_discord::remote_auth`:
 
-1. Yapfast makes a 2048-bit RSA key and sends its public half, as base64 DER.
-2. Discord sends a nonce encrypted to it (RSA-OAEP with SHA-256), and Yapfast
+1. Yappuccino makes a 2048-bit RSA key and sends its public half, as base64 DER.
+2. Discord sends a nonce encrypted to it (RSA-OAEP with SHA-256), and Yappuccino
    answers with the SHA-256 of the nonce, base64url, which proves it holds the
    key.
 3. Discord sends a fingerprint, and the code carries
    `https://discord.com/ra/{fingerprint}`.
 4. Scanning it sends who scanned (`id:discriminator:avatar:username`, encrypted
-   to the key), and Yapfast shows "Confirm on your phone".
+   to the key), and Yappuccino shows "Confirm on your phone".
 5. Confirming sends a ticket, which `POST /users/@me/remote-auth/login` trades
    for the login, encrypted to the key again.
 
 The gateway closes the connection about two minutes after the code shows, and
-Yapfast connects again for a new code while the code is on screen. Saying no on
+Yappuccino connects again for a new code while the code is on screen. Saying no on
 the phone stops linking, with "Try again". The key lives only in memory for the
 one attempt. The `rsa` crate carries the Marvin timing advisory
-(RUSTSEC-2023-0071), which needs an attacker to time many decryptions; Yapfast
+(RUSTSEC-2023-0071), which needs an attacker to time many decryptions; Yappuccino
 decrypts three messages from Discord per attempt. Linking connects Discord at
 once, without restarting: voice reaches it through a slot the chat backend
-fills. When Discord can't start then, or as Yapfast starts, such as when the
-credential store can't be read, Yapfast says why. What waits on Discord, such as
+fills. When Discord can't start then, or as Yappuccino starts, such as when the
+credential store can't be read, Yappuccino says why. What waits on Discord, such as
 a friend request, the custom status or a profile, fails with that reason
 rather than waiting, as it does when the chat backend stops.
 
@@ -165,12 +165,12 @@ Discord may ask for a captcha when trading the ticket, as it does of logins
 from devices it doesn't know ([captcha
 handling](https://docs.discord.food/topics/captcha-handling)): a 400 with
 `captcha_key`, an hCaptcha site key that changes, and often `captcha_rqdata`,
-`captcha_rqtoken` and `captcha_session_id`. Yapfast has no web view, so
+`captcha_rqtoken` and `captcha_session_id`. Yappuccino has no web view, so
 `captcha.rs` serves a page with the challenge on `127.0.0.1`, at a random path,
 and opens it in the browser; the dialog says so and can open it again. The page
 loads hCaptcha's `api.js` with `host=discord.com`, as hCaptcha's mobile SDKs
 name the host they stand for, sets the rqdata, and posts the solution back.
-Yapfast trades the ticket again with `X-Captcha-Key`, `X-Captcha-Rqtoken` and
+Yappuccino trades the ticket again with `X-Captcha-Key`, `X-Captcha-Rqtoken` and
 `X-Captcha-Session-Id`, keeping the login gateway's heartbeat going meanwhile,
 and shows a new captcha up to three times if Discord doesn't take one. The
 listener lives only while the page waits, so nothing stays loaded afterwards.
@@ -205,16 +205,16 @@ In rough order. The browser covers these until then.
 - Animated custom emoji, which show their first frame.
 - Copying custom emoji: copied text has their private code points, not
   `:name:`.
-- A custom status's end while Yapfast is closed, or set from a device whose
-  clock is off: Yapfast trusts the time Discord gives.
+- A custom status's end while Yappuccino is closed, or set from a device whose
+  clock is off: Yappuccino trusts the time Discord gives.
 - Opening embed pictures from a card in the viewer with their neighbours.
-- A smaller READY. Yapfast identifies with an empty
+- A smaller READY. Yappuccino identifies with an empty
   `client_state.guild_versions`, so every connect brings every server in full.
   Discord's web client, when it has a local cache, sends each server's
   version from its last READY, with `highest_last_message_id`,
   `read_state_version`, `user_guild_settings_version`,
   `user_settings_version`, `private_channels_version` and `api_code_version`,
-  and Discord leaves out what hasn't changed. Yapfast would keep those versions
+  and Discord leaves out what hasn't changed. Yappuccino would keep those versions
   beside its saved snapshot, fill in what READY leaves out from it, and the
   fake would answer the same way.
 
@@ -231,7 +231,7 @@ be encrypted, so the homeserver sees only counts, sizes and timing.
 ## Memory
 
 The Discord connection and its server state count towards the same targets as
-the rest of Yapfast: under 250 MiB settled idle and under 400 MiB in a ten-person
+the rest of Yappuccino: under 250 MiB settled idle and under 400 MiB in a ten-person
 call. Large servers carry big member lists, so request members only for the
 channel on screen. Measure settled idle and a Discord call with the method in
 [measurements](../measurements/README.md).
@@ -239,21 +239,21 @@ channel on screen. Measure settled idle and a Discord call with the method in
 ## Testing
 
 `testing/fake_discord.ts` is a local Discord: the gateway, the parts of the
-HTTP API Yapfast uses, a voice server that answers the handshake without DAVE,
+HTTP API Yappuccino uses, a voice server that answers the handshake without DAVE,
 Go Live signalling, and the remote login gateway. Set
-`YAPFAST_DISCORD_TEST_SERVER` to it, and Yapfast uses a test token instead of
-the linked account, kept in memory. With `YAPFAST_DISCORD_TEST_UNLINKED=1` too,
-Yapfast starts unlinked and links against the fake, whose controls scan and
+`YAPPUCCINO_DISCORD_TEST_SERVER` to it, and Yappuccino uses a test token instead of
+the linked account, kept in memory. With `YAPPUCCINO_DISCORD_TEST_UNLINKED=1` too,
+Yappuccino starts unlinked and links against the fake, whose controls scan and
 confirm the code. The fake resumes a dropped gateway session, replaying what it
-missed, and can send op 7. `crates/yapfast-discord/tests/fake_server.rs` runs
+missed, and can send op 7. `crates/yappuccino-discord/tests/fake_server.rs` runs
 against it, each test on a fake of its own; `scripts/test-fake-discord
 FILTER` runs one area, such as `forum`. With `--env PATH`, the fake serves an environment's content in
 place of its fixture, for demos and screenshots; see
 [building](../building.md#networks) and `testing/fake_discord_env.ts`.
-`crates/yapfast-discord/tests/fake_env.rs` runs against
+`crates/yappuccino-discord/tests/fake_env.rs` runs against
 `testing/envs/example.json`. It counts the audio a call sends, which the
 ignored `discord_audio` test `a_call_sends_what_the_microphone_hears` checks:
-Yapfast joins the Lounge, unmutes and beeps into a microphone that hears its
+Yappuccino joins the Lounge, unmutes and beeps into a microphone that hears its
 speakers, as a private PulseAudio of null sinks does. What the fake can't show,
 such as media and DAVE with Discord's servers, needs real Discord. Use a
 separate test account, which the owner provides, in a private test server. Run
@@ -263,6 +263,6 @@ credential store, like any other Discord login.
 
 ## Licences
 
-davey is permissive, so closed-source Yapfast can use it. GPL clients
+davey is permissive, so closed-source Yappuccino can use it. GPL clients
 such as [Abaddon](https://github.com/uowuo/abaddon) are reference
 material only.

@@ -47,7 +47,7 @@ pub(super) fn load_thumbnail(
         runtime.spawn_blocking(move || {
             std::fs::read(&path)
                 .ok()
-                .and_then(|data| yapfast_core::chat::decode_picture(&data, 240, 240))
+                .and_then(|data| yappuccino_core::chat::decode_picture(&data, 240, 240))
         })
     };
     let task = slint::spawn_local(async move {
@@ -76,7 +76,7 @@ pub(super) fn load_thumbnail(
 
 pub(super) fn cached_picture(
     cache: &mut HashMap<String, slint::Image>,
-    state: &yapfast_core::application::AppState,
+    state: &yappuccino_core::application::AppState,
     url: Option<&str>,
 ) -> slint::Image {
     let Some(url) = url else {
@@ -182,7 +182,7 @@ thread_local! {
 
 /// A full image's size once shrunk to the viewer's largest.
 pub(super) fn fit(width: u32, height: u32) -> (u32, u32) {
-    use yapfast_core::chat::{VIEW_HEIGHT, VIEW_WIDTH};
+    use yappuccino_core::chat::{VIEW_HEIGHT, VIEW_WIDTH};
     let scale = f64::min(
         1.0,
         f64::min(
@@ -197,7 +197,7 @@ pub(super) fn fit(width: u32, height: u32) -> (u32, u32) {
 /// A picture's pixels in Slint's own buffer, so showing it shares them.
 struct SlintPixels(slint::SharedPixelBuffer<slint::Rgba8Pixel>);
 
-impl yapfast_core::chat::PixelBuffer for SlintPixels {
+impl yappuccino_core::chat::PixelBuffer for SlintPixels {
     fn bytes(&self) -> &[u8] {
         self.0.as_bytes()
     }
@@ -207,7 +207,7 @@ impl yapfast_core::chat::PixelBuffer for SlintPixels {
 /// shares its pixels rather than copying them; otherwise each picture on
 /// screen would be in memory twice.
 pub(super) fn decode_into_slint_buffers() {
-    yapfast_core::chat::set_pixel_buffers(|width, height, rgba| {
+    yappuccino_core::chat::set_pixel_buffers(|width, height, rgba| {
         Box::new(SlintPixels(slint::SharedPixelBuffer::clone_from_slice(
             rgba, width, height,
         )))
@@ -217,7 +217,7 @@ pub(super) fn decode_into_slint_buffers() {
 /// A moving picture's frame in Slint's own buffer, which it shows as it is.
 struct SlintFrame(slint::SharedPixelBuffer<slint::Rgba8Pixel>);
 
-impl yapfast_core::picture::FrameBuffer for SlintFrame {
+impl yappuccino_core::picture::FrameBuffer for SlintFrame {
     fn size(&self) -> (u32, u32) {
         (self.0.width(), self.0.height())
     }
@@ -231,13 +231,13 @@ impl yapfast_core::picture::FrameBuffer for SlintFrame {
 
 /// Has moving pictures made in Slint's buffers from now on.
 pub(super) fn make_frames_in_slint_buffers() {
-    yapfast_core::picture::set_frame_buffers(|width, height| {
+    yappuccino_core::picture::set_frame_buffers(|width, height| {
         Box::new(SlintFrame(slint::SharedPixelBuffer::new(width, height)))
     });
 }
 
 /// A moving picture's frame, shown without a copy.
-pub(crate) fn frame(buffer: &dyn yapfast_core::picture::FrameBuffer) -> slint::Image {
+pub(crate) fn frame(buffer: &dyn yappuccino_core::picture::FrameBuffer) -> slint::Image {
     match (buffer as &dyn std::any::Any).downcast_ref::<SlintFrame>() {
         Some(frame) => slint::Image::from_rgba8(frame.0.clone()),
         None => slint::Image::default(),
@@ -430,7 +430,7 @@ impl Cursor {
             let picture = picture.clone();
             let wanted = wanted.clone();
             std::thread::Builder::new()
-                .name("yapfast-frames".into())
+                .name("yappuccino-frames".into())
                 .spawn(move || decode_frames(&picture, &wanted, &send))
         };
         if let Err(error) = decoding {
@@ -642,7 +642,7 @@ pub(super) fn blurred(picture: &Picture) -> slint::Image {
 }
 
 /// A picture whose preview is on its way, shown as a skeleton meanwhile.
-pub(super) fn loading(attachment: &yapfast_core::chat::Attachment) -> bool {
+pub(super) fn loading(attachment: &yappuccino_core::chat::Attachment) -> bool {
     (attachment.image || attachment.video)
         && attachment.preview.is_none()
         && !attachment.preview_failed
@@ -650,8 +650,8 @@ pub(super) fn loading(attachment: &yapfast_core::chat::Attachment) -> bool {
 
 /// The size a preview will show at, from the picture's own size when known,
 /// so its skeleton takes the same room.
-pub(super) fn coming_size(attachment: &yapfast_core::chat::Attachment) -> (i32, i32) {
-    use yapfast_core::chat::{PREVIEW_HEIGHT, PREVIEW_WIDTH};
+pub(super) fn coming_size(attachment: &yappuccino_core::chat::Attachment) -> (i32, i32) {
+    use yappuccino_core::chat::{PREVIEW_HEIGHT, PREVIEW_WIDTH};
     let Some((width, height)) = attachment.dimensions else {
         return (PREVIEW_WIDTH as i32, 200);
     };
@@ -700,7 +700,7 @@ fn gallery_cells(previews: &[Preview<'_>], covered: &dyn Fn(usize) -> bool) -> (
     const TILE: i32 = 273;
     const GAP: i32 = 4;
     let cell = |index: usize,
-                attachment: &yapfast_core::chat::Attachment,
+                attachment: &yappuccino_core::chat::Attachment,
                 preview: Option<&Arc<Picture>>| {
         // A video whose poster didn't come plays all the same.
         let Some(preview) = preview else {
@@ -782,7 +782,7 @@ mod tests {
     fn galleries_copy_only_requested_previews_and_bound_their_cache() {
         PREVIEWS.set(Previews::default());
         let attachments: Vec<_> = (0..40)
-            .map(|index| yapfast_core::chat::Attachment {
+            .map(|index| yappuccino_core::chat::Attachment {
                 name: format!("{index}.png"),
                 size: None,
                 image: true,
@@ -790,7 +790,7 @@ mod tests {
                 preview: Some(Arc::new(Picture {
                     width: 360,
                     height: 240,
-                    rgba: yapfast_core::chat::Pixels::new(360, 240, vec![index; 360 * 240 * 4]),
+                    rgba: yappuccino_core::chat::Pixels::new(360, 240, vec![index; 360 * 240 * 4]),
                     ..Default::default()
                 })),
                 preview_failed: false,
@@ -842,11 +842,11 @@ mod tests {
         let picture = Arc::new(Picture {
             width: 360,
             height: 240,
-            rgba: yapfast_core::chat::Pixels::new(360, 240, vec![0; 360 * 240 * 4]),
+            rgba: yappuccino_core::chat::Pixels::new(360, 240, vec![0; 360 * 240 * 4]),
             ..Default::default()
         });
         let attachment = |name: &str, image: bool, preview: Option<&Arc<Picture>>| {
-            yapfast_core::chat::Attachment {
+            yappuccino_core::chat::Attachment {
                 name: name.into(),
                 size: None,
                 image,
@@ -899,10 +899,10 @@ mod tests {
         let picture = Arc::new(Picture {
             width: 400,
             height: 300,
-            rgba: yapfast_core::chat::Pixels::new(400, 300, vec![0; 400 * 300 * 4]),
+            rgba: yappuccino_core::chat::Pixels::new(400, 300, vec![0; 400 * 300 * 4]),
             ..Default::default()
         });
-        let attachment = |placement| yapfast_core::chat::Attachment {
+        let attachment = |placement| yappuccino_core::chat::Attachment {
             name: "bridge.png".into(),
             size: None,
             image: true,
@@ -920,7 +920,7 @@ mod tests {
                 attachment(Placement::Message),
                 attachment(Placement::Embed(0)),
             ],
-            embeds: vec![yapfast_core::chat::Embed {
+            embeds: vec![yappuccino_core::chat::Embed {
                 title: "City opens its first bridge for bikes only".into(),
                 ..Default::default()
             }],
@@ -946,7 +946,7 @@ mod tests {
         let source = Arc::new(Picture {
             width: 1,
             height: 1,
-            rgba: yapfast_core::chat::Pixels::new(1, 1, vec![255; 4]),
+            rgba: yappuccino_core::chat::Pixels::new(1, 1, vec![255; 4]),
             ..Default::default()
         });
         let weak = Arc::downgrade(&source);
@@ -978,7 +978,7 @@ mod tests {
         image::RgbaImage::from_pixel(3, 2, image::Rgba([10, 20, 30, 255]))
             .write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png)
             .unwrap();
-        let decoded = yapfast_core::chat::decode_picture(&png, 240, 240).unwrap();
+        let decoded = yappuccino_core::chat::decode_picture(&png, 240, 240).unwrap();
         let shown = picture(&decoded).to_rgba8().unwrap();
         assert_eq!(shown.as_bytes(), &*decoded.rgba);
         assert_eq!(
@@ -995,7 +995,7 @@ mod tests {
             std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("testing/fixtures/gif-h264.mp4"),
         )
         .unwrap();
-        let picture = Arc::new(yapfast_core::chat::decode_picture(&file, 32, 32).unwrap());
+        let picture = Arc::new(yappuccino_core::chat::decode_picture(&file, 32, 32).unwrap());
         let (frames, _) = animation(&picture);
         let shown = frames.row_data(0).unwrap();
         let model = FRAMES.with_borrow(|cache| cache.last().unwrap().upgrade().unwrap());
@@ -1027,7 +1027,7 @@ mod tests {
             std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("testing/fixtures/gif-h264.mp4"),
         )
         .unwrap();
-        let picture = Arc::new(yapfast_core::chat::decode_picture(&file, 32, 32).unwrap());
+        let picture = Arc::new(yappuccino_core::chat::decode_picture(&file, 32, 32).unwrap());
         AVATAR_SOURCES.with_borrow_mut(|sources| {
             sources.insert(animated.to_owned(), Arc::downgrade(&picture));
         });
@@ -1043,7 +1043,7 @@ mod tests {
             std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("testing/fixtures/gif-h264.mp4"),
         )
         .unwrap();
-        let picture = Arc::new(yapfast_core::chat::decode_picture(&file, 32, 32).unwrap());
+        let picture = Arc::new(yappuccino_core::chat::decode_picture(&file, 32, 32).unwrap());
         let decoded: Vec<_> = picture.frames().collect();
         let (frames, delays) = animation(&picture);
         assert_eq!((frames.row_count(), delays.row_count()), (10, 10));

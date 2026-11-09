@@ -9,7 +9,7 @@
 //! picker lists don't each add a font for text to fall back through.
 
 use std::{cell::RefCell, collections::HashMap};
-use yapfast_core::chat::{CustomEmoji, Picture};
+use yappuccino_core::chat::{CustomEmoji, Picture};
 
 use crate::emoji_font;
 
@@ -89,7 +89,7 @@ pub fn add<'a>(arrived: impl IntoIterator<Item = (&'a str, &'a Picture)>) -> boo
         if glyphs.is_empty() {
             return false;
         }
-        let family = format!("Yapfast Custom Emoji {}", registry.fonts);
+        let family = format!("Yappuccino Custom Emoji {}", registry.fonts);
         if !emoji_font::register(&family, &glyphs, &[]) {
             tracing::warn!("could not register a font of custom emoji");
             return false;
@@ -208,7 +208,7 @@ mod tests {
         let picture = Picture {
             width: 4,
             height: 2,
-            rgba: yapfast_core::chat::Pixels::new(4, 2, [255, 0, 0, 255].repeat(8)),
+            rgba: yappuccino_core::chat::Pixels::new(4, 2, [255, 0, 0, 255].repeat(8)),
             ..Default::default()
         };
         let png = square_png(&picture).expect("encodes");
@@ -233,7 +233,7 @@ mod tests {
         let red = Picture {
             width: 4,
             height: 4,
-            rgba: yapfast_core::chat::Pixels::new(4, 4, [255, 0, 0, 255].repeat(16)),
+            rgba: yappuccino_core::chat::Pixels::new(4, 4, [255, 0, 0, 255].repeat(16)),
             ..Default::default()
         };
         let font = emoji_font::build(

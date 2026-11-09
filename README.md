@@ -2,13 +2,13 @@
   <img src="packaging/icon.svg" width="96" height="96" alt="">
 </p>
 
-<h1 align="center">Yapfast</h1>
+<h1 align="center">Yappuccino</h1>
 
 <p align="center">
-  <a href="https://github.com/yapfast/yapfast/releases/latest"><img src="https://img.shields.io/github/v/release/yapfast/yapfast?label=beta&color=f0b232" alt="The latest release, a beta"></a>
+  <a href="https://github.com/Dev-NotAqua/yapfast/releases/latest"><img src="https://img.shields.io/github/v/release/Dev-NotAqua/yapfast?label=beta&color=f0b232" alt="The latest release, a beta"></a>
   <a href="#get-started"><img src="https://img.shields.io/badge/Windows%20%7C%20Linux-0078D4" alt="Windows and Linux"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/yapfast/yapfast?color=blue" alt="License: GPL 3.0"></a>
-  <a href="https://yapfast.com/discord-invite"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Join the Yapfast Discord server"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Dev-NotAqua/yapfast?color=blue" alt="License: GPL 3.0"></a>
+  <a href="https://yapfast.com/discord-invite"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Join the Yappuccino Discord server"></a>
 </p>
 
 <p align="center">
@@ -29,8 +29,8 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/yapfast.png" alt="Yapfast showing a group DM, with the server list on the left, the conversation in the middle and its members on the right"><br>
-  <sub>A test account on a fake Discord server. Nobody in there said any of this, or endorses Yapfast (sadly).</sub>
+  <img src="docs/images/yappuccino.png" alt="Yappuccino showing a group DM, with the server list on the left, the conversation in the middle and its members on the right"><br>
+  <sub>A test account on a fake Discord server. Nobody in there said any of this, or endorses Yappuccino (sadly).</sub>
 </p>
 
 ## Why?
@@ -39,25 +39,25 @@ Discord's desktop app is a whole ass Chromium running Discord's website, and it
 sits at about 720 MB of RAM doing nothing (insane, I know right?!?). That
 annoyed me enough to write my own in Rust.
 
-Yapfast does the same job (doing nothing) in about 30 MB. There's no browser
+Yappuccino does the same job (doing nothing) in about 30 MB. There's no browser
 engine anywhere in it or near it: it talks to Discord's API itself and draws its
 own window with [Slint](https://slint.dev) and Skia, like a game would. Your
 servers, DMs, friends, voice and GIFs are all there, and if you know Discord,
 you already know where everything is.
 
 It opens fast af, too. I timed both, from clicking the icon to reading my
-messages: Discord took 8 seconds on my Windows PC, Yapfast took 0.22 seconds,
+messages: Discord took 8 seconds on my Windows PC, Yappuccino took 0.22 seconds,
 because it shows the messages it saved last time and catches up while you read.
 
 ## Measured against Discord
 
 <table>
-  <tr><th></th><th>Vesktop memory</th><th>Yapfast memory</th><th>Vesktop CPU</th><th>Yapfast CPU</th></tr>
+  <tr><th></th><th>Vesktop memory</th><th>Yappuccino memory</th><th>Vesktop CPU</th><th>Yappuccino CPU</th></tr>
   <tr><td>Idle</td><td>724 MB</td><td>30 MB (−96%)</td><td>0.11%</td><td>0.015% (−86%)</td></tr>
   <tr><td>Image-heavy channel</td><td>706 MB</td><td>41 MB (−94%)</td><td>0.17%</td><td>0.008% (−95%)</td></tr>
   <tr><td>In a call</td><td>888 MB</td><td>44 MB (−95%)</td><td>0.46%</td><td>0.33% (−28%)</td></tr>
   <tr><td>Sharing your screen¹</td><td>1,013 MB</td><td>113 MB (−89%)</td><td>2.15%</td><td>1.1% (−48%)</td></tr>
-  <tr><th></th><th colspan="2">Discord</th><th colspan="2">Yapfast</th></tr>
+  <tr><th></th><th colspan="2">Discord</th><th colspan="2">Yappuccino</th></tr>
   <tr><td>Opening the app²</td><td colspan="2" align="center">8 s</td><td colspan="2" align="center">0.22 s (36× faster)</td></tr>
 </table>
 
@@ -71,12 +71,12 @@ Electron, with Vencord on top. So its numbers stand in for Discord's. CPU counts
 the whole processor as 100%.
 
 ¹ Sharing a 1920×1080 monitor at 30 frames a second, while in the call.
-Yapfast encodes on the graphics card when it has an encoder, here an NVIDIA
+Yappuccino encodes on the graphics card when it has an encoder, here an NVIDIA
 RTX 3090 sending H264. Encoding on the processor with x264 instead, it takes
 2.5%, a little more than Vesktop.
 
 ² From clicking the icon to reading your messages, against Discord's own app
-rather than Vesktop, timed on my Windows PC. Yapfast shows the messages it saved
+rather than Vesktop, timed on my Windows PC. Yappuccino shows the messages it saved
 last time and catches up while you read.
 
 Memory and CPU measured on 25 October 2026, and screen sharing on 27 October,
@@ -136,7 +136,7 @@ macOS, Steam's and Wine's included, and on Linux the Rich Presence games send,
 with details, elapsed time, images and buttons.
 
 **Settings → Game activity** turns sharing on and off as Discord's own setting
-does, and names games Yapfast doesn't know. See
+does, and names games Yappuccino doesn't know. See
 [game detection](docs/discord/people.md#game-detection) and
 [Rich Presence](docs/discord/people.md#linux-rich-presence).
 
@@ -167,7 +167,7 @@ they do in Discord.
 - **Messages** you can send, reply to, edit, react to, pin, forward and attach
   files to, with Markdown, embeds, custom emoji, stickers and spoilers.
   Discord's own links to servers, channels, messages and profiles open in
-  Yapfast, including one handed to it by the desktop.
+  Yappuccino, including one handed to it by the desktop.
 - **Threads**: start one from a message, browse a channel's threads, join or
   leave one, and read it beside its channel.
 - **Search** a whole server with Discord's filters, and browse a channel's pins.
@@ -184,10 +184,10 @@ they do in Discord.
 - Media channels.
 - Activities.
 - Making and changing server folders.
-- A server's form for new members, such as its rules, when you join. Yapfast
+- A server's form for new members, such as its rules, when you join. Yappuccino
   sends you to Discord in your browser to fill it in.
 - Captchas, sort of. If Discord asks for one while you link or join a server,
-  Yapfast opens it in your browser, but I haven't hit one against real
+  Yappuccino opens it in your browser, but I haven't hit one against real
   Discord yet, so who knows..
 
 Use Discord in a browser for these until then; it has all of it, and you have a
@@ -196,13 +196,13 @@ order I'm working on it.
 
 It's a beta, and it's what I use for Discord every day, so it had better
 be usable. Still, there are rough edges; when you hit one,
-[open an issue](https://github.com/yapfast/yapfast/issues) and I'll fix it, or
-come hang out on the [Yapfast Discord server](https://yapfast.com/discord-invite)
+[open an issue](https://github.com/Dev-NotAqua/yapfast/issues) and I'll fix it, or
+come hang out on the [Yappuccino Discord server](https://yapfast.com/discord-invite)
 and tell me there.
 
 ### Not for you?
 
-- [Vesktop](https://vesktop.dev) if you want plugins. Yapfast has none yet
+- [Vesktop](https://vesktop.dev) if you want plugins. Yappuccino has none yet
   (they're coming, dw), and Vesktop ships with Vencord's.
 - [Ripcord](https://cancel.fm/ripcord/) if you want something even plainer.
   It's native too, but closed source, and it does Slack on the side.
@@ -210,25 +210,25 @@ and tell me there.
 ## Will Discord ban me?
 
 > [!WARNING]
-> Probably not, but I can't promise it. Third-party clients, Yapfast included,
+> Probably not, but I can't promise it. Third-party clients, Yappuccino included,
 > are against Discord's Terms of Service. In practice Discord rarely bans anyone
 > for using one; the accounts that get banned are almost always spamming or
-> running automation. Yapfast only does what you click, and keeps to the same
+> running automation. Yappuccino only does what you click, and keeps to the same
 > limits Discord's own app does.
 >
 > If losing your account would be a disaster, don't use any third-party client,
 > this one or another. And don't post screenshots of it in a server whose
-> moderators might ban you for it. Yapfast tells you all this again before it
+> moderators might ban you for it. Yappuccino tells you all this again before it
 > shows the sign-in code.
 
 ## Where your messages go
 
 Straight from your PC to Discord, or to your Matrix server. I don't run a
-Yapfast server, so nothing in between could keep a copy (I'd have to pay for
+Yappuccino server, so nothing in between could keep a copy (I'd have to pay for
 servers just to snoop on your DMs, and no thanks :D).
 
 - You link your account by scanning a QR code with Discord's phone app, so
-  Yapfast never sees your password.
+  Yappuccino never sees your password.
 - The login token stays in your system's credential store, and only ever goes
   to Discord. Unlinking signs that session out and deletes it.
 - It sends no analytics or crash reports, and doesn't check for updates.
@@ -241,18 +241,18 @@ Don't want to take my word for it? Fair, the code's all right here.
 
 ### Windows 10 and 11
 
-1. Download `Yapfast-…-windows-x64-setup.exe` from the
-   [latest release](https://github.com/yapfast/yapfast/releases/latest).
+1. Download `Yappuccino-…-windows-x64-setup.exe` from the
+   [latest release](https://github.com/Dev-NotAqua/yapfast/releases/latest).
 2. Run it. It installs just for you, with no administrator prompt. The
    installer isn't signed yet, so SmartScreen may get nervous: choose **More
    info**, then **Run anyway**.
-3. Yapfast shows a QR code. On your phone, open Discord, go to **Settings →
+3. Yappuccino shows a QR code. On your phone, open Discord, go to **Settings →
    Scan QR Code**, and point the camera at it.
 
 Rather skip the installer? The release has a portable ZIP too: extract it and
-double-click `yapfast.exe`.
+double-click `yappuccino.exe`.
 
-Yapfast starts with Windows and waits in the tray, so messages and calls still
+Yappuccino starts with Windows and waits in the tray, so messages and calls still
 reach you. Untick that in the installer, or turn it off later in **Settings →
 Advanced**.
 
@@ -260,13 +260,13 @@ Advanced**.
 
 It runs great on both X11 and Wayland, screen sharing too (Hyprland here).
 Every release has two packages, on the
-[latest release](https://github.com/yapfast/yapfast/releases/latest):
+[latest release](https://github.com/Dev-NotAqua/yapfast/releases/latest):
 
-- **AppImage**, `Yapfast-…-x86_64.AppImage`, for any distro with glibc 2.39 or
+- **AppImage**, `Yappuccino-…-x86_64.AppImage`, for any distro with glibc 2.39 or
   newer, like Ubuntu 24.04, Fedora 40 or Debian 13. Make it executable
   (`chmod +x`, or "Allow executing" in its properties) and run it. It adds
   itself to your app menu, and uses your own graphics driver, Mesa or NVIDIA.
-- **Arch package**, `yapfast-…-x86_64.pkg.tar.zst`. Install it with
+- **Arch package**, `yappuccino-…-x86_64.pkg.tar.zst`. Install it with
   `sudo pacman -U` and the file or its link. Rather build it yourself? The
   [PKGBUILD](packaging/arch/PKGBUILD) builds the release's tag from source.
 
@@ -281,7 +281,7 @@ It's one command (pretty sure, anyway :D), and you get the same Discord-only
 app the releases ship, in your launcher:
 
 ```sh
-nix profile add github:yapfast/yapfast#yapfast
+nix profile add github:yappuccino/yappuccino#yappuccino
 ```
 
 It compiles from source, so give it a few minutes. An older glibc and no Nix?
@@ -301,10 +301,10 @@ test it on.
 
 Want what's on `main` right now, without waiting for a release or building it
 yourself? Every now and then I put out a nightly build of the Discord-only app.
-They're on the [releases page](https://github.com/yapfast/yapfast/releases),
+They're on the [releases page](https://github.com/Dev-NotAqua/yapfast/releases),
 marked **Pre-release**, newest first, each with a list of what changed:
 
-- **Windows:** the portable ZIP. Extract it and double-click `yapfast.exe`.
+- **Windows:** the portable ZIP. Extract it and double-click `yappuccino.exe`.
 - **Linux:** the AppImage. `chmod +x` it and run it.
 - **Arch Linux:** the `.pkg.tar.zst`. Install it with `sudo pacman -U` and the
   file or its link.
@@ -320,7 +320,7 @@ They're untested between releases, so expect the odd rough edge.
 
 <br>
 
-Yapfast started as a [Matrix](https://matrix.org) client, and Matrix still
+Yappuccino started as a [Matrix](https://matrix.org) client, and Matrix still
 works: encrypted rooms, Spaces as servers, and voice channels over MatrixRTC, in
 the same window as Discord. The release is Discord-only for now, so
 [build it yourself](#build-it-yourself) to get both.
@@ -357,8 +357,8 @@ that.
 
 <br>
 
-Nope. They need a JavaScript runtime, and Yapfast's insides look nothing like
-what they expect. Yapfast will get plugins of its own, though, and open source
+Nope. They need a JavaScript runtime, and Yappuccino's insides look nothing like
+what they expect. Yappuccino will get plugins of its own, though, and open source
 Vencord ones could be ported once it does.
 
 </details>
@@ -369,7 +369,7 @@ Vencord ones could be ported once it does.
 <br>
 
 Serein draws with wgpu, which costs more memory before you've opened a single
-channel. Yapfast draws with Slint, on the processor by default (WAY lighter) or
+channel. Yappuccino draws with Slint, on the processor by default (WAY lighter) or
 the GPU if you ask. It also does Matrix (from source, for now), DeepFilterNet
 noise suppression on top of RNNoise, voice gates, and the cached GIF picker.
 It's still missing a few things, like media channels and activities.
@@ -391,7 +391,7 @@ UX to my muscle memory, so switching over hurts as little as it can.
 
 ## Build it yourself
 
-Yapfast builds inside a pinned [Nix](https://nixos.org) environment, which
+Yappuccino builds inside a pinned [Nix](https://nixos.org) environment, which
 brings the right Rust, Clang and native libraries. From the project folder:
 
 ```sh
@@ -426,7 +426,7 @@ tables are the same.
 | --- | --- |
 | [Contributing](CONTRIBUTING.md) | What a pull request needs: checks, memory numbers, commit style |
 | [Development](docs/development.md) | Day-to-day work: the preview, local Matrix and LiveKit servers, voice tests |
-| [Architecture](docs/architecture.md) | How `yapfast-core` and the Slint client fit together |
+| [Architecture](docs/architecture.md) | How `yappuccino-core` and the Slint client fit together |
 | [Building](docs/building.md) | Toolchain, Cargo features, checks, releases |
 | [Discord](docs/discord/README.md) | What's done, what's next, and the fake server the tests use |
 | [Voice](docs/voice.md) | Calls, devices and audio processing |
@@ -435,14 +435,14 @@ tables are the same.
 
 ## License
 
-Yapfast is free software under the [GNU General Public License](LICENSE),
+Yappuccino is free software under the [GNU General Public License](LICENSE),
 version 3 or later. Builds with Matrix also include MatrixRTC libraries under
 the AGPL. Every release carries its dependencies' own licenses. Take it, I
 don't even care, baka.
 
 ## Thanks
 
-Yapfast speaks to Discord the way its own apps do, as documented by
+Yappuccino speaks to Discord the way its own apps do, as documented by
 [Discord Userdoccers](https://docs.discord.food), a community effort to
 document the user side of Discord's API. Thanks to everyone who writes it <3
 
@@ -452,5 +452,5 @@ It stands on [Slint](https://slint.dev), [Skia](https://skia.org),
 [DeepFilterNet](https://github.com/Rikorose/DeepFilterNet). My patches to
 Slint live in [`vendor/`](vendor), with the rest of the code.
 
-<sub>Yapfast isn't affiliated with or endorsed by Discord Inc. Discord is a
+<sub>Yappuccino isn't affiliated with or endorsed by Discord Inc. Discord is a
 trademark of Discord Inc.</sub>

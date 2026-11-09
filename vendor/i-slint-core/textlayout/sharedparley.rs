@@ -282,7 +282,7 @@ pub fn draw_text(
             let render = if text_overflow == TextOverflow::Clip || clip_overflowing_first_line {
                 item_renderer.save_state();
 
-                // Yapfast: an emoji in a `StyledText` is taller than its line, as Discord's
+                // Yappuccino: an emoji in a `StyledText` is taller than its line, as Discord's
                 // are, so the first and last lines' are let past the box rather than cut.
                 let clip = LogicalRect::new(LogicalPoint::default(), size);
                 let clip = if text.is_markdown() { clip.inflate(4., 4.) } else { clip };
@@ -292,10 +292,10 @@ pub fn draw_text(
             };
 
             if render {
-                // Yapfast: a selected `StyledText` fills its selection's background and keeps its
+                // Yappuccino: a selected `StyledText` fills its selection's background and keeps its
                 // glyphs' own colours, so links and code still read as such.
                 if let Some((range, background)) =
-                    text.yapfast_selection().filter(|(range, _)| !range.is_empty())
+                    text.yappuccino_selection().filter(|(range, _)| !range.is_empty())
                 {
                     let spans =
                         layout.selection_geometry(range, &draw::visible_band(item_renderer), |x| {
@@ -379,7 +379,7 @@ pub fn link_under_cursor(
     .flatten()
 }
 
-/// Yapfast: where the link under the cursor ends, as a byte offset with the paragraphs counted as
+/// Yappuccino: where the link under the cursor ends, as a byte offset with the paragraphs counted as
 /// if joined by newlines: what `RenderText::hovered_link` gives back to draw its underline.
 #[cfg(feature = "std")]
 pub fn link_end_under_cursor(
@@ -398,7 +398,7 @@ pub fn link_end_under_cursor(
     .flatten()
 }
 
-/// Yapfast: how much text a press selects.
+/// Yappuccino: how much text a press selects.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TextUnit {
     Character,
@@ -406,7 +406,7 @@ pub enum TextUnit {
     Paragraph,
 }
 
-/// Yapfast: the text at `position` as a byte range, the paragraphs counted as if joined by newlines:
+/// Yappuccino: the text at `position` as a byte range, the paragraphs counted as if joined by newlines:
 /// empty at a character boundary, else the word or paragraph there. Above the text is its start
 /// and below it its end, so dragging past either selects to it.
 #[cfg(feature = "std")]
@@ -502,7 +502,7 @@ fn draw_selection_background<'a, R: GlyphRenderer>(
     Some(SelectionRendering { spans, foreground })
 }
 
-/// Yapfast: the link under the cursor, with the box of its part on the line there, so a
+/// Yappuccino: the link under the cursor, with the box of its part on the line there, so a
 /// popup it opens can sit beside it.
 #[cfg(feature = "std")]
 pub fn link_box_under_cursor(
@@ -631,7 +631,7 @@ pub fn draw_text_input(
         |layout| {
             item_renderer.save_state();
 
-            // Yapfast: as in `draw_text`, an emoji is taller than its line. Only up and
+            // Yappuccino: as in `draw_text`, an emoji is taller than its line. Only up and
             // down, as a field scrolls long text past its sides.
             let render = item_renderer.combine_clip(
                 LogicalRect::new(LogicalPoint::default(), size).inflate(0., 4.),

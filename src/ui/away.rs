@@ -1,25 +1,25 @@
-//! Whether someone is using Yapfast, judged as Discord's web client judges it:
+//! Whether someone is using Yappuccino, judged as Discord's web client judges it:
 //! a key, a click or the wheel in the window counts, a passing pointer
 //! doesn't. Once nobody has for [`QUIET`], Discord hears since when, and
 //! goes AFK and then idle on its own clock; see
-//! `yapfast_discord::settings::Away`. One timer runs while someone uses Yapfast,
+//! `yappuccino_discord::settings::Away`. One timer runs while someone uses Yappuccino,
 //! and none once nobody does.
 
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use slint::{Timer, TimerMode};
-use yapfast_core::application::Action;
+use yappuccino_core::application::Action;
 
-use super::{Adapter, YapfastWindow};
+use super::{Adapter, YappuccinoWindow};
 
-/// How long without input before Yapfast tells Discord. Discord's shortest AFK
+/// How long without input before Yappuccino tells Discord. Discord's shortest AFK
 /// timeout that matters is a minute; its timeouts count from the last
 /// input, not from this.
 const QUIET: Duration = Duration::from_secs(15);
 
 pub(super) struct Away {
     last: Instant,
-    /// Discord heard nobody is using Yapfast.
+    /// Discord heard nobody is using Yappuccino.
     inactive: bool,
     timer: Timer,
 }
@@ -35,19 +35,19 @@ impl Default for Away {
 }
 
 impl Adapter {
-    /// Whether nobody has used Yapfast for a while, so animation holds still.
+    /// Whether nobody has used Yappuccino for a while, so animation holds still.
     pub(super) fn is_inactive(&self) -> bool {
         self.away.inactive
     }
 
-    /// Watches for nobody using Yapfast, from now.
+    /// Watches for nobody using Yappuccino, from now.
     pub(super) fn watch_away(&mut self) {
         self.away.last = Instant::now();
         self.wait_away(QUIET);
     }
 
     /// Someone used the window.
-    pub(super) fn used(&mut self, window: &YapfastWindow) {
+    pub(super) fn used(&mut self, window: &YappuccinoWindow) {
         self.away.last = Instant::now();
         if self.away.inactive {
             self.away.inactive = false;
@@ -59,7 +59,7 @@ impl Adapter {
     }
 
     /// Tells Discord again, as the setting to show idle changed.
-    pub(super) fn idle_setting_changed(&mut self, window: &YapfastWindow) {
+    pub(super) fn idle_setting_changed(&mut self, window: &YappuccinoWindow) {
         if self.away.inactive {
             self.tell_away(window);
         }
@@ -82,7 +82,7 @@ impl Adapter {
         });
     }
 
-    fn tell_away(&mut self, window: &YapfastWindow) {
+    fn tell_away(&mut self, window: &YappuccinoWindow) {
         let since = self.away.inactive.then(|| {
             let last = SystemTime::now() - self.away.last.elapsed();
             last.duration_since(UNIX_EPOCH)

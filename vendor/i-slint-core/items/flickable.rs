@@ -67,15 +67,15 @@ use animation::{FlickAnimation, FlickAnimationParameter};
 /// information to derive a fling velocity.
 /// The unit is: millisecond
 const WHEEL_SCROLL_DURATION: Duration = Duration::from_millis(180);
-/// Yapfast: how far the winit backend scrolls for one notch of a wheel, in logical pixels.
+/// Yappuccino: how far the winit backend scrolls for one notch of a wheel, in logical pixels.
 const WHEEL_NOTCH: f32 = 60.;
-/// Yapfast: a wheel spun faster than this, in notches a second, scrolls farther for each notch,
+/// Yappuccino: a wheel spun faster than this, in notches a second, scrolls farther for each notch,
 /// in proportion, so a hard spin crosses a long history quickly and a slow one keeps its
 /// precision.
 const WHEEL_ACCELERATION_START: f32 = 12.;
-/// Yapfast: the most a notch scales.
+/// Yappuccino: the most a notch scales.
 const WHEEL_MOST_ACCELERATION: f32 = 6.;
-/// Yapfast: how long a notch counts towards the wheel's speed: its weight falls by e in this time.
+/// Yappuccino: how long a notch counts towards the wheel's speed: its weight falls by e in this time.
 const WHEEL_SPEED_MEMORY: Duration = Duration::from_millis(200);
 #[cfg(not(any(target_os = "ios", target_os = "linux", target_os = "none", target_os = "macos")))]
 const VELOCITY_TRACKER_SAMPLES: usize = 20;
@@ -199,17 +199,17 @@ impl Item for Flickable {
         self_rc: &ItemRc,
         _: &mut super::MouseCursorInner,
     ) -> InputEventFilterResult {
-        // Yapfast: a middle press may autoscroll the innermost flickable it passes through; see
-        // `crate::yapfast_autoscroll`.
+        // Yappuccino: a middle press may autoscroll the innermost flickable it passes through; see
+        // `crate::yappuccino_autoscroll`.
         if matches!(event, MouseEvent::Pressed { button: PointerEventButton::Middle, .. })
             && self.interactive()
         {
-            crate::yapfast_autoscroll::offer(self_rc);
+            crate::yappuccino_autoscroll::offer(self_rc);
         }
-        // Yapfast: a press selecting text in the rows keeps the pointer here once it has selected
+        // Yappuccino: a press selecting text in the rows keeps the pointer here once it has selected
         // something, and wheels scroll it, as the text it began in may scroll away. Presses
         // that can't pan watch the moves after them, for one to begin selecting.
-        if let Some(selecting) = crate::yapfast_selection::drag_in(self_rc) {
+        if let Some(selecting) = crate::yappuccino_selection::drag_in(self_rc) {
             return if selecting || matches!(event, MouseEvent::Wheel { .. }) {
                 InputEventFilterResult::Intercept
             } else {
@@ -229,7 +229,7 @@ impl Item for Flickable {
             }
         }
         if !self.accepts_pan_event(event) {
-            // Yapfast: watches the press, in case it starts selecting text.
+            // Yappuccino: watches the press, in case it starts selecting text.
             if matches!(event, MouseEvent::Pressed { button: PointerEventButton::Left, .. }) {
                 return InputEventFilterResult::ForwardAndInterceptGrab;
             }
@@ -245,23 +245,23 @@ impl Item for Flickable {
         self_rc: &ItemRc,
         _: &mut super::MouseCursorInner,
     ) -> InputEventResult {
-        // Yapfast: carries on a press selecting text in the rows; see the filter above.
-        if crate::yapfast_selection::drag_in(self_rc).is_some() {
+        // Yappuccino: carries on a press selecting text in the rows; see the filter above.
+        if crate::yappuccino_selection::drag_in(self_rc).is_some() {
             let in_window = |position: LogicalPoint| {
                 self_rc.map_to_window(self_rc.geometry().origin + position.to_vector())
             };
             return match event {
                 MouseEvent::Moved { position, .. } => {
-                    crate::yapfast_selection::drag_to(window_adapter, in_window(*position));
+                    crate::yappuccino_selection::drag_to(window_adapter, in_window(*position));
                     InputEventResult::GrabMouse
                 }
                 MouseEvent::Wheel { position, .. } => {
                     self.data.handle_mouse(self, event, window_adapter, self_rc);
-                    crate::yapfast_selection::drag_to(window_adapter, in_window(*position));
+                    crate::yappuccino_selection::drag_to(window_adapter, in_window(*position));
                     InputEventResult::GrabMouse
                 }
                 MouseEvent::Released { button: PointerEventButton::Left, .. } => {
-                    crate::yapfast_selection::release(window_adapter);
+                    crate::yappuccino_selection::release(window_adapter);
                     InputEventResult::EventAccepted
                 }
                 MouseEvent::Exit => InputEventResult::EventIgnored,
@@ -612,7 +612,7 @@ struct FlickableDataInner {
 
     pending_flicked: bool,
 
-    /// Yapfast: when the wheel's last notch came, the recent notches, each weighing less with
+    /// Yappuccino: when the wheel's last notch came, the recent notches, each weighing less with
     /// time, and the way they turned, to tell how fast the wheel spins.
     wheel_notches: Option<(Instant, f32, euclid::Vector2D<f32, crate::lengths::LogicalPx>)>,
 }
@@ -898,7 +898,7 @@ impl FlickableDataInner {
         }
     }
 
-    /// Yapfast: scales a wheel's `delta` by how fast the wheel spins. Only whole notches count:
+    /// Yappuccino: scales a wheel's `delta` by how fast the wheel spins. Only whole notches count:
     /// touchpads that send no phases scroll by less at a time, and keep their own pace.
     fn accelerate_wheel(&mut self, delta: LogicalVector) -> LogicalVector {
         let delta = delta.cast::<f32>();

@@ -1,4 +1,4 @@
-//! One Yapfast for each data folder, unless Settings → Advanced allows more:
+//! One Yappuccino for each data folder, unless Settings → Advanced allows more:
 //! starting it again brings the running one's window forward and ends. The
 //! first start holds `instance.lock` in the folder, which the system lets go
 //! of when the process ends, and listens for later starts: on a Unix socket
@@ -16,16 +16,16 @@ const SOCKET: &str = "instance.socket";
 const PATIENCE: Duration = Duration::from_secs(5);
 const RETRY: Duration = Duration::from_millis(100);
 
-/// What this start of Yapfast goes on to do.
+/// What this start of Yappuccino goes on to do.
 pub enum Start {
     /// Run, as the first on the folder or one more beside it.
     Run(Instance),
-    /// Another Yapfast runs on the folder and was asked to show its window,
+    /// Another Yappuccino runs on the folder and was asked to show its window,
     /// unless this start was for the tray only: nothing is left to do.
     Handed,
 }
 
-/// What a later start asks the running Yapfast to show: the desktop's
+/// What a later start asks the running Yappuccino to show: the desktop's
 /// activation token, and a Discord link when the desktop handed it one.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Launch {
@@ -33,14 +33,14 @@ pub struct Launch {
     pub link: Option<String>,
 }
 
-/// A running Yapfast's hold on its folder, while it's the first there.
+/// A running Yappuccino's hold on its folder, while it's the first there.
 #[derive(Default)]
 pub struct Instance {
     _lock: Option<File>,
     listener: Option<Listener>,
 }
 
-/// Starts Yapfast on `root`. With another running there and `alone`, hands
+/// Starts Yappuccino on `root`. With another running there and `alone`, hands
 /// this start to it, which shows its window unless `background`.
 pub fn claim(root: &Path, alone: bool, background: bool, link: Option<String>) -> Start {
     claim_with(
@@ -65,7 +65,7 @@ fn claim_with(root: &Path, alone: bool, background: bool, launch: Launch) -> Sta
     let lock = match lock {
         Ok(lock) => lock,
         Err(error) => {
-            tracing::warn!(%error, "could not tell whether Yapfast already runs");
+            tracing::warn!(%error, "could not tell whether Yappuccino already runs");
             return Start::Run(Instance::default());
         }
     };
@@ -78,24 +78,24 @@ fn claim_with(root: &Path, alone: bool, background: bool, launch: Launch) -> Sta
             })
         }
         Err(std::fs::TryLockError::WouldBlock) if !alone => {
-            tracing::info!("another Yapfast runs on this folder; starting one more");
+            tracing::info!("another Yappuccino runs on this folder; starting one more");
             Start::Run(Instance::default())
         }
         Err(std::fs::TryLockError::WouldBlock) if background && launch.link.is_none() => {
-            tracing::info!("Yapfast already runs; nothing to start in the tray");
+            tracing::info!("Yappuccino already runs; nothing to start in the tray");
             Start::Handed
         }
         Err(std::fs::TryLockError::WouldBlock) => {
             if hand(root, &launch) {
-                tracing::info!("Yapfast already runs; showed its window");
+                tracing::info!("Yappuccino already runs; showed its window");
                 Start::Handed
             } else {
-                tracing::warn!("Yapfast already runs but didn't answer; starting another");
+                tracing::warn!("Yappuccino already runs but didn't answer; starting another");
                 Start::Run(Instance::default())
             }
         }
         Err(std::fs::TryLockError::Error(error)) => {
-            tracing::warn!(%error, "could not tell whether Yapfast already runs");
+            tracing::warn!(%error, "could not tell whether Yappuccino already runs");
             Start::Run(Instance::default())
         }
     }
@@ -127,14 +127,14 @@ fn activation_token() -> Option<String> {
     None
 }
 
-/// Asks the first Yapfast to show its window, waiting a little for it to listen.
+/// Asks the first Yappuccino to show its window, waiting a little for it to listen.
 fn hand(root: &Path, launch: &Launch) -> bool {
     let started = std::time::Instant::now();
     loop {
         match ask(root, launch) {
             Ok(()) => return true,
             Err(error) if started.elapsed() >= PATIENCE => {
-                tracing::warn!(%error, "could not reach the running Yapfast");
+                tracing::warn!(%error, "could not reach the running Yappuccino");
                 return false;
             }
             Err(_) => std::thread::sleep(RETRY),
@@ -187,12 +187,12 @@ impl Listener {
     fn bind(root: &Path) -> Option<Self> {
         let path = root.join(SOCKET);
         // Holding the lock, this start is the only one: a socket there is a
-        // gone Yapfast's.
+        // gone Yappuccino's.
         let _ = std::fs::remove_file(&path);
         match std::os::unix::net::UnixListener::bind(&path) {
             Ok(listener) => Some(Self(Some(listener))),
             Err(error) => {
-                tracing::warn!(%error, "starting Yapfast again can't show this window");
+                tracing::warn!(%error, "starting Yappuccino again can't show this window");
                 None
             }
         }
@@ -203,7 +203,7 @@ impl Listener {
             return;
         };
         let thread = std::thread::Builder::new()
-            .name("yapfast-instance".into())
+            .name("yappuccino-instance".into())
             .stack_size(64 * 1024)
             .spawn(move || {
                 use std::io::Read;
@@ -221,7 +221,7 @@ impl Listener {
                 }
             });
         if let Err(error) = thread {
-            tracing::warn!(%error, "starting Yapfast again can't show this window");
+            tracing::warn!(%error, "starting Yappuccino again can't show this window");
         }
     }
 }
@@ -229,7 +229,7 @@ impl Listener {
 #[cfg(windows)]
 mod windows {
     //! A named auto-reset event for the folder: a later start sets it, and the
-    //! first Yapfast's thread, waiting on it, shows the window. A second,
+    //! first Yappuccino's thread, waiting on it, shows the window. A second,
     //! unnamed event stops the thread before a restart starts the next process.
 
     use std::path::Path;
@@ -243,7 +243,7 @@ mod windows {
         UI::WindowsAndMessaging::{ASFW_ANY, AllowSetForegroundWindow},
     };
 
-    /// The event's name: `Local\yapfast-` and an FNV-1a hash of the folder's
+    /// The event's name: `Local\yappuccino-` and an FNV-1a hash of the folder's
     /// absolute path, as Windows compares paths, without case.
     fn name(root: &Path) -> Vec<u16> {
         use std::os::windows::ffi::OsStrExt;
@@ -255,7 +255,7 @@ mod windows {
                 hash = (hash ^ u64::from(byte)).wrapping_mul(0x0100_0000_01b3);
             }
         }
-        format!("Local\\yapfast-{hash:016x}")
+        format!("Local\\yappuccino-{hash:016x}")
             .encode_utf16()
             .chain([0])
             .collect()
@@ -306,7 +306,7 @@ mod windows {
             if event.is_null() || stop.is_null() {
                 tracing::warn!(
                     error = %std::io::Error::last_os_error(),
-                    "starting Yapfast again can't show this window"
+                    "starting Yappuccino again can't show this window"
                 );
                 // SAFETY: each is a handle this made, or null.
                 unsafe {
@@ -331,7 +331,7 @@ mod windows {
             let (event, stop) = (self.event, self.stop);
             let root = self.root.clone();
             let thread = std::thread::Builder::new()
-                .name("yapfast-instance".into())
+                .name("yappuccino-instance".into())
                 .stack_size(64 * 1024)
                 .spawn(move || {
                     let handles = [event as HANDLE, stop as HANDLE];
@@ -360,7 +360,7 @@ mod windows {
             match thread {
                 Ok(_) => self.listening = true,
                 Err(error) => {
-                    tracing::warn!(%error, "starting Yapfast again can't show this window");
+                    tracing::warn!(%error, "starting Yappuccino again can't show this window");
                 }
             }
         }
@@ -385,11 +385,11 @@ mod windows {
 use windows::{Listener, ask};
 
 /// The folder under a data folder holding links handed to its running
-/// Yapfast on Windows, whose named event carries no words of its own.
+/// Yappuccino on Windows, whose named event carries no words of its own.
 #[cfg(any(windows, test))]
 const LINK_QUEUE: &str = "instance-links";
 
-/// Leaves a link for the running Yapfast on `root` to take when its event
+/// Leaves a link for the running Yappuccino on `root` to take when its event
 /// is set. The file lands whole under its final name, so the running one
 /// never reads a half-written link.
 #[cfg(any(windows, test))]
@@ -437,7 +437,7 @@ fn drain_link_queue(root: &Path) -> Vec<String> {
         .collect()
 }
 
-/// Drops links left for a Yapfast that has gone; the new first start on a
+/// Drops links left for a Yappuccino that has gone; the new first start on a
 /// folder opens no stale link when a later start shows its window.
 #[cfg(any(windows, test))]
 fn clear_link_queue(root: &Path) {
@@ -588,15 +588,15 @@ mod tests {
             Some(launch(Some("token-1"), None))
         );
         assert_eq!(
-            launch_from_line("open - yapfast://channels/@me/20"),
-            Some(launch(None, Some("yapfast://channels/@me/20")))
+            launch_from_line("open - yappuccino://channels/@me/20"),
+            Some(launch(None, Some("yappuccino://channels/@me/20")))
         );
         assert_eq!(launch_from_line("open"), Some(Launch::default()));
         // A start writes a link with a space as one word, which arrives whole.
         #[cfg(feature = "discord")]
         {
             let link =
-                yapfast_core::discord::discord_link("https://discord.com/channels/10/11?a b");
+                yappuccino_core::discord::discord_link("https://discord.com/channels/10/11?a b");
             let spaced = launch(None, link.as_deref());
             assert_eq!(launch_from_line(&launch_line(&spaced)), Some(spaced));
         }

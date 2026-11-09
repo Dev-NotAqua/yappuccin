@@ -568,7 +568,7 @@ export component JoinVoice inherits VerticalLayout {
     }
     Text { text: root.room-name; color: Theme.text; font-size: 26px; font-weight: 900; horizontal-alignment: center; overflow: elide; }
     Text { text: root.voice-description; color: Theme.secondary; horizontal-alignment: center; wrap: word-wrap; }
-    if !root.preview && !root.call-encrypted: Text { text: "This channel is unencrypted. Yapfast only joins encrypted voice channels."; color: Theme.accent; font-size: 15px; horizontal-alignment: center; wrap: word-wrap; }
+    if !root.preview && !root.call-encrypted: Text { text: "This channel is unencrypted. Yappuccino only joins encrypted voice channels."; color: Theme.accent; font-size: 15px; horizontal-alignment: center; wrap: word-wrap; }
     HorizontalLayout {
         alignment: center; padding-top: 6px;
         ActionButton { min-height: 42px; text: root.voice-active ? "Switch voice channel" : "Join voice"; primary: true; enabled: root.can-join; clicked => { root.join-voice(); } }
@@ -668,9 +668,12 @@ component StageTile inherits Rectangle {
     callback stop;
     callback full-screen(bool);
     border-radius: root.full ? 0px : 12px; clip: true;
+    background: transparent;
+    animate background { duration: Theme.quick; }
+    animate border-radius { duration: Theme.medium; easing: ease-out; }
     accessible-role: button; accessible-label: root.label;
     accessible-action-default => { root.clicked(); }
-    animate x, y, width, height { duration: root.full ? 0ms : 160ms; easing: ease-out; }
+    animate x, y, width, height { duration: root.full ? 0ms : Theme.medium; easing: ease-out; }
     property <bool> stop-shown: root.stop-label != "" && (touch.has-hover || root.focused);
     @children
     touch := TouchArea {
@@ -801,12 +804,14 @@ export component ParticipantGrid inherits Flickable {
     property <bool> focusing: root.focused >= 0 && root.focused < self.count;
     // A few people take the columns, and the size, that make their tiles
     // largest within both the width and the height, so a short call above a
-    // DM's messages shows everyone without scrolling. Side by side wins
-    // unless stacking makes tiles a tenth larger. More people take tiles at
-    // least 240px wide, and scroll.
+    // DM's messages shows everyone without scrolling. With one to four
+    // people there's no cap: the tiles grow to fill the call, so two people
+    // fill it as two large cards rather than two small ones in a sea of
+    // space. Side by side wins unless stacking makes tiles a tenth larger.
+    // More people take tiles at least 240px wide, and scroll.
     pure function fitted(columns: int) -> length {
         let rows = ceil(root.count / columns);
-        min(420px, (root.span - (columns - 1) * root.gap) / columns,
+        min((root.span - (columns - 1) * root.gap) / columns,
             (root.height - 2 * root.inset - (rows - 1) * root.gap) / rows / 0.5625)
     }
     property <int> fewest: max(1, min(self.count, floor((self.span + self.gap) / (240px + self.gap))));
@@ -958,6 +963,7 @@ export component ParticipantGrid inherits Flickable {
         // Drawn over the camera's picture.
         Rectangle {
             border-radius: tile.border-radius; border-width: person.speaking ? 3px : 0px; border-color: Theme.live;
+            animate border-width, border-color { duration: Theme.quick; easing: ease-out; }
         }
         if person.local && root.camera-starting: Rectangle {
             x: 10px; y: 10px; height: 26px;
@@ -1257,7 +1263,7 @@ component ScreenCard inherits Rectangle {
     }
 }
 
-// Going live: what to share, where Yapfast lists it, and the resolution, frame
+// Going live: what to share, where Yappuccino lists it, and the resolution, frame
 // rate and quality to share it at; or while sharing, what to share instead.
 export component ShareMenu inherits Rectangle {
     /// The screens, then the windows, then the cameras, to share; a pick

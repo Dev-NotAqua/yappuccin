@@ -11507,7 +11507,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aee1b19627c7c60102ab80d3a9cbe18de90bfe03bfa6c3715447681f0e8c8af6"
 
 [[package]]
-name = "yapfast"
+name = "yappuccino"
 version = "0.3.0"
 dependencies = [
  "anyhow",
@@ -11540,14 +11540,14 @@ dependencies = [
  "wl-clipboard-rs",
  "x11rb",
  "xkeysym",
- "yapfast-core",
- "yapfast-discord",
- "yapfast-ui",
+ "yappuccino-core",
+ "yappuccino-discord",
+ "yappuccino-ui",
  "zbus",
 ]
 
 [[package]]
-name = "yapfast-core"
+name = "yappuccino-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -11595,11 +11595,11 @@ dependencies = [
  "windows",
  "windows-core",
  "x264-src",
- "yapfast-discord",
+ "yappuccino-discord",
 ]
 
 [[package]]
-name = "yapfast-discord"
+name = "yappuccino-discord"
 version = "0.1.0"
 dependencies = [
  "aes-gcm",
@@ -11633,10 +11633,11 @@ dependencies = [
  "tracing-subscriber",
  "url",
  "webrtc-sys",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
-name = "yapfast-ui"
+name = "yappuccino-ui"
 version = "0.1.0"
 dependencies = [
  "slint",

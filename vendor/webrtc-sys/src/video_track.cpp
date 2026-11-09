@@ -327,7 +327,7 @@ webrtc::scoped_refptr<VideoTrackSource::InternalSource> VideoTrackSource::get()
   return source_;
 }
 
-// Yapfast: the source most recently made on each thread; see
+// Yappuccino: the source most recently made on each thread; see
 // last_video_track_source.
 static thread_local std::weak_ptr<VideoTrackSource> last_source;
 

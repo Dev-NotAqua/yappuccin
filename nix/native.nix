@@ -19,11 +19,11 @@ rec {
   };
   skia = pkgs.runCommand "talk-skia-0.157.0-linux" {
     nativeBuildInputs = [ pkgs.python3 pkgs.binutils pkgs.llvmPackages_21.llvm ];
-    YAPFAST_SKIA_SOURCE = skiaArchive;
-    YAPFAST_SKIA_OBJCOPY = "${pkgs.llvmPackages_21.llvm}/bin/llvm-objcopy";
-    YAPFAST_SKIA_NM = "${pkgs.llvmPackages_21.llvm}/bin/llvm-nm";
+    YAPPUCCINO_SKIA_SOURCE = skiaArchive;
+    YAPPUCCINO_SKIA_OBJCOPY = "${pkgs.llvmPackages_21.llvm}/bin/llvm-objcopy";
+    YAPPUCCINO_SKIA_NM = "${pkgs.llvmPackages_21.llvm}/bin/llvm-nm";
   } ''
-    export YAPFAST_SKIA_OUTPUT="$out"
+    export YAPPUCCINO_SKIA_OUTPUT="$out"
     python3 ${./prepare-skia-native.py}
   '';
   libraries = with pkgs; [

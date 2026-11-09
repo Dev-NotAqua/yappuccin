@@ -14,13 +14,13 @@ their custom status or what they're doing under the name. As in Discord's
 DM list, a presence comes from friends' presences, and for anyone in a DM or
 group DM also from the servers the account shares with them:
 READY_SUPPLEMENTAL's `merged_presences`, a server's PRESENCE_UPDATE and
-member list rows. Yapfast keeps servers' presences only for people in a DM,
+member list rows. Yappuccino keeps servers' presences only for people in a DM,
 not for every member (`Tracker::in_private`). Someone with none shows the
 grey offline ring. These follow PRESENCE_UPDATE live. The header of an open
 one-to-one DM shows the same dot on their avatar, and their custom status or
 what they're doing in a bubble beside the name. A group DM
 shows how many are in it. A group DM lists its members by name, with their
-presence. Yapfast downloads the pictures of the first
+presence. Yappuccino downloads the pictures of the first
 150 DMs listed; the rest keep their initials.
 
 Friend requests, message requests and spam have their own screen. A
@@ -32,28 +32,28 @@ lists each person once, under "Requests": their friend request, with Accept
 and Ignore, and under it the latest message of their message request, which
 opens the conversation; an unread one is marked New. Discord's own client
 keeps the two apart, friend requests under Friends and message requests on a
-screen of their own; Yapfast puts them together, as one person's asking.
+screen of their own; Yappuccino puts them together, as one person's asking.
 Friend requests this account sent follow under "Sent". Those Discord marks
 as spam, friend requests and message requests alike, fold away under
 "Spam", so a person Discord misjudged can still be found. The entry stays
 highlighted while a request from the screen is open. Opening one shows its messages with Accept and Ignore in place of the
 composer: replying waits for accepting, as in Discord. Accepting makes it an
 ordinary DM; ignoring removes it, and the sender isn't told. Requests count
-no mentions, spam isn't marked unread, and Yapfast never opens a request on its
+no mentions, spam isn't marked unread, and Yappuccino never opens a request on its
 own when it picks a conversation.
 
 A request's message comes as Discord's client loads it:
 `GET /users/@me/message-requests/supplemental-data` with up to 25
 `channel_ids`, repeated, answers `[{channel_id, message_preview}]` with a
-message object each. Yapfast asks once for each request it hasn't a message
+message object each. Yappuccino asks once for each request it hasn't a message
 for, after connecting and when a request arrives; MESSAGE_CREATE and
 MESSAGE_UPDATE in a request replace it with a newer one, and deleting the
 one shown asks again.
 
 The pen in the DM list's header starts a DM: it lists the account's friends
-(from READY's relationships), then anyone else Yapfast knows by name, and
+(from READY's relationships), then anyone else Yappuccino knows by name, and
 opening one posts to `/users/@me/channels`, which finds the DM with them or
-starts one. Yapfast opens it once its CHANNEL_CREATE lists it.
+starts one. Yappuccino opens it once its CHANNEL_CREATE lists it.
 
 ## Friends and requests
 
@@ -99,7 +99,7 @@ acceptance that doesn't say so. Ignoring or cancelling is `DELETE` on the
 same path, each with the X-Context-Properties
 header Discord's client sends: `{"location":"User Profile"}` when sending
 from a profile, `{"location":"Friends"}` otherwise, as base64. Discord
-doesn't let a client send many requests quickly, and Yapfast only sends one when
+doesn't let a client send many requests quickly, and Yappuccino only sends one when
 the person clicks. Requests Discord took for spam are listed too, marked
 "Maybe spam".
 
@@ -115,7 +115,7 @@ someone is blocked. Unblock on a row is the menu's `DELETE`.
 Right-clicking a DM offers, besides Profile and copying, these:
 
 - Pin keeps a DM or group DM at the top of the list. Discord's desktop client
-  doesn't pin DMs, so Yapfast keeps the pins in `layout.json`, on this device.
+  doesn't pin DMs, so Yappuccino keeps the pins in `layout.json`, on this device.
 - Start call joins the DM's call, as the phone in its header does.
 - Add note writes this account's note on the other person:
   `GET /users/@me/notes/{id}` fills the dialog, a 404 meaning there's none,
@@ -124,7 +124,7 @@ Right-clicking a DM offers, besides Profile and copying, these:
   USER_NOTE_UPDATE changes it, and a new session forgets them all.
 - Add friend nickname, for a friend, is `PATCH
   /users/@me/relationships/{id}` with `{"nickname": ...}`, or null to remove
-  it. RELATIONSHIP_UPDATE carries it back, and Yapfast shows a friend by their
+  it. RELATIONSHIP_UPDATE carries it back, and Yappuccino shows a friend by their
   nickname in the DM list and the friends list, as Discord does.
 - Close DM is `DELETE /channels/{id}`; Discord answers with CHANNEL_DELETE,
   and the DM returns when either side writes.
@@ -132,7 +132,7 @@ Right-clicking a DM offers, besides Profile and copying, these:
   on the same path with `{"type": 2}`, each after the person confirms, with
   `{"location":"ContextMenu"}` as the context. Unblock is the same `DELETE`.
 - Ignore is `PUT /users/@me/relationships/{id}/ignore`, and `DELETE` stops it.
-  Discord marks the relationship `user_ignored`, which Yapfast tracks to offer
+  Discord marks the relationship `user_ignored`, which Yappuccino tracks to offer
   the opposite.
 - Mute is `PATCH /users/@me/guilds/@me/settings` with the channel's override:
   `muted` and a `mute_config` of `selected_time_window`, in seconds or -1 for
@@ -160,7 +160,7 @@ messages, adding friends, the profile or member list, and a search. Its call
 is two buttons, Start Voice Call and Start Video Call, which joins and turns
 the camera on once the call connects. Once someone is in the call, the first
 reads Join Voice Call and the second goes, and in the call both go; Discord's
-keeps a Join Video Call for a call already on video, which Yapfast doesn't
+keeps a Join Video Call for a call already on video, which Yappuccino doesn't
 offer. A server's text channel has, after its icon and name,
 its topic, then on the right Discord's buttons in Discord's order: the bell
 of its [notification settings](messages.md#notification-settings), its pinned
@@ -169,17 +169,17 @@ search. The Threads button comes before the bell; see [a channel's list of
 threads](servers.md#a-channels-list-of-threads).
 
 - The topic is the channel's `topic`, from READY and GUILD_CREATE, which
-  CHANNEL_UPDATE changes. Yapfast keeps it with the channel, shared between the
+  CHANNEL_UPDATE changes. Yappuccino keeps it with the channel, shared between the
   server's snapshots (`Option<Arc<str>>`), and when a channel opens, renders
   its Discord markup as a message's: mentions by name, custom emoji,
   Markdown and links. It sends the result (`Event::Topic`) again only when
-  the topic changes, or when it mentions someone and the names Yapfast knows
+  the topic changes, or when it mentions someone and the names Yappuccino knows
   change. The header shows it on one line, after a rule, cut at the last
   word that fits; clicking it shows it in full under the header, with its
   links. A channel without one shows none.
 
 - Pinned messages open under the pin, the latest pinned first, from `GET
-  /channels/{id}/messages/pins`, whose `items` carry each `message`. Yapfast asks
+  /channels/{id}/messages/pins`, whose `items` carry each `message`. Yappuccino asks
   each time they open, and for the first 50.
 - Notices, such as that someone pinned a message, joined, started a thread
   or a call, or that a poll closed, show as Discord's client shows them: a
@@ -195,19 +195,19 @@ threads](servers.md#a-channels-list-of-threads).
   each of `messages` a list whose first is the one found; they take the
   member list's or the profile's place, and Show more loads the next page.
   Discord indexes a DM or a server the first time it's searched, answering
-  202 with code 110000 and a `retry_after`; Yapfast asks again up to five
+  202 with code 110000 and a `retry_after`; Yappuccino asks again up to five
   times.
-- The box takes Discord's filters with the words (`yapfast_discord::search`):
+- The box takes Discord's filters with the words (`yappuccino_discord::search`):
   `from:` and `mentions:` someone, `in:` a channel of the server, `has:`
   link, embed, poll, file, video, image, sound, sticker or forward,
   `before:`, `after:` and `during:` a day such as 2026-10-13, and
-  `pinned:true`. A value with spaces goes in quotes. Yapfast sends them as
+  `pinned:true`. A value with spaces goes in quotes. Yappuccino sends them as
   Discord's client does, each repeated for several: `author_id`, `mentions`,
   `channel_id`, `has` (`snapshot` for forwards), `min_id` and `max_id`, the
   snowflakes of the day's local midnights, and `pinned`. `in:` names a text
   channel by its name; `from:` and `mentions:` find the member through the
   gateway's member search in a server, as the box's suggestions do, and
-  among the people Yapfast knows in a DM, someone called exactly that first. A
+  among the people Yappuccino knows in a DM, someone called exactly that first. A
   name nobody has, or a filter Discord doesn't take, says so in place of
   results.
 - A server's results are headed by the channel they're in, and the search
@@ -217,7 +217,7 @@ threads](servers.md#a-channels-list-of-threads).
   in, but neither takes the view from the result nor loads the messages
   around the last read one in place of its window. Another server, a DM or
   a voice channel closes the search.
-- In a server, pins and results carry no member profiles, so Yapfast asks the
+- In a server, pins and results carry no member profiles, so Yappuccino asks the
   gateway for those of authors it doesn't know yet and waits up to five
   seconds for them; then they show with their server nickname, avatar and
   role colour.
@@ -241,7 +241,7 @@ enlarges it into a centred one. The card leaves the dates and the roles'
 heading to the full profile, and ends in a box, "Message @name", as
 Discord's does: Enter opens or starts the DM with them and sends what it
 holds there, without touching the DM's own composer. The box shows only for
-someone Yapfast can message, never for this account;
+someone Yappuccino can message, never for this account;
 right-clicking a DM and choosing "Profile" opens the full one. A one-to-one
 DM shows its other person's profile in a panel on the right, with the bio in
 full and the mutual servers and friends. Mutual servers show their icon and
@@ -250,8 +250,8 @@ server's banner, member count (from READY's `member_count`), channel count
 and "Go to server". Mutual friends show their avatar and status dot;
 clicking one opens their profile card beside it, or their full profile from
 a full profile; the person icon in the DM's header
-hides or shows it, and Yapfast remembers the choice in `layout.json`. Yapfast fetches the
-profile once each time the open DM changes to someone else. Yapfast fetches it
+hides or shows it, and Yappuccino remembers the choice in `layout.json`. Yappuccino fetches the
+profile once each time the open DM changes to someone else. Yappuccino fetches it
 from `GET /users/{id}/profile` with the open server's id, so the server's
 nickname, avatar, banner, bio and pronouns win over the person's own, and the
 profile lists their roles in role order, when they joined Discord and the server,
@@ -286,7 +286,7 @@ Discord's client does: an application's asset from `/app-assets/`, `mp:` keys
 through the media proxy, and `spotify:`, `youtube:` and `twitch:` keys from
 those services' image hosts, which downloads allow for this alone; keys with
 anything but plain characters show no picture. A game Discord detected has no
-pictures, so its card shows the game's icon, which Yapfast asks for once per
+pictures, so its card shows the game's icon, which Yappuccino asks for once per
 game with `GET /applications/public?application_ids={id}` and downloads from
 `/app-icons/`. Application pictures stay in the picture cache. The timers tick
 once a second, and only while a profile with one shows. Matrix members and
@@ -296,14 +296,14 @@ room role.
 Someone's server tag shows as a small chip, as in Discord: the badge of the
 server they represent, then up to four letters. It comes from the
 `primary_guild` of their user object, which has the `tag`, the
-`identity_guild_id`, a `badge` hash that Yapfast fetches from
+`identity_guild_id`, a `badge` hash that Yappuccino fetches from
 `/clan-badges/{guild}/{badge}.png`, and `identity_enabled`, which is true while
 they wear it. It's false once they stop, and null until they take up a tag
 their server changed; as in Discord's client, those and one without a tag show
 nothing. The chip sits after the name on each message that starts a group,
 after the name in the member list and in a one-to-one DM's row, and beside the
 handle on a profile card. A tag without a badge shows its letters alone.
-Yapfast learns tags from every user object it sees, with the names and avatars,
+Yappuccino learns tags from every user object it sees, with the names and avatars,
 so a tag changes on screen as soon as a message, a member list row or a profile
 carries the new one; a user object without `primary_guild`, as a partial one
 is, changes nothing, and `null` takes it away. They are kept with the names
@@ -313,7 +313,7 @@ The card shows the person's badges, as Discord's does, in a row of pictures
 under the name and handle: HypeSquad, Active Developer, a Nitro subscriber's
 and the like, in the order the profile lists them. They come from the
 `badges` of `GET /users/{id}/profile`: each has an `id`, a `description`, an
-`icon` hash that Yapfast fetches from `/badge-icons/{icon}.png`, and
+`icon` hash that Yappuccino fetches from `/badge-icons/{icon}.png`, and
 sometimes a `link`. Pointing at one shows its description; clicking one that
 has a link opens it. A badge missing its description or icon is left out, and
 a profile with none shows no row. Badges show on profile cards only, not
@@ -334,7 +334,7 @@ kept profile, as Discord's client keeps its answer. Each of its `badges` has a `
 progress), a `current_tier` naming one of its `tiers`, whose `name` is the
 level and `complex_icon_static_url` the large picture, an SVG. A badge
 without tiers, such as Quests, shows its own name as the title and its
-`simple_icon_url`. Yapfast matches an entry to a profile badge by the
+`simple_icon_url`. Yappuccino matches an entry to a profile badge by the
 level's `simple_icon_url`, which both lists carry, else by the icon hash in
 `simple_icon_raster_url`; one the person doesn't own (`owned: false`) is
 skipped. A badge with no entry, such as Nitro's, keeps the plain tooltip, and
@@ -358,7 +358,7 @@ members shows it.
 The feed comes from `GET /content-inventory/users/@me`, in Discord's ranked
 order, and isn't any one server's: its entries are everything Discord thinks
 this account's people did. A channel shows those whose author is a member of
-its server and can see it, asking the gateway for members Yapfast doesn't know
+its server and can see it, asking the gateway for members Yappuccino doesn't know
 yet, and leaves out a live entry of someone listed offline. Each card has the
 author, the title and a 48 px picture, with their presence's picture while it's
 live and the feed's otherwise. Cards say:
@@ -375,11 +375,11 @@ Times step by the minute, on a timer that runs while there are cards, where
 Discord's client ticks seconds. Other content types and the feed's badges (new
 player, streak, marathon and so on) don't show. Three cards show until the
 header opens the rest, whose pictures aren't asked for until then, and the eye
-in the header hides them all, as Discord's "Hide Activity Cards" does. Yapfast
+in the header hides them all, as Discord's "Hide Activity Cards" does. Yappuccino
 remembers that in `layout.json`, and clicking the header brings them back.
 
-Yapfast asks for the feed only while a server's channel shows, when the window
-is focused, the gateway connected and someone used Yapfast in the last 15
+Yappuccino asks for the feed only while a server's channel shows, when the window
+is focused, the gateway connected and someone used Yappuccino in the last 15
 minutes, and not with the cards hidden once it has a feed. It sends the
 `refresh_token` of the last answer, and asks again after
 `wait_ms_until_next_fetch`, at least a minute. An answer with
@@ -412,7 +412,7 @@ Board and Wishlist come only for the full profile, and only when their tab
 opens, read-only: a small card and the DM's panel ask for neither. A
 wishlist that failed is asked for again when its tab next opens, and a
 profile that arrives after a tab opened asks then. The client fetches a
-wishlist when the window opens, and hides the tab if it's empty; Yapfast
+wishlist when the window opens, and hides the tab if it's empty; Yappuccino
 asks when the tab opens, and an empty one says so in a line. It leaves out
 the wishlist's age check (`nsfwAllowed`), Filter and Browse the Shop.
 
@@ -440,8 +440,8 @@ doesn't know is an "Unknown game", as in the client. Tags aren't shown.
 The Wishlist is `GET /wishlists/{id}?source=user_profile`, which the client
 uses for its own account's and for anyone's, the first id in the profile's
 `wishlist_settings` `{id: {updated_at, visibility}}`, where visibility 0 is
-private. Its only other route Yapfast knows of, `POST
-/users/@me/wishlist/items`, adds an item, which Yapfast never sends. With no
+private. Its only other route Yappuccino knows of, `POST
+/users/@me/wishlist/items`, adds an item, which Yappuccino never sends. With no
 id there's nothing on it, and a 403 or 404 says it's private; a private list
 of one's own loads, and says that. An item in `wishlist_items` is named by
 `sku.name`, else `sku_name`, and pictured by what it is, `sku.product_line`,
@@ -459,13 +459,13 @@ else the item's `sku_product_line`:
 
 A collectible's kind and `asset` are in `sku.tenant_metadata.collectibles.item`,
 else the item's `collectibles_item` or `bundle_items`. The client's card shows
-only lines 1, 7 and 14; Yapfast also shows others it can name, by the store
+only lines 1, 7 and 14; Yappuccino also shows others it can name, by the store
 picture if they have one.
 
 ## Animated avatars and banners
 
 An avatar, banner or server icon whose hash starts with `a_` is animated:
-Discord serves a GIF beside its still PNG. Yapfast shows the PNG and plays
+Discord serves a GIF beside its still PNG. Yappuccino shows the PNG and plays
 the GIF only where Discord's client does, so pictures nobody looks at cost
 nothing: an avatar while the pointer is on its message or member row, and
 the avatar and banner of a profile card while it shows. The frames decode as
@@ -501,7 +501,7 @@ nameplate among `collectibles` takes them off.
   picture at the right end, the row's height tall, at 60% opacity (90%
   selected). Under the row's text the picture shows at 30% of that, fading to
   full 10 to 60 pixels after the text's end, where Discord masks the picture
-  with `mask-image`; Slint has no masks, so Yapfast draws the row's colour over
+  with `mask-image`; Slint has no masks, so Yappuccino draws the row's colour over
   it in the same gradient. The account card's plate is a 10% to 40% gradient
   under the picture at 40% opacity, with no fade, filling the card and a pixel
   over its top and bottom. A row with a plate keeps 12 pixels free at its
@@ -516,7 +516,7 @@ nameplate among `collectibles` takes them off.
 
 Both pictures are served by `https://cdn.discordapp.com/media/v1/collectibles-shop/{sku_id}/static`,
 a PNG: 288 by 288 for a decoration, 448 by 84 or 672 by 126 for a plate. The
-client asks for `/animated`, an APNG, or `/video`, a WebM, and Yapfast
+client asks for `/animated`, an APNG, or `/video`, a WebM, and Yappuccino
 asks for `/animated` (Discord's own client does on Linux and Safari), when
 the [profile switches](#profile-switches) let them animate, as they do
 unless turned off. A decoration plays on a message while the pointer is on the message that starts
@@ -525,7 +525,7 @@ account card while the pointer is on them. Discord's client plays a chat
 decoration while the pointer is on any message of the group, and a card's
 whenever it's open. A nameplate plays while its row is pointed at, and the
 account card's while the card is; a selected row's holds still, as playing
-costs some 7% of a core for as long as it's selected. Everything holds still when Yapfast's window isn't focused
+costs some 7% of a core for as long as it's selected. Everything holds still when Yappuccino's window isn't focused
 (`Motion.playing`), and a surface that stops being pointed at goes back to the
 still picture. The animated picture is fetched the first time it's to play,
 and decodes the frame showing: `Picture`'s frames come from the kept file one
@@ -546,7 +546,7 @@ server's off. `Names` keeps these beside the user's own, by server and user.
 
 A profile names the effect its person equips, `profile_effect: {id,
 expires_at}`, in `user_profile` (or `guild_member_profile`, which wins in its
-server). The effect itself is the shop's: Yapfast asks for it once the card
+server). The effect itself is the shop's: Yappuccino asks for it once the card
 shows, `GET /collectibles-products/{sku}` with the account's own login, as
 Discord's client does, and takes the first item with `effects`: its
 `staticFrameSrc` (else `reducedMotionSrc`, else `thumbnailPreviewSrc`) and
@@ -556,7 +556,7 @@ each layer in place of `src`, the same one in all), `loop`, `start`,
 fields are camelCase, as the client reads them).
 
 Discord's client plays an effect over the card for as long as its window has
-the focus. Yapfast shows the still picture, and plays the layers only while
+the focus. Yappuccino shows the still picture, and plays the layers only while
 the pointer is on the card, starting them over each time, as a card's
 decoration does: playing costs a fifth of a core on the software renderer. An
 effect with no layer that loops stops at the end of its last layer and shows
@@ -575,7 +575,7 @@ asking for frames; a file that says 0 plays for as long as its layer shows.
 
 A name can carry a style, `display_name_styles: {font_id, effect_id, colors}`,
 on a user object or a member object (which wins in its server, as the
-decorations do): a font, an effect and up to five colours. Yapfast draws it
+decorations do): a font, an effect and up to five colours. Yappuccino draws it
 where Discord's client does: a message's author, a member list's rows, a
 one-to-one DM's row and the profile card's name (`StyledName` in
 `ui/controls.slint`). `src/ui/name_style.rs` makes the colours, as the client's
@@ -648,7 +648,7 @@ next time the profile is fetched.
 ## Editing one's main profile
 
 Edit Profile, in the account's menu bottom left, or Edit profile in My
-account, opens Yapfast's version of the "Main Profile" tab of Discord's
+account, opens Yappuccino's version of the "Main Profile" tab of Discord's
 Profiles settings (`application/profile_editor.rs`, the dialog in
 `ui/server.slint`, which it shares with the [server
 profile's](#editing-ones-server-profile)). It reads the profile with `GET
@@ -674,7 +674,7 @@ profile's banner stays 210. The column lists, in Discord's order, the
 nameplate, the avatar and its decoration, the display name style, the theme
 and banner, and the profile effect, each showing what's set: the decoration
 and effect say they're on even when the [profile
-switches](#profile-switches) keep their pictures from showing. Yapfast has no
+switches](#profile-switches) keep their pictures from showing. Yappuccino has no
 windows to choose those collectibles, so their tiles open Discord's shop.
 Hide Styles folds the column away, sliding, and the Show Styles tab on the
 card's edge brings it back.
@@ -709,7 +709,7 @@ theme and the name style take `canUsePremiumProfileCustomization`, so
 A GIF avatar without it says "An animated avatar takes Nitro." where the
 client offers Nitro; the rest, the bio and the server tag included, is free.
 The client's colour picker suggests colours from the avatar and has an
-eyedropper; Yapfast's takes the hex or a point on the picker.
+eyedropper; Yappuccino's takes the hex or a point on the picker.
 
 Save Changes sends what changed, in up to three requests, as the client
 does:
@@ -732,7 +732,7 @@ as for server profiles: the same crop and size, as a data URI, or `null`
 to remove it. The client never sends the bio, pronouns or banner to
 `/users/@me`, though Discord's docs list them there.
 
-Saving keeps the editor open, as Discord's does. Afterwards Yapfast asks for
+Saving keeps the editor open, as Discord's does. Afterwards Yappuccino asks for
 the profile again, once, for the editor, and drops the profiles it kept of
 this account, so the account's card, which draws the tag, name style and
 theme from it, asks again as it next opens. What was written or chosen while the save and that answer were on
@@ -743,7 +743,7 @@ keeps all that's written, so what Discord took is no longer a change and
 what it refused still is. Save Changes waits until that answer comes.
 
 The client's tab also edits Profile Widgets, an avatar decoration, a
-nameplate, a profile effect, a frame and badges. Yapfast shows those but
+nameplate, a profile effect, a frame and badges. Yappuccino shows those but
 doesn't change them. Changing the username, in My Account with the password,
 is left for later.
 
@@ -753,13 +753,13 @@ Board and Wishlist show what the account has on Discord, read only, as on
 [the full profile](#the-full-profiles-tabs), the board's games named when
 the editor reads the profile and the wishlist asked for when its tab first
 opens, and again if that failed. Where Discord has its Add buttons, a line
-says adding more from Yapfast is coming soon. Activity shows what the
+says adding more from Yappuccino is coming soon. Activity shows what the
 account's own profile lists it doing.
 
 ## Editing one's server profile
 
 Edit server profile, in a server's menu, its header's dropdown and one's
-own entry in its member list, opens Yapfast's version of Discord's "Per-server
+own entry in its member list, opens Yappuccino's version of Discord's "Per-server
 Profiles" settings page (`application/profile_editor.rs`, the same card
 as the [main profile's](#editing-ones-main-profile)). Discord's client
 offers it to everyone; it reads the profile with `GET
@@ -785,10 +785,10 @@ Classic (1). Without it Discord still shows them, greyed, under an offer:
 "Make unique profiles for each server", "Customize your profile for every
 server, from avatar decorations to bios. Only with Nitro.", and "Unlock
 with Nitro", or "Upgrade Nitro" with a lesser Nitro, which opens
-`https://discord.com/nitro`. Yapfast shows the offer under the name, and
+`https://discord.com/nitro`. Yappuccino shows the offer under the name, and
 a lock in place of the pencil on each of them.
 
-Change Avatar and Change Banner use the file chooser attachments use. Yapfast
+Change Avatar and Change Banner use the file chooser attachments use. Yappuccino
 reads the picture off the UI thread, as Discord's cropper sends it: the
 middle square of an avatar, at most 1024 pixels, and the middle 17 by 6 of
 a banner, at most 2400 by 848, from a PNG, JPG, GIF or WebP under 10 MB.
@@ -803,7 +803,7 @@ Save Changes sends what changed, as the client does, in up to two
 requests, each only with fields to send:
 
 1. `PATCH /guilds/{id}/members/@me` with `nick` and `avatar`. Discord
-   answers with the member and sends GUILD_MEMBER_UPDATE, which Yapfast's
+   answers with the member and sends GUILD_MEMBER_UPDATE, which Yappuccino's
    names already take in, so the nickname and server avatar show in the
    member list and on messages.
 2. `PATCH /guilds/{id}/profile/@me` with `banner`, `bio` and `pronouns`.
@@ -816,15 +816,15 @@ client never sends them there.
 
 Discord's editor also has a profile theme, an avatar decoration, display
 name styles, a nameplate, a profile effect and a frame, all Nitro and most
-bought from its shop. Yapfast leaves them out of the server profile's
+bought from its shop. Yappuccino leaves them out of the server profile's
 editor; it [shows](#avatar-decorations-and-nameplates) what people equip.
 Saving keeps it open and reads the profile back, as for the main profile.
 
-A member's server profile shows wherever Yapfast shows them in that server:
+A member's server profile shows wherever Yappuccino shows them in that server:
 their server avatar in the member list and on their messages, from their
 member object, and their server banner, bio and pronouns on their profile
 card, from `GET /users/{id}/profile?guild_id=...`, whose
-`guild_member_profile` wins over their own where it isn't empty. Yapfast
+`guild_member_profile` wins over their own where it isn't empty. Yappuccino
 keeps a fetched profile for five minutes, but fetches it again once
 GUILD_MEMBER_UPDATE changes their nickname or server avatar, and after
 this account saves its own.
@@ -836,7 +836,7 @@ as its file chooser would.
 
 Games and tools on Linux tell Discord what they're doing through its local
 RPC socket, which the discord-rpc library and Discord's game SDK use. While
-the account shares its game ([game detection](#game-detection)), Yapfast
+the account shares its game ([game detection](#game-detection)), Yappuccino
 serves that socket itself, so no bridge such as arRPC needs to run. Windows'
 named pipes and the macOS socket aren't served yet.
 
@@ -845,12 +845,12 @@ The socket is the first free `discord-ipc-0` to `discord-ipc-9` in
 another program serves, such as Discord's own app, stays that program's, and
 a game that only tries `discord-ipc-0` talks to it instead. A socket left by
 an ended program of the same user is taken over. The socket has mode `0600`
-and takes only that user's programs. `YAPFAST_DISCORD_RPC=0` turns it off,
-and `YAPFAST_DISCORD_RPC_DIR` puts it in another directory, for Wine or a
-sandboxed game that can't see the runtime directory; Yapfast doesn't change
+and takes only that user's programs. `YAPPUCCINO_DISCORD_RPC=0` turns it off,
+and `YAPPUCCINO_DISCORD_RPC_DIR` puts it in another directory, for Wine or a
+sandboxed game that can't see the runtime directory; Yappuccino doesn't change
 sandbox permissions or set up Wine's bridge.
 
-Yapfast answers the handshake with READY, PING with PONG, and CLOSE and
+Yappuccino answers the handshake with READY, PING with PONG, and CLOSE and
 SET_ACTIVITY, where `activity: null` clears the activity; other commands get
 an error. As Discord's desktop client does when a game connects, it asks
 `GET /oauth2/applications/{id}/rpc` for the application's name, and the
@@ -860,7 +860,7 @@ for its images' ids. Images given by https address go to
 as `mp:` assets; each client's last 32 addresses are kept. Timestamps in
 seconds become the gateway's milliseconds, and buttons become labels with
 their addresses in the activity's `metadata`. Playing, Listening, Watching
-and Competing activities show. Yapfast copies only the fields it knows, so a
+and Competing activities show. Yappuccino copies only the fields it knows, so a
 game can't replace the custom status or claim another application.
 
 The game that set its activity last shows. When it clears it or
@@ -872,7 +872,7 @@ presence change does.
 ## Game detection
 
 Settings → Game activity → Share the game you play is the account's own
-`show_current_game` setting, which Discord's apps change too. Yapfast reads
+`show_current_game` setting, which Discord's apps change too. Yappuccino reads
 it from READY and settings updates and writes it with
 `PATCH /users/@me/settings-proto/1`; it's on unless the account turned it
 off, and a newly linked account shares nothing until READY says. While it's
@@ -899,7 +899,7 @@ Windows and Wine paths ignore case. Custom games are this device's, kept in
 
 Discord's list comes from
 `https://cdn.discordapp.com/detectables/games-v1.json`, about 4 MB, as
-Discord's desktop client fetches it. Yapfast keeps this platform's executables
+Discord's desktop client fetches it. Yappuccino keeps this platform's executables
 and the Steam ids in `discord-games.json` beside the account cache, which
 accounts share, and the CDN's ETag in `discord-games.etag`. It asks again a day
 later with the ETag, so an unchanged list costs a 304; a failed download keeps
@@ -916,18 +916,18 @@ Runtime and any other install with a `toolmanifest.vdf` don't count, nor do
 the Steamworks redistributables. The manifests are read at most once a
 minute, from Steam's usual folders, its Flatpak's and the libraries they
 name, and the list again only when the games installed change; no game's
-files are walked. A sandbox that hides the host's processes from Yapfast
+files are walked. A sandbox that hides the host's processes from Yappuccino
 hides their games too.
 
 These take effect at startup:
 
-- `YAPFAST_DISCORD_GAME_DETECTION=0` turns off scanning and the list's
-  download. Rich Presence stays, under `YAPFAST_DISCORD_RPC`.
-- `YAPFAST_DISCORD_GAMES_CACHE=/path/games.json` keeps the list there.
-- `YAPFAST_DISCORD_GAMES_FILE=/path/rules.json` uses that list instead of
-  Discord's. Steam still matches; point `YAPFAST_STEAM_DIR` at an empty
+- `YAPPUCCINO_DISCORD_GAME_DETECTION=0` turns off scanning and the list's
+  download. Rich Presence stays, under `YAPPUCCINO_DISCORD_RPC`.
+- `YAPPUCCINO_DISCORD_GAMES_CACHE=/path/games.json` keeps the list there.
+- `YAPPUCCINO_DISCORD_GAMES_FILE=/path/rules.json` uses that list instead of
+  Discord's. Steam still matches; point `YAPPUCCINO_STEAM_DIR` at an empty
   folder too to match only the list.
-- `YAPFAST_STEAM_DIR=/path/to/Steam` reads Steam's manifests from there.
+- `YAPPUCCINO_STEAM_DIR=/path/to/Steam` reads Steam's manifests from there.
 
 A list of your own takes Discord's shape. Use `win32` for a Wine game and
 `darwin` on macOS, leave out `id` for a game Discord doesn't know, and give
@@ -943,19 +943,19 @@ A list of your own takes Discord's shape. Use `win32` for a Wine game and
 ]
 ```
 
-`shows_status_and_games` in `crates/yapfast-discord/tests/fake_server.rs` gives
+`shows_status_and_games` in `crates/yappuccino-discord/tests/fake_server.rs` gives
 the socket, the list and its cache private paths, and plays a handshake,
 activities, images, clearing, several clients, the share setting and a detected
 process through to the fake gateway. Other runs against the fake leave Rich
 Presence and detection off unless those paths are set, so they never take the
 desktop's socket.
 
-`yapfast-game-detection-probe` measures the detector alone, without Discord,
+`yappuccino-game-detection-probe` measures the detector alone, without Discord,
 and prints counts, times and heap, never process names or paths:
 
 ```sh
-nix develop path:./nix --command cargo build --profile measure -p yapfast-discord --bin yapfast-game-detection-probe
-target/measure/yapfast-game-detection-probe /path/to/discord-games.json 30
+nix develop path:./nix --command cargo build --profile measure -p yappuccino-discord --bin yappuccino-game-detection-probe
+target/measure/yappuccino-game-detection-probe /path/to/discord-games.json 30
 ```
 
 ## Role icons
@@ -965,6 +965,6 @@ shows it 20px beside its group's name in the member list, and the highest role
 with an icon shows 16px before a member's tag in the list. The picture is
 `/role-icons/{role}/{hash}.png?size=64`. Only a server with the `ROLE_ICONS`
 feature, or at boost level 2 or 3, shows them: Discord keeps a role's icon when
-a server loses its boosts, and its client stops drawing it, so Yapfast does too.
+a server loses its boosts, and its client stops drawing it, so Yappuccino does too.
 GUILD_UPDATE brings the change. Unicode-emoji role icons and the icon beside a
 message author aren't drawn.

@@ -29,8 +29,8 @@ COMMON=(--disable-everything --disable-programs --disable-doc --disable-network
   --disable-swresample --disable-avfilter --disable-iconv
   --disable-debug --enable-pic --enable-static --disable-shared)
 
-if [[ -z "${YAPFAST_FFMPEG_UPDATE:-}" ]]; then
-  export YAPFAST_FFMPEG_UPDATE=1
+if [[ -z "${YAPPUCCINO_FFMPEG_UPDATE:-}" ]]; then
+  export YAPPUCCINO_FFMPEG_UPDATE=1
   exec nix shell --inputs-from "path:$root/nix" nixpkgs#gnumake nixpkgs#clang \
     nixpkgs#pkg-config nixpkgs#binutils nixpkgs#nasm nixpkgs#curl nixpkgs#gnutar nixpkgs#xz nixpkgs#patch \
     --command "$0" "$@"

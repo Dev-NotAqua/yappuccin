@@ -1,4 +1,4 @@
-// Yapfast's ScrollView and ListView: the Fluent style's, with a scrollbar thumb that
+// Yappuccino's ScrollView and ListView: the Fluent style's, with a scrollbar thumb that
 // stays under the pointer while it's dragged.
 //
 // The Fluent bar starts its drag over whenever `maximum` changes. In a ListView
@@ -30,8 +30,8 @@ component ScrollBarButton inherits TouchArea {
         colorize: Theme.dark ? #FFFFFF14 : #00000073;
         accessible-role: none;
 
-        animate colorize, opacity { duration: 150ms; }
-        animate width, height { duration: 150ms; easing: ease-out; }
+        animate colorize, opacity { duration: Theme.medium; }
+        animate width, height { duration: Theme.medium; easing: ease-out; }
     }
 
     states [
@@ -81,7 +81,7 @@ component ScrollBar inherits Rectangle {
         }
     ]
 
-    animate size { duration: 150ms; easing: ease-out; }
+    animate size { duration: Theme.medium; easing: ease-out; }
 
     // A ListView's rows, measured as they come into view, change its estimate of
     // their height all through a drag; the thumb stays with the pointer.
@@ -95,7 +95,7 @@ component ScrollBar inherits Rectangle {
         border-radius: (root.horizontal ? self.height : self.width) / 2;
         background: Theme.dark ? #FFFFFF14 : #00000073;
 
-        animate width, height { duration: 150ms; easing: ease-out; }
+        animate width, height { duration: Theme.medium; easing: ease-out; }
     }
 
     touch-area := TouchArea {
@@ -226,7 +226,7 @@ export component ListView inherits ScrollView {
 }
 
 // Where an autoscroll began, which Slint's core reports to the application:
-// see `yapfast_autoscroll` in vendor/i-slint-core.
+// see `yappuccino_autoscroll` in vendor/i-slint-core.
 export global Autoscroll {
     in-out property <bool> shown;
     in-out property <length> x;

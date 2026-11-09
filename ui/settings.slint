@@ -1,6 +1,6 @@
-import { SettingsToggle } from "yapfast/settings-toggle.slint";
-import { SettingsNavigation } from "yapfast/settings-nav.slint";
-import { ClientStyle } from "yapfast/style.slint";
+import { SettingsToggle } from "yappuccino/settings-toggle.slint";
+import { SettingsNavigation } from "yappuccino/settings-nav.slint";
+import { ClientStyle } from "yappuccino/style.slint";
 import { ComboBox } from "std-widgets.slint";
 import { ScrollView } from "scrollview.slint";
 import { Theme, Middle, Label, Tip, Popup, Looks } from "theme.slint";
@@ -184,7 +184,7 @@ export component UnsavedBar inherits Rectangle {
     Rectangle { y: 0px; height: 1px; background: Theme.edge; }
     bar := HorizontalLayout {
         x: root.shakes == 0 ? 0px : Math.mod(root.shakes, 2) == 0 ? -6px : 6px;
-        animate x { duration: 50ms; }
+        animate x { duration: Theme.instant; }
         width: root.width;
         padding: 12px; padding-left: root.pad; spacing: 8px;
         // It goes onto two lines where the bar is narrow, as in the
@@ -514,7 +514,7 @@ export component VoiceSettings inherits VerticalLayout {
     in-out property <bool> talk-recording;
     /// How long the microphone keeps sending after the key comes up, in ms.
     in-out property <int> talk-delay: 20;
-    /// Where the key works: in every app, or only in Yapfast and why.
+    /// Where the key works: in every app, or only in Yappuccino and why.
     in property <string> talk-note;
     /// Discord is linked, so its calls' noise suppression shows.
     in property <bool> discord;
@@ -719,8 +719,8 @@ export component VoiceSettings inherits VerticalLayout {
             chosen => { root.preferences-changed(); }
         }
         Label {
-            text: root.input-mode == 0 ? "Yapfast sends your voice when it hears you speak."
-                : "Yapfast sends your microphone only while you hold a key.";
+            text: root.input-mode == 0 ? "Yappuccino sends your voice when it hears you speak."
+                : "Yappuccino sends your microphone only while you hold a key.";
         }
     }
     if root.input-mode == 1: VerticalLayout {
@@ -773,7 +773,7 @@ export component VoiceSettings inherits VerticalLayout {
         }
         Label {
             text: root.gate-meter-note != "" ? root.gate-meter-note
-                : "Yapfast sends your voice when it's louder than the handle, and other sounds when they're 18 dB louder still. The bar is your microphone after noise suppression and at its volume, as Yapfast hears it to decide.";
+                : "Yappuccino sends your voice when it's louder than the handle, and other sounds when they're 18 dB louder still. The bar is your microphone after noise suppression and at its volume, as Yappuccino hears it to decide.";
         }
     }
 }
@@ -905,7 +905,7 @@ component ThemeColourRow inherits HorizontalLayout {
     }
 }
 
-// Settings: the window's colours, from the themes Yapfast comes with and the
+// Settings: the window's colours, from the themes Yappuccino comes with and the
 // person's own. A click shows one at once. New theme opens the editor, whose
 // changes show at once too; Save keeps them, Cancel restores the theme from
 // before.
@@ -920,6 +920,7 @@ export component AppearanceSettings inherits VerticalLayout {
     in property <bool> editor;
     in property <[ThemeColour]> colours;
     in-out property <string> theme-name;
+    in-out property <string> theme-background-image;
     in-out property <bool> theme-dark;
     in property <bool> editing-saved;
     in property <[string]> starts;
@@ -934,17 +935,30 @@ export component AppearanceSettings inherits VerticalLayout {
     callback save-theme();
     callback cancel-theme();
     callback delete-theme();
-    /// The desktop draws the window's title bar; offered where Yapfast can
+    callback export-theme();
+    callback import-theme();
+    callback pick-background();
+    /// The desktop draws the window's title bar; offered where Yappuccino can
     /// draw its own.
     in-out property <bool> system-title-bar;
     in property <bool> title-bar-choice;
     callback title-bar-toggled();
-    spacing: 16px;
+    /// Whether hovers, switches, popups and call tiles animate, kept with the
+    /// rest of the appearance preferences.
+    in-out property <bool> interface-animations;    spacing: 16px;
     SettingsTitle { text: "Appearance"; }
     if !root.editor: VerticalLayout {
         spacing: 8px;
         HorizontalLayout {
             SettingsHeading { text: "THEME"; vertical-alignment: center; horizontal-stretch: 1; }
+            ActionButton {
+                text: "Import"; small: true; icon: @image-url("icons/download.svg");
+                clicked => { root.import-theme(); }
+            }
+            ActionButton {
+                text: "Export"; small: true; icon: @image-url("icons/copy.svg");
+                clicked => { root.export-theme(); }
+            }
             ActionButton {
                 text: "New theme"; small: true; icon: @image-url("icons/circle-plus.svg");
                 clicked => { root.new-theme(); }
@@ -970,9 +984,15 @@ export component AppearanceSettings inherits VerticalLayout {
     }
     if !root.editor && root.title-bar-choice: SettingsSwitch {
         text: "Use the system title bar";
-        description: "Your desktop draws the window's title bar and buttons, as on its other windows. Off, Yapfast draws its own.";
+        description: "Your desktop draws the window's title bar and buttons, as on its other windows. Off, Yappuccino draws its own.";
         checked <=> root.system-title-bar;
         toggled => { root.title-bar-toggled(); }
+    }
+    if !root.editor: SettingsSwitch {
+        text: "Interface animations";
+        description: "Hovers, switches, menus and call tiles glide into place. Off, they land at once. GIFs, emoji and stickers keep their own setting under Messages.";
+        checked <=> root.interface-animations;
+        toggled => { root.preferences-changed(); }
     }
     if !root.editor: VerticalLayout {
         spacing: 12px;
@@ -1064,6 +1084,18 @@ export component AppearanceSettings inherits VerticalLayout {
                 }
             }
         }
+        VerticalLayout {
+            spacing: 8px;
+            SettingsHeading { text: "BACKGROUND IMAGE"; }
+            Label { text: "Optional: a picture shown behind the conversation. Stored with the theme; exported and imported with it."; }
+            HorizontalLayout {
+                spacing: 8px;
+                TextField {
+                    text <=> root.theme-background-image; placeholder: "No image"; label: "Image path"; min-height: 36px; text-size: 15px;
+                }
+                ActionButton { text: "Choose…"; small: true; icon: @image-url("icons/image.svg"); clicked => { root.pick-background(); } }
+            }
+        }
         if root.editing-saved: HorizontalLayout {
             alignment: start;
             ActionButton {
@@ -1090,7 +1122,7 @@ export component MessageSettings inherits VerticalLayout {
     in-out property <bool> collapse-long;
     in-out property <bool> boost-gems;
     in-out property <bool> share-typing;
-    /// When animations play: 0 while Yapfast has the focus, 1 always, 2 never.
+    /// When animations play: 0 while Yappuccino has the focus, 1 always, 2 never.
     in-out property <int> animate;
     in-out property <bool> reply-ping;
     in-out property <bool> strip-tracking;
@@ -1153,7 +1185,7 @@ export component MessageSettings inherits VerticalLayout {
         spacing: 8px;
         SettingsHeading { text: "PLAY GIFS, EMOJI AND STICKERS"; }
         Choices {
-            label: "Play GIFs, emoji and stickers"; options: ["While Yapfast is focused", "Always", "Never"];
+            label: "Play GIFs, emoji and stickers"; options: ["While Yappuccino is focused", "Always", "Never"];
             current <=> root.animate;
             chosen => { root.preferences-changed(); }
         }
@@ -1211,7 +1243,7 @@ export component NotificationSettings inherits VerticalLayout {
     SettingsTitle { text: "Notifications"; }
     SettingsSwitch {
         text: "Show desktop notifications";
-        description: "For new messages while Yapfast isn't in front. "
+        description: "For new messages while Yappuccino isn't in front. "
             + (root.matrix && root.discord ? "Each Discord server's notification settings and your Matrix notification rules decide"
                 : root.matrix ? "Your Matrix notification rules decide" : "Each Discord server's notification settings decide")
             + " which: usually DMs and mentions. Clicking one opens the conversation.";
@@ -1227,13 +1259,13 @@ export component NotificationSettings inherits VerticalLayout {
     }
     SettingsSwitch {
         text: "Flash the taskbar";
-        description: "For a message that notifies while Yapfast isn't in front. The window's title counts mentions and DMs waiting either way.";
+        description: "For a message that notifies while Yappuccino isn't in front. The window's title counts mentions and DMs waiting either way.";
         checked <=> root.flash-taskbar;
         toggled => { root.preferences-changed(); }
     }
 }
 
-// Settings: Yapfast's own sounds for calls and messages, which instrument plays
+// Settings: Yappuccino's own sounds for calls and messages, which instrument plays
 // them, and how loud they are, all together or each on its own.
 export component SoundSettings inherits VerticalLayout {
     /// The set, in the order the choices show.
@@ -1250,7 +1282,7 @@ export component SoundSettings inherits VerticalLayout {
     property <[string]> names: ["Someone joins the call", "Someone leaves the call", "Muting", "Unmuting", "Deafening", "Undeafening", "A message", "A mention", "Someone starts watching a stream", "Someone stops watching a stream", "Someone starts streaming", "Someone stops streaming"];
     spacing: 16px;
     SettingsTitle { text: "Sounds"; }
-    Label { text: "Yapfast plays these as you and others join and leave a call, as you mute and deafen, as others start and stop streaming, as they start and stop watching your stream or the one you watch, and for messages that notify, except in the conversation in front of you. They play on the speakers chosen for calls."; }
+    Label { text: "Yappuccino plays these as you and others join and leave a call, as you mute and deafen, as others start and stop streaming, as they start and stop watching your stream or the one you watch, and for messages that notify, except in the conversation in front of you. They play on the speakers chosen for calls."; }
     VerticalLayout {
         spacing: 8px;
         SettingsHeading { text: "SOUND SET"; }
@@ -1285,7 +1317,7 @@ export component SoundSettings inherits VerticalLayout {
     }
 }
 
-// Settings: how Yapfast draws its window and encodes a shared screen. Slint
+// Settings: how Yappuccino draws its window and encodes a shared screen. Slint
 // picks a renderer once per process, so a change to that waits for a
 // restart, which this offers; encoding changes from the next stream. Also
 // Developer Mode, which shows Copy ID in menus.
@@ -1308,12 +1340,12 @@ export component AdvancedSettings inherits VerticalLayout {
 
     if root.autostart-available: SettingsSwitch {
         text: "Start when you sign in";
-        description: "Yapfast starts in the system tray when you sign in to your computer, so messages and calls reach you.";
+        description: "Yappuccino starts in the system tray when you sign in to your computer, so messages and calls reach you.";
         checked <=> root.start-on-sign-in;
         toggled => { root.preferences-changed(); }
     }
     if root.discord-links-available: SettingsSwitch {
-        text: "Open Discord links in Yapfast";
+        text: "Open Discord links in Yappuccino";
         description: "discord:// links from other apps and shortcuts open here instead of Discord. Turning it off gives them back to the app that had them.";
         checked <=> root.discord-links;
         toggled => { root.preferences-changed(); }
@@ -1321,37 +1353,37 @@ export component AdvancedSettings inherits VerticalLayout {
     SettingsSwitch {
         text: "Close to tray";
         description: root.tray-available
-            ? "Closing the window keeps Yapfast running in the system tray, with any call. Quit from the tray icon's menu."
-            : "No system tray is running, so closing the window quits Yapfast.";
+            ? "Closing the window keeps Yappuccino running in the system tray, with any call. Quit from the tray icon's menu."
+            : "No system tray is running, so closing the window quits Yappuccino.";
         checked <=> root.close-to-tray;
         toggled => { root.preferences-changed(); }
     }
     SettingsSwitch {
         text: "Allow multiple windows";
-        description: "Starting Yapfast while it runs opens another Yapfast, with its own window and tray icon. Off, it brings the open window forward.";
+        description: "Starting Yappuccino while it runs opens another Yappuccino, with its own window and tray icon. Off, it brings the open window forward.";
         checked <=> root.multiple-windows;
         toggled => { root.preferences-changed(); }
     }
     SettingsSwitch {
         text: "Render with the GPU";
-        description: "Hardware acceleration. Off, Yapfast draws on the processor, which uses about half the memory.";
+        description: "Hardware acceleration. Off, Yappuccino draws on the processor, which uses about half the memory.";
         checked <=> root.gpu-rendering;
         toggled => { root.preferences-changed(); }
     }
     if root.gpu-rendering != root.gpu-running: HorizontalLayout {
         spacing: 12px;
         Label {
-            text: "Yapfast switches to " + (root.gpu-rendering ? "the GPU" : "the processor") + " when it restarts. Restarting leaves any call.";
+            text: "Yappuccino switches to " + (root.gpu-rendering ? "the GPU" : "the processor") + " when it restarts. Restarting leaves any call.";
             vertical-alignment: center; horizontal-stretch: 1;
         }
         ActionButton {
-            text: "Restart Yapfast"; icon: @image-url("icons/refresh-cw.svg");
+            text: "Restart Yappuccino"; icon: @image-url("icons/refresh-cw.svg");
             clicked => { root.restart(); }
         }
     }
     SettingsSwitch {
         text: "Encode streams with the GPU";
-        description: "Screen sharing uses the graphics card's video encoder, which takes almost no processor time and looks better at low bitrates. Off, or without one, Yapfast encodes on the processor.";
+        description: "Screen sharing uses the graphics card's video encoder, which takes almost no processor time and looks better at low bitrates. Off, or without one, Yappuccino encodes on the processor.";
         checked <=> root.gpu-encoding;
         toggled => { root.preferences-changed(); }
     }
@@ -1362,7 +1394,7 @@ export component AdvancedSettings inherits VerticalLayout {
         toggled => { root.preferences-changed(); }
     }
     Label {
-        text: "Icons from Solar by 480 Design (CC BY 4.0), many of them adapted, and from Lucide (ISC).";
+        text: "Icons from Solar by 480 Design (CC BY 4.0), many of them adapted, and the wave hand from Phosphor (MIT).";
         font-size: 12px; color: Theme.faint;
     }
 }
@@ -1379,7 +1411,7 @@ export component DiscordLinkSettings inherits VerticalLayout {
     callback open-discord-captcha;
     spacing: 16px;
     SettingsTitle { text: "Discord"; }
-    Label { text: "Link your Discord account to see its servers and DMs in Yapfast, and join its calls. The login stays on this computer, in the system's credential store."; }
+    Label { text: "Link your Discord account to see its servers and DMs in Yappuccino, and join its calls. The login stays on this computer, in the system's credential store."; }
     DiscordLinkPanel {
         phase: root.link-phase; code: root.link-code; name: root.link-name; note: root.link-note;
         begin => { root.link-discord(); }
@@ -1408,7 +1440,7 @@ export component GameActivitySettings inherits VerticalLayout {
     SettingsTitle { text: "Game activity"; }
     SettingsSwitch {
         text: "Share the game you play";
-        description: "Yapfast looks for games among the programs running, and on Linux takes the Rich Presence games send. Your Discord account keeps this setting, so it's the same in Discord's apps.";
+        description: "Yappuccino looks for games among the programs running, and on Linux takes the Rich Presence games send. Your Discord account keeps this setting, so it's the same in Discord's apps.";
         checked: root.shown;
         controlled: true;
         enabled: root.linked;
@@ -1416,7 +1448,7 @@ export component GameActivitySettings inherits VerticalLayout {
         toggled(shown) => { root.toggled(shown); }
     }
     SettingsHeading { text: "CUSTOM GAMES"; }
-    Label { text: "Name a game by its executable, a file name or a full path, and what to show after Playing. These come before the games Yapfast knows, but a game's Rich Presence comes first."; }
+    Label { text: "Name a game by its executable, a file name or a full path, and what to show after Playing. These come before the games Yappuccino knows, but a game's Rich Presence comes first."; }
     for game[index] in root.executables: VerticalLayout {
         spacing: 4px;
         HorizontalLayout {
@@ -1468,7 +1500,7 @@ export component DiscordSettings inherits VerticalLayout {
     SettingsTitle { text: "Discord"; }
     if root.matrix-build: HorizontalLayout {
         spacing: 12px;
-        Label { text: "Unlinking signs Yapfast out of Discord on this computer."; vertical-alignment: center; horizontal-stretch: 1; }
+        Label { text: "Unlinking signs Yappuccino out of Discord on this computer."; vertical-alignment: center; horizontal-stretch: 1; }
         ActionButton {
             text: "Unlink Discord"; icon: @image-url("icons/log-out.svg"); danger: true;
             clicked => { root.unlink-discord(); }
@@ -1482,13 +1514,13 @@ export component DiscordSettings inherits VerticalLayout {
     }
     SettingsSwitch {
         text: "Mark messages read on Discord";
-        description: "Channels you read in Yapfast show as read in the Discord apps too.";
+        description: "Channels you read in Yappuccino show as read in the Discord apps too.";
         checked: root.sync-discord-reads;
         toggled(sync) => { root.sync-discord-reads-toggled(sync); }
     }
     SettingsSwitch {
         text: "Show me as idle when I'm away";
-        description: "After 10 minutes without using Yapfast, as in Discord. Either way, your phone gets notifications while you're away.";
+        description: "After 10 minutes without using Yappuccino, as in Discord. Either way, your phone gets notifications while you're away.";
         checked: root.show-idle;
         toggled(shown) => { root.show-idle-toggled(shown); }
     }

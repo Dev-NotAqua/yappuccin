@@ -1,4 +1,4 @@
-import { ClientStyle } from "yapfast/style.slint";
+import { ClientStyle } from "yappuccino/style.slint";
 import { ScrollView, ListView } from "scrollview.slint";
 import { Theme, Middle, Label, Tip, BadgeTip } from "theme.slint";
 import { ActionButton, IconButton, Avatar, Nameplate, StatusText, StyledName, NameStyleRow, EffectLayer, ProfileEffect, PictureStore, Picture, TextField, ServerTagChip, TipIcon } from "controls.slint";
@@ -610,10 +610,10 @@ export component BadgeTipCard inherits Rectangle {
     // It pops up: fades in and grows from the caret, as Discord's does.
     property <bool> shown: false;
     opacity: root.shown ? 1 : 0;
-    animate opacity { duration: 120ms; easing: ease-out; }
+    animate opacity { duration: Theme.quick; easing: ease-out; }
     transform-scale: root.shown ? 1 : 0.95;
     transform-origin: { x: self.width / 2, y: self.height };
-    animate transform-scale { duration: 120ms; easing: ease-out; }
+    animate transform-scale { duration: Theme.quick; easing: ease-out; }
     Timer {
         interval: 16ms;
         running: true;
@@ -983,7 +983,7 @@ export component ProfileCard inherits Rectangle {
                             x: root.pad + root.avatar-size + 18px; y: root.banner-height - root.avatar-size / 2 + 45px;
                             width: min(root.width - self.x - 12px, min(180px, large-thought.preferred-width + 26px));
                             height: (large-bubble.has-hover ? large-thought.preferred-height : min(large-thought.preferred-height, 42px)) + 16px;
-                            animate height { duration: 180ms; easing: ease-out; }
+                            animate height { duration: Theme.medium; easing: ease-out; }
                             clip: true; z: large-bubble.has-hover ? 10 : 0;
                             border-radius: 16px; background: root.bubble; border-color: root.bubble-edge; border-width: 1px;
                             // The bump joins the bubble with no line between them.
@@ -1011,7 +1011,7 @@ export component ProfileCard inherits Rectangle {
                             x: root.pad + root.avatar-size + 12px; y: root.banner-height + 4px;
                             width: min(root.width - self.x - 12px, thought.preferred-width + 24px);
                             height: (small-bubble.has-hover ? thought.preferred-height : min(thought.preferred-height, 38px)) + 14px;
-                            animate height { duration: 180ms; easing: ease-out; }
+                            animate height { duration: Theme.medium; easing: ease-out; }
                             clip: true; z: small-bubble.has-hover ? 10 : 0;
                             border-radius: 14px; background: root.bubble; border-color: root.bubble-edge; border-width: 1px;
                             small-bubble := TouchArea { }
@@ -1572,7 +1572,7 @@ export component ProfileModal inherits Rectangle {
     }
 }
 
-// A role mentioned in a message, as a card: who Yapfast knows has it.
+// A role mentioned in a message, as a card: who Yappuccino knows has it.
 export component RoleCard inherits Rectangle {
     in property <string> role-name;
     in property <color> role-color;

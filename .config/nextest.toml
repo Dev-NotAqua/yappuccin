@@ -5,5 +5,5 @@
 fake-discord = { max-threads = 8 }
 
 [[profile.default.overrides]]
-filter = 'package(yapfast-discord) and binary(fake_server)'
+filter = 'package(yappuccino-discord) and binary(fake_server)'
 test-group = 'fake-discord'

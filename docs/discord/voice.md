@@ -5,10 +5,10 @@ Scope for the beta:
 - Server voice channels: join, leave, a participant list, speaking indicators,
   mute, deafen and per-person volume.
 - DM and group DM calls, both incoming with ringing and outgoing.
-- One connection at a time across Yapfast and Discord. Joining Discord voice asks
-  to leave a Yapfast call, and the other way round.
+- One connection at a time across Yappuccino and Discord. Joining Discord voice asks
+  to leave a Yappuccino call, and the other way round.
 - The same devices, push-to-talk, voice activation, echo cancellation and
-  voice leveling as Yapfast calls. Noise suppression is DeepFilterNet, or
+  voice leveling as Yappuccino calls. Noise suppression is DeepFilterNet, or
   RNNoise, rather than WebRTC's, as described under Microphone below.
 
 Clicking a voice channel joins through the same voice dock and one-call rule as
@@ -16,16 +16,16 @@ Matrix voice, and, as Discord's client does, without showing the call: a second
 click on the channel, or its line in the dock, does that. Discord's client goes
 to the channel as it joins only when its chat has a mention, where it opens the
 chat, and from buttons that say so, such as Join Voice on a voice channel's
-popout, which Yapfast doesn't have. Calls start with the microphone on unless
+popout, which Yappuccino doesn't have. Calls start with the microphone on unless
 Settings turns that off, mute and deafen show in Discord, and a voice gate
 sends audio only during speech. Audio goes through `audio_io.rs`, PulseAudio
 on Linux and WASAPI on Windows, and libwebrtc's processing module; see the
 [Windows guide](../windows-beta.md#discord-voice-on-windows) for what's been checked there.
 davey's change for Go Live groups is described in
-`vendor/davey/README.yapfast.md`.
+`vendor/davey/README.yappuccino.md`.
 
 Discord may move a call to another voice server, saying so with a new
-`VOICE_SERVER_UPDATE` while the call is connected. Yapfast connects the call
+`VOICE_SERVER_UPDATE` while the call is connected. Yappuccino connects the call
 there and it goes on. The old server may drop the connection before that
 word comes, so a dropped connection waits five seconds for it before the
 call ends. Someone moving the account to a channel on another voice server
@@ -49,14 +49,14 @@ server. A stream that can't start or be watched logs its chain the same way.
 ignoring address discovery (`POST /_control/voice-discovery?off`).
 
 The account may be in voice on another client too, such as Discord's app on
-a phone. Yapfast tells that client's voice state from its own by the
+a phone. Yappuccino tells that client's voice state from its own by the
 `session_id` it carries: READY's is this gateway session's, and a voice
 state with another is the other client's. The voice channel lists the
 account there as Discord does: dimmed until hovered, without its icons, with
 the tooltip "Connected on another client". Joining here takes the call over,
 and the join waits for a voice state of this session. When the other client
-joins voice, Yapfast's call ends without sending op 4 with no channel, which
-would end the other client's call too; Yapfast sends that only for a join under
+joins voice, Yappuccino's call ends without sending op 4 with no channel, which
+would end the other client's call too; Yappuccino sends that only for a join under
 way or a voice state of its own session.
 
 Camera video works in server voice channels and DM calls; see
@@ -66,11 +66,11 @@ Since March 2026, Discord voice requires its end-to-end encryption, DAVE, and
 [rejects clients without
 it](https://support.discord.com/hc/en-us/articles/38749827197591-A-V-E2EE-Enforcement-for-Non-Stage-Voice-Calls).
 [davey](https://github.com/Snazzah/davey) (MIT) implements DAVE in Rust. Calls
-run on Yapfast's own voice connection, the one Go Live uses, rather than
+run on Yappuccino's own voice connection, the one Go Live uses, rather than
 [songbird](https://github.com/serenity-rs/songbird); [How calls carry
 video](#how-calls-carry-video) says why.
 
-Yapfast's current audio path runs inside LiveKit's libwebrtc. Discord voice
+Yappuccino's current audio path runs inside LiveKit's libwebrtc. Discord voice
 needs its own Opus encoding and decoding plus the same audio processing.
 libwebrtc's device module can't be reused outside a LiveKit room: it hands
 captured audio straight to WebRTC and only plays remote WebRTC streams. Its
@@ -78,12 +78,12 @@ audio processing module can, through
 `livekit::webrtc::native::apm::AudioProcessingModule`. So Discord voice gets a
 small path of its own: `audio_io.rs` for the microphone and speakers at 48 kHz,
 the processing module for echo cancellation and gain (noise suppression is
-DeepFilterNet; see [Microphone](#microphone)), then Yapfast's voice connection
+DeepFilterNet; see [Microphone](#microphone)), then Yappuccino's voice connection
 for Opus and DAVE. Feed the speaker mix to the processing module's reverse
 stream so echo cancellation has its reference.
 
-Opus comes from the libopus inside Yapfast's libwebrtc archive, called directly
-(`yapfast_discord::opus`), not from a crate such as `opus2` that builds a
+Opus comes from the libopus inside Yappuccino's libwebrtc archive, called directly
+(`yappuccino_discord::opus`), not from a crate such as `opus2` that builds a
 libopus of its own: two copies of the same symbols risk a clash when
 linking, particularly with MSVC on Windows.
 
@@ -109,7 +109,7 @@ average and last ping, and the outbound packet loss rate; and while the call
 is end-to-end encrypted with someone else in it, a Privacy tab with the voice
 privacy code in six groups of five digits, to compare with the others, and
 a button that copies it. Discord's client shows its graph only in developer
-mode; Yapfast shows it to everyone. A notice at the bottom says "End-to-end
+mode; Yappuccino shows it to everyone. A notice at the bottom says "End-to-end
 encrypted" while DAVE encrypts the call's frames, and "Secure connection"
 otherwise, as Discord's does; the dock's detail line says the same.
 
@@ -126,8 +126,8 @@ and unknown until two reports came. The grades are Discord's: bad past
 500 ms or 10% lost, average past 250 ms or 5%, fine below; the icon is
 grey until the first ping.
 
-The call's thread writes these into `yapfast_discord::call_stats::CallStats`.
-Yapfast copies the pings out only when the tooltip opens and each second while
+The call's thread writes these into `yappuccino_discord::call_stats::CallStats`.
+Yappuccino copies the pings out only when the tooltip opens and each second while
 the popout is open. The state the UI refreshes from changes only when the
 grade or the encryption does. `talks_to_the_fake_server` checks the ping and
 the loss are measured.
@@ -157,9 +157,9 @@ Calls run on the connection Go Live uses (`voice_connection.rs`, shared by
 `stream_connection.rs` and `call_connection.rs`), not on songbird with video
 added. Video in songbird would have meant patching most of its driver, which
 speaks version 4 of the voice gateway and has DAVE for Opus only, and keeping
-those patches through its releases, while Yapfast already had a version 8
+those patches through its releases, while Yappuccino already had a version 8
 connection carrying video with DAVE. It also leaves one libopus, libwebrtc's.
-`yapfast_core` drives a call through `Call`, `Microphone`, `Track` and
+`yappuccino_core` drives a call through `Call`, `Microphone`, `Track` and
 `Listener`, and the fake voice server exchanges audio both ways to test it.
 
 A call's connection sends Opus stereo at 128 kbit/s in its music mode, 20 ms
@@ -194,9 +194,9 @@ Turning the camera on in a call does what Discord's clients do: the main
 gateway's voice state says `self_video`, and the call's connection announces
 the camera with op 12, its video and RTX SSRCs (those op 2 assigned) and one
 stream at rid "100", at most 1280×720 and 30 frames a second. Discord's
-clients offer a second layer at quality 50; Yapfast sends one, as its Go Live
+clients offer a second layer at quality 50; Yappuccino sends one, as its Go Live
 does. Turning it off sends op 12 again with a video SSRC of 0 and no
-streams. Yapfast offers H264 to encode, as for Go Live, and both H264 and VP8 to
+streams. Yappuccino offers H264 to encode, as for Go Live, and both H264 and VP8 to
 decode. The camera's pictures go to x264 on the camera's own thread, at Go
 Live's lighter effort and 1.5 Mbit/s, and each frame to the call's thread, which encrypts it with DAVE
 and sends it as Go Live's packetizer does: sender reports, a resend from RTX
@@ -209,14 +209,14 @@ SSRC, and Discord forwards a camera only to those who ask for it with op 15
 {...}}`, quality from 0 to 100. The sender films at the quality asked of it, on a
 ladder Discord's clients work out from 1280×720: 100 is 1280×720 at up to
 2.5 Mbit/s, 90 896×504, 80 672×378, 70 640×360, 60 512×288, 50 416×234 at
-264 kbit/s, down to 20. Yapfast asks for each camera whose tile is in
+264 kbit/s, down to 20. Yappuccino asks for each camera whose tile is in
 sight as Discord's desktop app does, with the tile's pixels: while more
 than one camera films, the tile in focus at 100; in a call with one other person, the first step larger
 than the tile, as far as all the cameras fit in 1280×720 together; in a
 larger call, the largest step at which they fit (90 for two cameras, 80
 for three). Any other camera, 0. Frames come together as Go Live's
 do (reordering, NACK, a PLI after a loss) and are decrypted with the
-sender's DAVE key. Whole frames go to one thread, `yapfast-discord-video`,
+sender's DAVE key. Whole frames go to one thread, `yappuccino-discord-video`,
 which keeps an FFmpeg H264 or libvpx VP8 decoder on one thread for each
 camera in sight, and writes each picture straight into the tile's feed at the
 tile's size. A tile that leaves the screen loses its decoder within a second,
@@ -235,27 +235,27 @@ one, or joins the one going on, through the same voice dock and one-call
 rule as a voice channel. Joining sends op 4 without a server, naming the DM
 as the channel; VOICE_STATE_UPDATE and VOICE_SERVER_UPDATE come back without
 a server too, the latter with the channel's id, and the voice connection
-identifies with the DM's id where a server's call gives the server's. Yapfast
+identifies with the DM's id where a server's call gives the server's. Yappuccino
 keeps those voice states under the server `@me`, as DM room ids do.
 
 Discord sends CALL_CREATE, CALL_UPDATE and CALL_DELETE for the DMs' calls,
-including one for each call going on when Yapfast connects (the
-AUTO_CALL_CONNECT capability Yapfast already asks for). Each names whom the call
+including one for each call going on when Yappuccino connects (the
+AUTO_CALL_CONNECT capability Yappuccino already asks for). Each names whom the call
 rings. Starting a call, rather than joining one with someone in it, rings the
 others with `POST /channels/{id}/call/ring` and no recipients, once Discord
 has reported the call: it rings only in a call it knows. Calling and ringing
-are allowed separately. In a DM, Yapfast rings a friend at once and anyone else
+are allowed separately. In a DM, Yappuccino rings a friend at once and anyone else
 only when `GET /channels/{id}/call` says they're `ringable`, as discord.py-self
 does; otherwise, or when Discord refuses, the call says so until someone
-comes, and the other person sees the call only in the DM. Yapfast plays a soft
+comes, and the other person sees the call only in the DM. Yappuccino plays a soft
 ringback while nobody has come. People
 being rung show in the call faded, "Calling...", until they answer or Discord
 stops ringing them.
 
 A call ringing this account shows a card at the top of the window with the
-DM's picture, Decline and Accept, and Yapfast rings: a rising arpeggio
+DM's picture, Decline and Accept, and Yappuccino rings: a rising arpeggio
 synthesized in `ring.rs` and played through `audio_io.rs` on the call's speakers
-until the call is answered, declined or stops ringing. While Yapfast isn't in
+until the call is answered, declined or stops ringing. While Yappuccino isn't in
 front a desktop notification says who is calling. On Do Not Disturb the card
 shows without the ring or the notification. Accepting joins, leaving any
 other call without asking, since answering already chose, and leaves what's
@@ -295,7 +295,7 @@ Sounds don't go through the voice connection. Playing one posts
 server's sound `source_guild_id`, as Discord's client does. Discord sends
 VOICE_CHANNEL_EFFECT_SEND to everyone in the call, and each client
 downloads the sound from the CDN, `/soundboard-sounds/{id}`, MP3 or Ogg,
-and plays it at the sound's volume. Yapfast plays its own at once, as
+and plays it at the sound's volume. Yappuccino plays its own at once, as
 Discord's client does, and leaves out the effect that comes back for it.
 The sounds mix into the call's speakers in `Hearing`, at the sound's
 volume times the soundboard volume times the speakers', so echo
@@ -305,7 +305,7 @@ the file (`Video::open_sound`), resampled to 48 kHz stereo and cut at
 6 s, Discord's limit being 5.2 s. A call keeps the files it downloaded,
 up to 2 MiB, to play them again, and lets them go when it ends.
 
-As a call connects, Yapfast asks for Discord's own sounds with
+As a call connects, Yappuccino asks for Discord's own sounds with
 `GET /soundboard-default-sounds`, once a session, and for the server's with
 the gateway's op 31, REQUEST_SOUNDBOARD_SOUNDS, which SOUNDBOARD_SOUNDS
 answers; Discord's client asks for them then too. With Nitro it asks for
@@ -324,7 +324,7 @@ another client's changes; a star writes the whole list back with `PATCH`,
 Someone's menu in a voice channel has Mute Soundboard beside Mute (see
 [servers.md](servers.md#someones-menu-in-a-voice-channel)): the sounds they
 play from then on stay silent here. Discord's client keeps it locally, and
-so does Yapfast, in its layout.
+so does Yappuccino, in its layout.
 
 ### Soundboard volume and entrance sounds
 
@@ -344,11 +344,11 @@ under server 0 is the one for every server. Settings chooses one for "All
 servers" or a server in the same picker as the call's, listing Discord's
 sounds and every server's, which it asks for with op 31 as it opens, and
 Remove takes it away. A `PATCH /users/@me/settings-proto/1` replaces each
-top-level field it sends whole, so Yapfast reads the settings with `GET`
+top-level field it sends whole, so Yappuccino reads the settings with `GET`
 first and sends the whole of `voice_and_video` or `guilds` with the one
 value changed.
 
-As a call connects, with Nitro and outside a stage channel, Yapfast looks
+As a call connects, with Nitro and outside a stage channel, Yappuccino looks
 up the server's entrance sound, else the one for every server, as Discord's
 client does; a DM's call takes the one for every server. Once the sounds
 have come, within 10 s, and if the account may play that one there and
@@ -364,18 +364,18 @@ whose sounds are `testing/fixtures`' tones.
 ## Microphone
 
 Discord's own client suppresses noise with Krisp, a neural network, and
-WebRTC's suppressor sounded different from it. So Yapfast's Discord microphone
+WebRTC's suppressor sounded different from it. So Yappuccino's Discord microphone
 runs, in 10 ms blocks: WebRTC's echo cancellation and high-pass filter; if
 asked, taking the room's echo out; a noise suppressor, which also tells the
 gate which blocks are speech; WebRTC's gain control on what's left; then
-Yapfast's leveling and the microphone's volume, from
+Yappuccino's leveling and the microphone's volume, from
 [Settings](../voice.md#sounds).
 
 The suppressor is DeepFilterNet 3, through libDF, its Rust implementation on
 tract (crate `deep_filter`; the code and the model's weights are MIT or
 Apache-2.0). crates.io has only libDF 0.2.5, from before DeepFilterNet 3, so
-Yapfast takes the repository's last commit, `d375b2d`, and its `default-model`
-feature builds the 8 MB model into Yapfast. It runs both of its stages on every
+Yappuccino takes the repository's last commit, `d375b2d`, and its `default-model`
+feature builds the 8 MB model into Yappuccino. It runs both of its stages on every
 block but in a pause or while push to talk sends nothing, as libDF's command
 line does on every block. The library's defaults skip deep filtering above
 20 dB SNR, which dulled clean speech and took up to 5 dB off speech over a
@@ -390,17 +390,17 @@ whatever the microphone hears.
 RNNoise, through `nnnoiseless` (BSD-3-Clause), lets keyboard clicks through,
 and they hold the gate open. Settings → Voice & video → "Noise suppression in
 Discord calls" still chooses it, to compare the two, as does Off, for a quiet
-room: RNNoise then only tells the gate which blocks are speech. Yapfast keeps
+room: RNNoise then only tells the gate which blocks are speech. Yappuccino keeps
 the choice in `layout.json` as `noise_suppression`. The microphone's menu, from
 the caret beside mute, has the same three choices. During a Discord call, a
 button beside Leave in the call panel turns suppression off, shown red while
 it's off, and on again to the kind last used, wherever it was chosen:
-DeepFilterNet unless RNNoise was. A Yapfast call has no such button, as WebRTC
+DeepFilterNet unless RNNoise was. A Yappuccino call has no such button, as WebRTC
 suppresses its noise. A
 call going on switches at its next block, after DeepFilterNet's 0.2 s load if
 switching to it.
 Muting closes the microphone, but the call's microphone thread,
-`yapfast-discord-in`, waits with the suppressor until the call ends, 39 MiB
+`yappuccino-discord-in`, waits with the suppressor until the call ends, 39 MiB
 for DeepFilterNet, so unmuting or switching microphones doesn't load it
 again. What it kept from before made no difference: after 30 s of another
 room, the PESQ of what the gate sent moved by at most 0.02.
@@ -432,19 +432,19 @@ microphone opens it sooner.
 "Input sensitivity in Discord calls" sets it from -80 to 0 dBFS
 (`input_sensitivity`); behind its handle, the microphone's level goes from
 green through orange at -18 dBFS to red at -6, with whether the gate is open.
-While the setting shows, Yapfast runs the chosen microphone through a call's
-processing on a thread of its own, `yapfast-gate-meter`, and sends nothing; in
+While the setting shows, Yappuccino runs the chosen microphone through a call's
+processing on a thread of its own, `yappuccino-gate-meter`, and sends nothing; in
 a call that's a second copy of the processing. DeepFilterNet takes a block for
 speech when its own estimate of the block's SNR is at least 5 dB, RNNoise when
 its speech probability is at least 0.6. A 0 dB threshold let typing open the
 gate in pauses, and 10 dB missed quiet speech. RNNoise's probability beside
-DeepFilterNet's output did no better, so Yapfast doesn't run both. The gate
+DeepFilterNet's output did no better, so Yappuccino doesn't run both. The gate
 keeps the last 100 ms while shut and sends them when it opens, so a soft start
 such as an "h" isn't cut off; speech goes out that much later until the gate
 closes. It stays shut for the first 200 ms after the microphone opens, while
 the suppressor learns the noise.
 
-The declicker (`crates/yapfast-core/src/declick.rs`, on unless
+The declicker (`crates/yappuccino-core/src/declick.rs`, on unless
 `noise::set_declick` turns it off) takes out what DeepFilterNet leaves of mouse
 clicks while someone speaks. A click is a burst above 4 kHz whose band above
 12 kHz jumps at least 25 dB within half a millisecond and comes within 15 dB of
@@ -461,13 +461,13 @@ turned on) is for a voice that sounds far away in a bare room: the reverb the
 room puts on it, which echo cancellation doesn't touch, since that only takes
 out what the speakers play. It's online weighted prediction error (WPE;
 Yoshioka and Nakatani 2012, in Caroselli et al.'s 2017 recursive least squares
-form), in `crates/yapfast-core/src/dereverb.rs`: in each band up to 5 kHz, the
+form), in `crates/yappuccino-core/src/dereverb.rs`: in each band up to 5 kHz, the
 reverb in a 20 ms frame is predicted from the 200 ms of frames starting 20 ms
 before it, and subtracted. The first 20 ms of the room, which the voice needs
 to sound whole, stay. It puts the voice 10 ms later. DeepFilterNet takes some
 of a room out on its own, more than RNNoise, but its short view of the past
 limits it on late reverb. Its post-filter cut tails a little more without
-bringing speech closer to the dry speech, and cost quality on noise, so Yapfast
+bringing speech closer to the dry speech, and cost quality on noise, so Yappuccino
 leaves it off. No open model takes a room out at 48 kHz in real time on a
 processor; LocalVQE does at 16 kHz.
 
@@ -496,13 +496,13 @@ is mostly the first second after the microphone opens, while its normalization
 and WebRTC's gain control settle, and 10-50 ms at the quiet ends of words.
 
 To hear the processing, run a recording through it: raw mono 16-bit 48 kHz in
-`YAPFAST_AUDIO_IN`, with `YAPFAST_AUDIO_OUT` and optionally `YAPFAST_AUDIO_SENT`, then
-`cargo test -p yapfast-core processes_a_recording -- --ignored --nocapture`.
-`YAPFAST_SUPPRESSOR=rnnoise` or `off` chooses the suppressor,
-`YAPFAST_NOISE_LIMIT` limits it in dB, `YAPFAST_DEREVERB=on` takes the room's echo
-out and `YAPFAST_LEVELING=off` turns leveling off. `YAPFAST_AUDIO_FAR`, in the same
+`YAPPUCCINO_AUDIO_IN`, with `YAPPUCCINO_AUDIO_OUT` and optionally `YAPPUCCINO_AUDIO_SENT`, then
+`cargo test -p yappuccino-core processes_a_recording -- --ignored --nocapture`.
+`YAPPUCCINO_SUPPRESSOR=rnnoise` or `off` chooses the suppressor,
+`YAPPUCCINO_NOISE_LIMIT` limits it in dB, `YAPPUCCINO_DEREVERB=on` takes the room's echo
+out and `YAPPUCCINO_LEVELING=off` turns leveling off. `YAPPUCCINO_AUDIO_FAR`, in the same
 format and as long, is what the speakers played, for echo cancellation;
-`YAPFAST_AUDIO_ECHOED` then gets the microphone with only echo cancelled.
+`YAPPUCCINO_AUDIO_ECHOED` then gets the microphone with only echo cancelled.
 
 ## Push to talk
 
@@ -518,15 +518,15 @@ though with the key up DeepFilterNet runs only its encoder (see
 pauses, as when the gate shuts, so Discord, the call's speaking ring and the
 account panel's show the account not speaking. Muting still wins.
 
-Discord has no default key, and neither does Yapfast. "Record keybind" takes
+Discord has no default key, and neither does Yappuccino. "Record keybind" takes
 the next key pressed, and Escape stops without changing it; until there's a
-key, settings say the microphone sends nothing. Yapfast keeps the key by its
+key, settings say the microphone sends nothing. Yappuccino keeps the key by its
 scan code (`push_to_talk_key`), so it's the same key on any keyboard layout,
 with its name and, for the portal below, its keysym. One key, without
 modifiers. On Windows, Mouse 4 (Back) and Mouse 5 (Forward) can be recorded
 instead; reserved values in the same field distinguish them from scan codes.
 
-`crates/yapfast-core/src/push_to_talk.rs` keeps the mode, whether the key is
+`crates/yappuccino-core/src/push_to_talk.rs` keeps the mode, whether the key is
 down and the delay in atomics. The microphone reads them each 10 ms block,
 allocating nothing, and counts the delay in blocks. Matrix calls take the mode
 too, though their microphone is LiveKit's device module rather than this
@@ -540,13 +540,13 @@ on the local stack.
 
 | Desktop | How | Checked |
 | --- | --- | --- |
-| Wayland | The xdg-desktop-portal GlobalShortcuts portal: Yapfast binds one shortcut, offering the key as its preferred trigger, and holds it from Activated to Deactivated. The desktop may ask to approve it or give it another key; settings show the shortcut it gave. KDE Plasma, Hyprland and GNOME from 48 have the portal | Against a stand-in portal on a private bus (`the_portal_binds_the_key_and_holds_it`); not on a real desktop |
+| Wayland | The xdg-desktop-portal GlobalShortcuts portal: Yappuccino binds one shortcut, offering the key as its preferred trigger, and holds it from Activated to Deactivated. The desktop may ask to approve it or give it another key; settings show the shortcut it gave. KDE Plasma, Hyprland and GNOME from 48 have the portal | Against a stand-in portal on a private bus (`the_portal_binds_the_key_and_holds_it`); not on a real desktop |
 | X11 | XInput 2's raw key events on the root window, which come whatever window has the focus and leave the key to it | Under Xvfb, with xdotool typing (`x11_hears_the_key_whatever_has_the_focus`) |
 | Windows | A low-level keyboard hook (`WH_KEYBOARD_LL`) for a key or mouse hook (`WH_MOUSE_LL`) for Mouse 4/5, on a thread of its own, which sees the release, unlike `RegisterHotKey`, and passes every event on | Keyboard under Wine 10.0, with `SendInput` typing (`the_hook_hears_the_key_go_down_and_up`); mouse recording, XBUTTON down/up and the focused fallback in unit tests; not on real Windows, where Windows may keep input into a program running as administrator, such as some games, from the hook, as Discord warns of its own |
 
 Where none of these works, as on a wlroots desktop such as Sway, which has no
 GlobalShortcuts, the window's own key events stand in, so the key works while
-Yapfast is in front, and settings say so, as Discord's browser client does.
+Yappuccino is in front, and settings say so, as Discord's browser client does.
 Losing the focus lets the key go. The watcher runs while push to talk is on and
 a key is set, in calls or not, and with the window closed to the tray: a thread
 blocked on the X server or in the hook's message loop, or the portal's task on

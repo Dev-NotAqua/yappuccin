@@ -1,9 +1,9 @@
 use super::*;
 
 // Keep the coordinate and appearance regressions in the classic mode.
-// The Yapfast tests below exercise the new defaults separately.
-fn classic_window() -> YapfastWindow {
-    let window = YapfastWindow::new().unwrap();
+// The Yappuccino tests below exercise the new defaults separately.
+fn classic_window() -> YappuccinoWindow {
+    let window = YappuccinoWindow::new().unwrap();
     window.global::<ClientStyle>().set_enabled(false);
     window
 }
@@ -22,7 +22,7 @@ fn a_server_without_a_picture_shows_its_initials_in_capitals() {
 
 #[test]
 fn a_notice_is_a_group_of_its_own_with_an_icon() {
-    use yapfast_core::chat::{Notice, NoticeKind};
+    use yappuccino_core::chat::{Notice, NoticeKind};
     let said = ChatMessage {
         item: "d:4".into(),
         author: "Alice".into(),
@@ -63,7 +63,7 @@ fn statuses_show_their_custom_emoji_as_pictures() {
     assert_eq!((words.as_str(), emoji.as_str()), ("☕ brb", ""));
 
     // The account's own status.
-    let mut status = yapfast_core::chat::CustomStatus {
+    let mut status = yappuccino_core::chat::CustomStatus {
         text: "Shipping it".into(),
         emoji: Some("pog".into()),
         emoji_id: Some("5".into()),
@@ -87,11 +87,11 @@ fn equal_lists_stay_so_rows_count_as_unchanged() {
     assert_eq!(changed.row_data(1), Some(3));
 
     // A profile built again from the same view isn't set again.
-    let view = yapfast_core::application::ProfileView {
-        profile: yapfast_core::chat::Profile {
+    let view = yappuccino_core::application::ProfileView {
+        profile: yappuccino_core::chat::Profile {
             id: "@sam:test".into(),
             name: "Sam".into(),
-            servers: vec![yapfast_core::chat::ProfileServer {
+            servers: vec![yappuccino_core::chat::ProfileServer {
                 id: "s".into(),
                 name: "Server".into(),
                 icon: None,
@@ -108,7 +108,7 @@ fn equal_lists_stay_so_rows_count_as_unchanged() {
         },
         ..Default::default()
     };
-    let state = yapfast_core::application::AppState::default();
+    let state = yappuccino_core::application::AppState::default();
     let mut pictures = HashMap::new();
     let shown = profile_data(&mut pictures, &state, &view);
     let again = profile_data(&mut pictures, &state, &view);
@@ -122,11 +122,11 @@ fn equal_lists_stay_so_rows_count_as_unchanged() {
 
 #[test]
 fn this_accounts_own_profile_shares_its_friends_and_servers_with_nobody() {
-    let view = |id: &str| yapfast_core::application::ProfileView {
-        profile: yapfast_core::chat::Profile {
+    let view = |id: &str| yappuccino_core::application::ProfileView {
+        profile: yappuccino_core::chat::Profile {
             id: id.into(),
             name: "Sam".into(),
-            servers: vec![yapfast_core::chat::ProfileServer {
+            servers: vec![yappuccino_core::chat::ProfileServer {
                 id: "s".into(),
                 name: "Server".into(),
                 icon: None,
@@ -135,7 +135,7 @@ fn this_accounts_own_profile_shares_its_friends_and_servers_with_nobody() {
                 channels: 2,
                 nick: None,
             }],
-            friends: vec![yapfast_core::chat::ProfileFriend {
+            friends: vec![yappuccino_core::chat::ProfileFriend {
                 id: "7".into(),
                 name: "Bob".into(),
                 avatar: None,
@@ -144,7 +144,7 @@ fn this_accounts_own_profile_shares_its_friends_and_servers_with_nobody() {
         },
         ..Default::default()
     };
-    let mut state = yapfast_core::application::AppState::default();
+    let mut state = yappuccino_core::application::AppState::default();
     state.discord_user = Some("42".into());
     let mut pictures = HashMap::new();
 
@@ -286,7 +286,7 @@ fn the_composers_menu_cuts_copies_and_pastes_through_the_application() {
 }
 
 /// Presses and lets go of a key, as typed.
-fn tap(window: &YapfastWindow, text: SharedString) {
+fn tap(window: &YappuccinoWindow, text: SharedString) {
     use slint::platform::WindowEvent;
     window
         .window()
@@ -301,7 +301,7 @@ fn escape_in_the_composer_cancels_a_reply_and_keeps_the_draft() {
     use slint::platform::Key;
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -530,11 +530,11 @@ fn files_dropped_on_the_thread_beside_go_with_its_message() {
     let (window, adapter, folder) = discord_server_window_changed(0, |server, _| {
         server
             .threads
-            .push(yapfast_core::yapfast_discord::ready::Channel {
+            .push(yappuccino_core::yappuccino_discord::ready::Channel {
                 id: "30".into(),
                 name: "Plans".into(),
                 parent: Some("11".into()),
-                thread: Some(Box::new(yapfast_core::yapfast_discord::ready::Thread {
+                thread: Some(Box::new(yappuccino_core::yappuccino_discord::ready::Thread {
                     joined: true,
                     ..Default::default()
                 })),
@@ -593,15 +593,15 @@ fn files_dropped_on_the_thread_beside_go_with_its_message() {
 #[test]
 #[cfg(feature = "discord")]
 fn the_thread_beside_suggests_mentions_and_emoji_above_its_composer() {
-    use yapfast_core::chat::{ChatMember, Role};
+    use yappuccino_core::chat::{ChatMember, Role};
     let (window, adapter, _folder) = discord_server_window_changed(0, |server, _| {
         server
             .threads
-            .push(yapfast_core::yapfast_discord::ready::Channel {
+            .push(yappuccino_core::yappuccino_discord::ready::Channel {
                 id: "30".into(),
                 name: "Plans".into(),
                 parent: Some("11".into()),
-                thread: Some(Box::new(yapfast_core::yapfast_discord::ready::Thread {
+                thread: Some(Box::new(yappuccino_core::yappuccino_discord::ready::Thread {
                     joined: true,
                     ..Default::default()
                 })),
@@ -669,7 +669,7 @@ fn the_thread_beside_suggests_mentions_and_emoji_above_its_composer() {
     assert_eq!(adapter.borrow().app.state.aside_draft(), "hey @Carol ");
     assert_eq!(adapter.borrow().app.state.draft(), "");
     // It's marked as the channel's composer marks its own.
-    let marks = i_slint_core::yapfast_marks::marks_of("hey @Carol ").expect("marked");
+    let marks = i_slint_core::yappuccino_marks::marks_of("hey @Carol ").expect("marked");
     assert_eq!(marks[0].0, 4..10);
     // `:name` too.
     window.invoke_aside_composer_caret("hey @Carol :pizz".into(), 16);
@@ -736,7 +736,7 @@ fn the_keyboard_steps_through_messages_and_acts_on_them() {
 #[test]
 fn the_call_panels_noise_toggle_turns_back_on_the_kind_last_used() {
     i_slint_backend_testing::init_no_event_loop();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     // Each turn saves, as a pick in Voice settings does.
     let saves = Rc::new(Cell::new(0));
     let count = saves.clone();
@@ -769,23 +769,23 @@ fn preferences_set_the_clock_text_size_previews_and_unmuting() {
     let message = ChatMessage {
         timestamp: 1_791_329_400,
         time: "23:30".into(),
-        embeds: vec![yapfast_core::chat::Embed::default()],
+        embeds: vec![yappuccino_core::chat::Embed::default()],
         ..Default::default()
     };
     // Missing preferences take their defaults: 24 hours, default text, previews.
     let defaults: Layout = serde_json::from_str("{}").unwrap();
     assert_eq!(
         defaults.noise_suppression,
-        yapfast_core::noise::Suppressor::DeepFilterNet
+        yappuccino_core::noise::Suppressor::DeepFilterNet
     );
     let row = defaults.restyle(&message, message_row(&message, &HashSet::new()));
     // A message from another day shows its date before its time, but beside
     // a grouped message only the time.
-    let now = yapfast_core::clock::now_ms() / 1000;
-    let time = yapfast_core::clock::time_on(message.timestamp, false);
+    let now = yappuccino_core::clock::now_ms() / 1000;
+    let time = yappuccino_core::clock::time_on(message.timestamp, false);
     assert_eq!(
         row.time,
-        yapfast_core::clock::sent(message.timestamp, now, false, false)
+        yappuccino_core::clock::sent(message.timestamp, now, false, false)
     );
     assert!(row.time.contains('/') && row.time.ends_with(&format!(" {time}")));
     assert_eq!(row.short_time, time);
@@ -796,16 +796,16 @@ fn preferences_set_the_clock_text_size_previews_and_unmuting() {
         link_previews: Some(false),
         boost_gems: Some(false),
         unmute_on_join: Some(true),
-        noise_suppression: yapfast_core::noise::Suppressor::RNNoise,
-        noise_strength: yapfast_core::noise::Strength::Light,
+        noise_suppression: yappuccino_core::noise::Suppressor::RNNoise,
+        noise_strength: yappuccino_core::noise::Strength::Light,
         input_sensitivity: Some(-45),
         reduce_room_echo: true,
         ..Default::default()
     };
     let row = layout.restyle(&message, message_row(&message, &HashSet::new()));
-    let time = yapfast_core::clock::time_on(message.timestamp, true);
+    let time = yappuccino_core::clock::time_on(message.timestamp, true);
     assert!(time.ends_with(" AM") || time.ends_with(" PM"));
-    let sent = yapfast_core::clock::sent(message.timestamp, now, true, false);
+    let sent = yappuccino_core::clock::sent(message.timestamp, now, true, false);
     assert!(sent.ends_with(&time));
     assert_eq!(row.time, sent);
     assert_eq!(row.time_styled, slint::StyledText::from_plain_text(&sent));
@@ -817,7 +817,7 @@ fn preferences_set_the_clock_text_size_previews_and_unmuting() {
         "A card, hidden while link previews are off."
     );
     let titled = ChatMessage {
-        embeds: vec![yapfast_core::chat::Embed {
+        embeds: vec![yappuccino_core::chat::Embed {
             title: "Server status".into(),
             ..Default::default()
         }],
@@ -848,8 +848,8 @@ fn preferences_set_the_clock_text_size_previews_and_unmuting() {
     assert_eq!(window.get_noise_suppression(), 1);
     assert_eq!(window.get_noise_strength(), 2);
     assert_eq!(
-        yapfast_core::noise::chosen(),
-        yapfast_core::noise::Suppressor::RNNoise
+        yappuccino_core::noise::chosen(),
+        yappuccino_core::noise::Suppressor::RNNoise
     );
     let saved = serde_json::to_value(&layout).unwrap();
     assert_eq!(saved["noise_suppression"], "rnnoise");
@@ -865,9 +865,9 @@ fn preferences_set_the_clock_text_size_previews_and_unmuting() {
     // The third choice is Off; an index out of range is the default.
     assert_eq!(
         chosen(&SUPPRESSORS, 2),
-        yapfast_core::noise::Suppressor::Off
+        yappuccino_core::noise::Suppressor::Off
     );
-    assert_eq!(chosen(&STRENGTHS, -1), yapfast_core::noise::Strength::Full);
+    assert_eq!(chosen(&STRENGTHS, -1), yappuccino_core::noise::Strength::Full);
     assert_eq!(window.get_message_font_size(), 18.);
     // Joining a call turns the microphone on once it connects.
     let unmuted = Rc::new(Cell::new(false));
@@ -890,7 +890,7 @@ fn preferences_set_the_clock_text_size_previews_and_unmuting() {
     slint::platform::update_timers_and_animations();
     assert!(deafened.get() && !unmuted.get());
     // Boost gems show unless turned off.
-    assert!(YapfastWindow::new().unwrap().get_boost_gems());
+    assert!(YappuccinoWindow::new().unwrap().get_boost_gems());
     assert!(Layout::default().boost_gems.unwrap_or(true));
 }
 
@@ -912,13 +912,13 @@ fn push_to_talk_keeps_its_mode_key_and_release_delay() {
     assert_eq!(window.get_input_mode(), 1);
     assert_eq!(window.get_talk_key(), "V");
     assert_eq!(window.get_talk_delay(), 2000);
-    assert!(yapfast_core::push_to_talk::on());
+    assert!(yappuccino_core::push_to_talk::on());
     let saved = serde_json::to_value(&layout).unwrap();
     assert_eq!(saved["input_mode"], "push_to_talk");
     assert_eq!(saved["push_to_talk_key"]["scancode"], 47);
     assert_eq!(saved["push_to_talk_key"]["trigger"], "v");
     defaults.apply(&window);
-    assert!(!yapfast_core::push_to_talk::on());
+    assert!(!yappuccino_core::push_to_talk::on());
     assert_eq!(window.get_talk_key(), "");
 }
 
@@ -993,7 +993,7 @@ fn developer_mode_is_off_until_turned_on_and_remembered() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
     let open = || {
-        let window = YapfastWindow::new().unwrap();
+        let window = YappuccinoWindow::new().unwrap();
         let adapter = Adapter::new(
             Arc::new(BackgroundRuntime::new().unwrap()),
             directory.path().into(),
@@ -1116,8 +1116,8 @@ fn call_volumes_play_while_dragged_and_are_remembered() {
     window.set_microphone_volume(200);
     window.set_speaker_volume(50);
     window.invoke_call_volumes_changed();
-    assert!((yapfast_core::volume::microphone() - 1.995).abs() < 1e-3);
-    assert!((yapfast_core::volume::speakers() - 0.143).abs() < 1e-3);
+    assert!((yappuccino_core::volume::microphone() - 1.995).abs() < 1e-3);
+    assert!((yappuccino_core::volume::speakers() - 0.143).abs() < 1e-3);
     assert_eq!(
         Layout::read(directory.path()).microphone_volume,
         None,
@@ -1129,8 +1129,8 @@ fn call_volumes_play_while_dragged_and_are_remembered() {
     assert_eq!(read.speaker_volume, Some(50));
     let defaults: Layout = serde_json::from_str("{}").unwrap();
     defaults.apply(&window);
-    assert_eq!(yapfast_core::volume::microphone(), 1.0);
-    assert_eq!(yapfast_core::volume::speakers(), 1.0);
+    assert_eq!(yappuccino_core::volume::microphone(), 1.0);
+    assert_eq!(yappuccino_core::volume::speakers(), 1.0);
     read.apply(&window);
     assert_eq!(window.get_microphone_volume(), 200);
     assert_eq!(window.get_speaker_volume(), 50);
@@ -1199,12 +1199,12 @@ fn embed_fields_share_rows_three_inline_at_a_time() {
 }
 
 /// A window showing one styled message from Sam, with the composer.
-fn one_message(body: &str) -> YapfastWindow {
+fn one_message(body: &str) -> YappuccinoWindow {
     messages(&[("Sam", body)])
 }
 
 /// A window showing styled messages, each starting a group, with the composer.
-fn messages(lines: &[(&str, &str)]) -> YapfastWindow {
+fn messages(lines: &[(&str, &str)]) -> YappuccinoWindow {
     showing(
         lines
             .iter()
@@ -1234,7 +1234,7 @@ fn init_backend() {
 
 /// A window showing these messages, each starting a group and sent at 19:2 and its
 /// index, with the composer.
-fn showing(chat: Vec<ChatMessage>) -> YapfastWindow {
+fn showing(chat: Vec<ChatMessage>) -> YappuccinoWindow {
     init_backend();
     let window = classic_window();
     copy_whole_messages(&window);
@@ -1269,7 +1269,7 @@ fn showing(chat: Vec<ChatMessage>) -> YapfastWindow {
     window
 }
 
-fn settle(window: &YapfastWindow) {
+fn settle(window: &YappuccinoWindow) {
     for _ in 0..5 {
         slint::platform::update_timers_and_animations();
         let _ = window.invoke_timeline_extent();
@@ -1281,7 +1281,7 @@ fn settle(window: &YapfastWindow) {
 /// until a copy changes the clipboard, which it returns. The first drag to start on a
 /// message starts at the end of the lowest, so it selects up to the end of that message.
 /// The list returns to the newest message before each.
-fn copy_upwards(window: &YapfastWindow, wheel: usize) -> Option<String> {
+fn copy_upwards(window: &YappuccinoWindow, wheel: usize) -> Option<String> {
     use slint::platform::{Key, PointerEventButton, WindowEvent};
     let dispatch = |event| window.window().dispatch_event(event);
     let at = |x, y| slint::LogicalPosition::new(x, y);
@@ -1356,7 +1356,7 @@ fn a_selection_runs_across_messages_with_their_names_and_times() {
 
 #[test]
 fn pictures_on_their_way_hold_their_place_as_skeletons() {
-    let attachment = |name: &str, preview_failed| yapfast_core::chat::Attachment {
+    let attachment = |name: &str, preview_failed| yappuccino_core::chat::Attachment {
         name: name.into(),
         size: Some(1000),
         image: true,
@@ -1392,14 +1392,14 @@ fn a_selection_copies_the_pictures_it_runs_through() {
     let picture = Arc::new(Picture {
         width: 40,
         height: 30,
-        rgba: yapfast_core::chat::Pixels::new(40, 30, vec![128; 40 * 30 * 4]),
+        rgba: yappuccino_core::chat::Pixels::new(40, 30, vec![128; 40 * 30 * 4]),
         ..Default::default()
     });
     let window = showing(vec![
         ChatMessage {
             author: "Sam".into(),
             body: "Look at this.".into(),
-            attachments: vec![yapfast_core::chat::Attachment {
+            attachments: vec![yappuccino_core::chat::Attachment {
                 name: "cat.png".into(),
                 size: None,
                 image: true,
@@ -1445,7 +1445,7 @@ fn a_selection_keeps_the_messages_it_scrolls_past() {
 #[test]
 fn a_click_on_a_link_in_selectable_text_opens_it() {
     use slint::platform::{PointerEventButton, WindowEvent};
-    let window = one_message("See https://example.com/yapfast");
+    let window = one_message("See https://example.com/yappuccino");
     let opened = Rc::new(RefCell::new(Vec::<String>::new()));
     let record = opened.clone();
     window.on_open_link(move |link| record.borrow_mut().push(link.into()));
@@ -1465,14 +1465,14 @@ fn a_click_on_a_link_in_selectable_text_opens_it() {
     assert!(
         opened
             .iter()
-            .all(|link| link == "https://example.com/yapfast")
+            .all(|link| link == "https://example.com/yappuccino")
     );
 }
 
 #[test]
 fn a_link_showing_other_text_asks_before_it_opens() {
     use slint::platform::{PointerEventButton, WindowEvent};
-    let window = one_message("See [example.com/yapfast](https://evil.example/yapfast)");
+    let window = one_message("See [example.com/yappuccino](https://evil.example/yappuccino)");
     let opened = Rc::new(RefCell::new(Vec::<String>::new()));
     let record = opened.clone();
     window.on_open_link(move |link| record.borrow_mut().push(link.into()));
@@ -1487,11 +1487,11 @@ fn a_link_showing_other_text_asks_before_it_opens() {
             .dispatch_event(WindowEvent::PointerReleased { position, button });
     }
     let opened = opened.borrow();
-    assert!(!opened.is_empty(), "a click on the link reaches Yapfast");
+    assert!(!opened.is_empty(), "a click on the link reaches Yappuccino");
     assert!(
         opened
             .iter()
-            .all(|link| link == "yapfast:leave/https://evil.example/yapfast"),
+            .all(|link| link == "yappuccino:leave/https://evil.example/yappuccino"),
         "{opened:?}"
     );
 }
@@ -1521,7 +1521,7 @@ fn a_click_on_an_emoji_in_a_message_reaches_its_card() {
     }
     let opened = opened.borrow();
     assert!(
-        opened.iter().any(|link| link == "yapfast:emoji/1f62d"),
+        opened.iter().any(|link| link == "yappuccino:emoji/1f62d"),
         "{opened:?}"
     );
 }
@@ -1529,7 +1529,7 @@ fn a_click_on_an_emoji_in_a_message_reaches_its_card() {
 #[test]
 fn an_emoji_card_says_what_the_emoji_is() {
     let mut pictures = HashMap::new();
-    let state = yapfast_core::application::AppState::default();
+    let state = yappuccino_core::application::AppState::default();
     let default = emoji_card(
         &emoji_text::Target::Unicode("😭".to_owned()),
         None,
@@ -1563,7 +1563,7 @@ fn an_emoji_card_says_what_the_emoji_is() {
 /// registry's, which this crate can reach and its own tests cannot run.
 #[test]
 fn an_animated_emoji_draws_a_frame_only_while_playing() {
-    use i_slint_core::yapfast_emoji as registry;
+    use i_slint_core::yappuccino_emoji as registry;
     let (glyph, key) = ('\u{10ffe0}', "test-animation:1");
     let frame =
         || slint::Image::from_rgba8(slint::SharedPixelBuffer::<slint::Rgba8Pixel>::new(2, 2));
@@ -1590,8 +1590,8 @@ fn an_animated_emoji_draws_a_frame_only_while_playing() {
 #[test]
 fn an_emoji_card_says_how_many_of_its_servers_members_are_online() {
     let mut pictures = HashMap::new();
-    let mut state = yapfast_core::application::AppState::default();
-    let server = yapfast_core::chat::ChatServer {
+    let mut state = yappuccino_core::application::AppState::default();
+    let server = yappuccino_core::chat::ChatServer {
         id: "discord:10".into(),
         name: "Equicord".into(),
         channels: Vec::new(),
@@ -1606,7 +1606,7 @@ fn an_emoji_card_says_how_many_of_its_servers_members_are_online() {
         ..Default::default()
     };
     let target = emoji_text::Target::Custom("42".to_owned());
-    // Before Discord answers, the note follows the features Yapfast has.
+    // Before Discord answers, the note follows the features Yappuccino has.
     let known = emoji_card(&target, Some(&server), &state, &mut pictures);
     assert_eq!(known.server_online, "", "nothing said yet");
     assert_eq!(known.server_note, "Discoverable Server");
@@ -1616,7 +1616,7 @@ fn an_emoji_card_says_how_many_of_its_servers_members_are_online() {
     );
     state.server_previews.insert(
         server.id.clone(),
-        yapfast_core::chat::ServerPreview {
+        yappuccino_core::chat::ServerPreview {
             online: Some(3999),
             discoverable: true,
         },
@@ -1628,10 +1628,10 @@ fn an_emoji_card_says_how_many_of_its_servers_members_are_online() {
     );
     assert_eq!(answered.server_note, "Discoverable Server");
     // A server Discover doesn't list shows its count alone, whatever feature
-    // Yapfast knew of it.
+    // Yappuccino knew of it.
     state.server_previews.insert(
         server.id.clone(),
-        yapfast_core::chat::ServerPreview {
+        yappuccino_core::chat::ServerPreview {
             online: Some(12),
             discoverable: false,
         },
@@ -1660,7 +1660,7 @@ fn an_emoji_card_says_how_many_of_its_servers_members_are_online() {
 #[test]
 fn a_right_click_on_a_link_gives_its_menu_the_address() {
     use slint::platform::{PointerEventButton, WindowEvent};
-    let window = one_message("See [example.com/yapfast](https://evil.example/yapfast)");
+    let window = one_message("See [example.com/yappuccino](https://evil.example/yappuccino)");
     let button = PointerEventButton::Right;
     let mut found = 0;
     for y in (100..700).step_by(4) {
@@ -1672,26 +1672,26 @@ fn a_right_click_on_a_link_gives_its_menu_the_address() {
             .window()
             .dispatch_event(WindowEvent::PointerReleased { position, button });
         let at = |x: f32| {
-            i_slint_core::yapfast_selection::pressed_link_at(
+            i_slint_core::yappuccino_selection::pressed_link_at(
                 i_slint_core::lengths::LogicalPoint::new(x, y as f32),
             )
         };
         if let Some(link) = at(440.) {
-            assert_eq!(link, "yapfast:leave/https://evil.example/yapfast");
+            assert_eq!(link, "yappuccino:leave/https://evil.example/yappuccino");
             assert_eq!(at(460.), None, "only where the press was");
             found += 1;
         }
     }
     assert!(found > 0, "a right press on the link records it");
     assert_eq!(
-        callbacks::web_address("yapfast:leave/https://evil.example/yapfast"),
-        Some("https://evil.example/yapfast")
+        callbacks::web_address("yappuccino:leave/https://evil.example/yappuccino"),
+        Some("https://evil.example/yappuccino")
     );
     assert_eq!(
         callbacks::web_address("https://example.com/a"),
         Some("https://example.com/a")
     );
-    assert_eq!(callbacks::web_address("yapfast:user/1"), None);
+    assert_eq!(callbacks::web_address("yappuccino:user/1"), None);
     assert_eq!(
         callbacks::web_address("https://matrix.to/#/@sam:example.org"),
         None
@@ -1824,7 +1824,7 @@ fn menus_list_their_choices_and_carry_them_out() {
     .unwrap();
     bind_callbacks(&window, &adapter);
     window.invoke_explore_preview();
-    let texts = |window: &YapfastWindow| -> Vec<String> {
+    let texts = |window: &YappuccinoWindow| -> Vec<String> {
         window
             .get_menu_rows()
             .iter()
@@ -1888,7 +1888,7 @@ fn a_server_members_menu_follows_permissions_and_ticks_roles() {
     .unwrap();
     bind_callbacks(&window, &adapter);
     // Alice is Staff, below Leads; Dave, her friend, is below her.
-    adapter.borrow_mut().app = yapfast_core::application::member_server(&["30"]);
+    adapter.borrow_mut().app = yappuccino_core::application::member_server(&["30"]);
     // Copy ID waits for Developer Mode, off unless turned on, as in Discord.
     assert!(!window.get_developer_mode());
     window.invoke_prepare_menu("4".into(), true);
@@ -2034,11 +2034,11 @@ fn a_server_members_menu_follows_permissions_and_ticks_roles() {
     window.invoke_choose_menu("3".into(), true, "mention".into());
     assert_eq!(adapter.borrow().app.state.draft(), "@Cara ");
     // The composer colours it as the message will show it.
-    let marks = i_slint_core::yapfast_marks::marks_of("@Cara ").expect("the mention is marked");
+    let marks = i_slint_core::yappuccino_marks::marks_of("@Cara ").expect("the mention is marked");
     assert_eq!(marks.len(), 1);
     assert_eq!(marks[0].0, 0..5);
     window.invoke_draft_edited("@Carab".into());
-    assert_eq!(i_slint_core::yapfast_marks::marks_of("@Carab"), None);
+    assert_eq!(i_slint_core::yappuccino_marks::marks_of("@Carab"), None);
 }
 
 #[test]
@@ -2054,8 +2054,8 @@ fn invite_to_server_lists_the_servers_in_a_submenu() {
     )
     .unwrap();
     bind_callbacks(&window, &adapter);
-    let mut app = yapfast_core::application::member_server(&["30"]);
-    yapfast_core::application::with_clubs(&mut app);
+    let mut app = yappuccino_core::application::member_server(&["30"]);
+    yappuccino_core::application::with_clubs(&mut app);
     adapter.borrow_mut().app = app;
     window.invoke_prepare_menu("4".into(), true);
     let rows: Vec<MenuRow> = window.get_menu_rows().iter().collect();
@@ -2082,7 +2082,7 @@ fn invite_to_server_lists_the_servers_in_a_submenu() {
 
 #[test]
 fn an_event_shows_when_it_runs_and_where() {
-    use yapfast_core::{application::EventDialog, chat::EventPreview, clock};
+    use yappuccino_core::{application::EventDialog, chat::EventPreview, clock};
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
     let window = classic_window();
@@ -2169,7 +2169,7 @@ fn menus_give_each_row_its_own_submenu_and_tick_checkboxes() {
     assert_eq!(menus::toggle(&window, "hide-muted"), Some(true));
     assert!(window.get_menu_rows().row_data(3).unwrap().checked);
     assert_eq!(menus::toggle(&window, "suppress-roles"), Some(true));
-    let ticked = |window: &YapfastWindow| {
+    let ticked = |window: &YappuccinoWindow| {
         window
             .get_menu_submenus()
             .row_data(2)
@@ -2304,7 +2304,7 @@ fn a_window_made_again_shows_what_the_last_one_did() {
     adapter
         .borrow_mut()
         .action(&window, Action::SelectRoom("general".into()));
-    let topic = Arc::new(yapfast_core::chat::Topic {
+    let topic = Arc::new(yappuccino_core::chat::Topic {
         body: "Plans for the weekend".into(),
         ..Default::default()
     });
@@ -2313,12 +2313,12 @@ fn a_window_made_again_shows_what_the_last_one_did() {
         topic: Some(topic),
     });
     adapter.borrow_mut().refresh(&window);
-    let shown = |window: &YapfastWindow| {
+    let shown = |window: &YappuccinoWindow| {
         (
             window.get_sidebar_title(),
             window.get_filter_placeholder(),
             window.get_has_topic(),
-            i_slint_core::yapfast_selection::plain(&window.get_room_topic()),
+            i_slint_core::yappuccino_selection::plain(&window.get_room_topic()),
         )
     };
     let before = shown(&window);
@@ -2386,11 +2386,11 @@ fn dragging_the_thread_beside_resizes_it_within_limits_and_remembers_it() {
 #[cfg(feature = "discord")]
 #[test]
 fn the_activity_panel_shows_discords_feed_in_its_order_for_those_the_channel_may_show() {
-    use yapfast_core::{
+    use yappuccino_core::{
         application::AppState,
         chat::{ChatMember, FeedEntry, FeedPerson, Presence, Role},
         discord::room_id,
-        yapfast_discord::activity_feed::Kind,
+        yappuccino_discord::activity_feed::Kind,
     };
     let hour = 60 * 60_000;
     let now = 100 * hour;
@@ -2425,7 +2425,7 @@ fn the_activity_panel_shows_discords_feed_in_its_order_for_those_the_channel_may
         presence: Some(presence),
         color: None,
         activity: None,
-        activities: yapfast_core::yapfast_discord::activity::activities(&activities),
+        activities: yappuccino_core::yappuccino_discord::activity::activities(&activities),
         roles: Default::default(),
         role_icon: None,
         group_icon: None,
@@ -2516,7 +2516,7 @@ fn a_finished_activity_says_how_long_ago_in_discords_steps() {
 
 #[test]
 fn decorations_and_nameplates_reach_the_member_list_and_the_account_card() {
-    use yapfast_core::chat::{ChatMember, Nameplate, Role};
+    use yappuccino_core::chat::{ChatMember, Nameplate, Role};
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
     let window = classic_window();
@@ -2563,7 +2563,7 @@ fn decorations_and_nameplates_reach_the_member_list_and_the_account_card() {
                 bot: false,
                 decoration: Some("ring.png".into()),
                 nameplate: Some(plate("strip.png")),
-                style: Some(Arc::new(yapfast_core::chat::NameStyle::new(
+                style: Some(Arc::new(yappuccino_core::chat::NameStyle::new(
                     14,
                     3,
                     &[65433],
@@ -2597,7 +2597,7 @@ fn decorations_and_nameplates_reach_the_member_list_and_the_account_card() {
         slint::Color::from_rgb_u8(0x97, 0x2f, 0xed)
     );
     assert!(dave.decoration_url.is_empty() && dave.nameplate_url.is_empty());
-    // A palette Yapfast doesn't know leaves the picture without a colour.
+    // A palette Yappuccino doesn't know leaves the picture without a colour.
     let eve = roster.row_data(2).unwrap();
     assert_eq!(eve.nameplate_url, "bare.png");
     assert_eq!(eve.nameplate_color.alpha(), 0);
@@ -3540,7 +3540,7 @@ fn message_actions_reach_the_shared_application_in_the_preview() {
 fn a_discord_channel_without_sending_still_takes_reactions() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -3561,7 +3561,7 @@ fn a_discord_channel_without_sending_still_takes_reactions() {
             .map(Arc::make_mut)
             .find(|room| room.id == id)
             .unwrap();
-        room.network = yapfast_core::network::Network::Discord;
+        room.network = yappuccino_core::network::Network::Discord;
         room.read_only = true;
         room.reacts = reacts;
         adapter.app.state.list_changes += 1;
@@ -3773,7 +3773,7 @@ fn collapsed_categories_keep_the_open_unread_and_occupied_channels() {
             ("b", "", true, false),
             ("c", "", true, false),
             ("e", "VOICE", true, true),
-            // The voice channel Yapfast is in stays.
+            // The voice channel Yappuccino is in stays.
             ("f", "", true, false),
             ("g", "OTHER", false, false),
             ("h", "", false, false),
@@ -4252,7 +4252,7 @@ fn an_unread_dm_shows_on_the_rail_above_the_servers_and_opens() {
     .unwrap();
     bind_callbacks(&window, &adapter);
     adapter.borrow_mut().action(&window, Action::Preview);
-    let rail = |window: &YapfastWindow| -> Vec<(String, bool, bool)> {
+    let rail = |window: &YappuccinoWindow| -> Vec<(String, bool, bool)> {
         window
             .get_servers()
             .iter()
@@ -4292,13 +4292,13 @@ fn an_unread_dm_shows_on_the_rail_above_the_servers_and_opens() {
 
 #[test]
 fn a_folder_on_the_rail_holds_its_servers_until_opened() {
-    let folder = yapfast_core::chat::ServerFolder {
+    let folder = yappuccino_core::chat::ServerFolder {
         id: "discord-folder:7".into(),
         name: None,
         color: Some(0xff0000),
     };
-    let server = |id: &str, folder: Option<&yapfast_core::chat::ServerFolder>| {
-        yapfast_core::chat::ChatServer {
+    let server = |id: &str, folder: Option<&yappuccino_core::chat::ServerFolder>| {
+        yappuccino_core::chat::ChatServer {
             id: id.into(),
             name: id.into(),
             channels: vec![],
@@ -4429,7 +4429,7 @@ fn a_right_click_on_a_folder_asks_for_its_menu() {
 #[cfg(feature = "discord")]
 #[test]
 fn a_profile_shows_activities_as_discord_cards() {
-    let activities = yapfast_discord::activity::activities(&serde_json::json!([
+    let activities = yappuccino_discord::activity::activities(&serde_json::json!([
         {"type": 2, "name": "Spotify", "details": "Weightless", "state": "Marconi Union",
          "sync_id": "6kkwzB6hXLIONkEk9JciA6",
          "timestamps": {"start": 1_700_000_000_000_u64, "end": 1_700_000_480_000_u64},
@@ -4460,10 +4460,10 @@ fn a_profile_shows_activities_as_discord_cards() {
 
 #[test]
 fn discord_channels_show_their_kinds_icons_marked_as_discord_marks_them() {
-    use yapfast_core::chat::{ChannelMark, ChatRoom, MarkKind};
+    use yappuccino_core::chat::{ChannelMark, ChatRoom, MarkKind};
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -4518,7 +4518,7 @@ fn discord_channels_show_their_kinds_icons_marked_as_discord_marks_them() {
 
 #[test]
 fn friends_in_a_servers_voice_channel_show_where() {
-    use yapfast_core::chat::{ChatRoom, ChatServer, Reacts, VoicePerson};
+    use yappuccino_core::chat::{ChatRoom, ChatServer, Reacts, VoicePerson};
     let person = |id: &str| VoicePerson {
         id: id.into(),
         name: id.into(),
@@ -4612,13 +4612,13 @@ fn friends_in_a_servers_voice_channel_show_where() {
 
 #[test]
 fn a_call_shows_on_its_servers_icon_and_its_closed_folder() {
-    let folder = yapfast_core::chat::ServerFolder {
+    let folder = yappuccino_core::chat::ServerFolder {
         id: "discord-folder:7".into(),
         name: None,
         color: None,
     };
-    let server = |id: &str, channel: &str, folder: Option<&yapfast_core::chat::ServerFolder>| {
-        yapfast_core::chat::ChatServer {
+    let server = |id: &str, channel: &str, folder: Option<&yappuccino_core::chat::ServerFolder>| {
+        yappuccino_core::chat::ChatServer {
             id: id.into(),
             name: id.into(),
             channels: vec![channel.into()],
@@ -4652,7 +4652,7 @@ fn a_call_shows_on_its_servers_icon_and_its_closed_folder() {
     // A voice channel chosen but not joined yet shows nothing.
     state.voice.room = Some("bravo-lounge".into());
     assert_eq!(calls(&state, &[]), none);
-    state.voice.phase = yapfast_core::voice::Phase::Connected;
+    state.voice.phase = yappuccino_core::voice::Phase::Connected;
     assert_eq!(
         calls(&state, &[]),
         [("Alpha".into(), false), ("discord-folder:7".into(), true)]
@@ -4687,7 +4687,7 @@ fn closing_the_viewer_lets_go_of_its_picture() {
     let mut adapter = adapter.borrow_mut();
     adapter.app.state.messages = Arc::new(vec![Arc::new(ChatMessage {
         item: "i0".into(),
-        attachments: vec![yapfast_core::chat::Attachment {
+        attachments: vec![yappuccino_core::chat::Attachment {
             name: "a.png".into(),
             size: None,
             image: true,
@@ -4695,11 +4695,11 @@ fn closing_the_viewer_lets_go_of_its_picture() {
             preview: Some(Arc::new(Picture {
                 width: 40,
                 height: 30,
-                rgba: yapfast_core::chat::Pixels::new(40, 30, vec![128; 40 * 30 * 4]),
+                rgba: yappuccino_core::chat::Pixels::new(40, 30, vec![128; 40 * 30 * 4]),
                 ..Default::default()
             })),
             preview_failed: false,
-            placement: yapfast_core::chat::Placement::Message,
+            placement: yappuccino_core::chat::Placement::Message,
             gif: None,
             spoiler: false,
             video: false,
@@ -4707,7 +4707,7 @@ fn closing_the_viewer_lets_go_of_its_picture() {
         }],
         ..Default::default()
     })]);
-    adapter.app.state.viewer = Some(yapfast_core::application::Viewer {
+    adapter.app.state.viewer = Some(yappuccino_core::application::Viewer {
         item: "i0".into(),
         index: 0,
         pictures: HashMap::new(),
@@ -4732,14 +4732,14 @@ fn a_pictures_menu_links_to_it_when_it_has_an_address() {
     )
     .unwrap();
     bind_callbacks(&window, &adapter);
-    let file = |url: Option<&str>| yapfast_core::chat::Attachment {
+    let file = |url: Option<&str>| yappuccino_core::chat::Attachment {
         name: "a.png".into(),
         size: None,
         image: true,
         dimensions: None,
         preview: None,
         preview_failed: false,
-        placement: yapfast_core::chat::Placement::Message,
+        placement: yappuccino_core::chat::Placement::Message,
         gif: None,
         spoiler: false,
         video: false,
@@ -4763,10 +4763,10 @@ fn a_pictures_menu_links_to_it_when_it_has_an_address() {
 /// it, muted with its own level; Alice is "1".
 #[cfg(feature = "discord")]
 fn discord_server_adapter(
-    window: &YapfastWindow,
+    window: &YappuccinoWindow,
     directory: &std::path::Path,
 ) -> Rc<RefCell<Adapter>> {
-    use yapfast_discord::{
+    use yappuccino_discord::{
         marked::{ChannelMarks, MarkedServer, ServerMarks},
         notifications::{Level, Mute, Notifications as Settings, Override},
         ready,
@@ -4820,7 +4820,7 @@ fn discord_server_adapter(
     adapter
         .borrow_mut()
         .app
-        .apply(yapfast_core::chat::Event::Discord(Arc::new(Snapshot {
+        .apply(yappuccino_core::chat::Event::Discord(Arc::new(Snapshot {
             status: Status::Online,
             user_id: Some("1".into()),
             servers: vec![server],
@@ -4836,7 +4836,7 @@ fn the_bell_and_channel_menus_offer_the_same_notification_choices() {
     let directory = tempfile::tempdir().unwrap();
     let window = classic_window();
     let adapter = discord_server_adapter(&window, directory.path());
-    let rows = |window: &YapfastWindow| -> Vec<(String, String, bool)> {
+    let rows = |window: &YappuccinoWindow| -> Vec<(String, String, bool)> {
         window
             .get_menu_rows()
             .iter()
@@ -4860,7 +4860,7 @@ fn the_bell_and_channel_menus_offer_the_same_notification_choices() {
     let submenus = window.get_menu_submenus();
     assert_eq!(
         submenus.row_data(0).unwrap().row_count(),
-        yapfast_core::application::MUTE_TIMES.len()
+        yappuccino_core::application::MUTE_TIMES.len()
     );
     // Clicked itself, the row mutes until it's turned back on, as Discord's
     // does; the times are its submenu's.
@@ -4911,7 +4911,7 @@ fn the_bell_and_channel_menus_offer_the_same_notification_choices() {
     );
 
     // What each choice changes.
-    use yapfast_core::chat::{Muting, NotificationChange, NotifyLevel};
+    use yappuccino_core::chat::{Muting, NotificationChange, NotifyLevel};
     let adapter = adapter.borrow();
     let general = menus::Notify::of(&adapter, "discord:10:11").unwrap();
     assert_eq!(
@@ -4941,7 +4941,7 @@ fn the_bell_and_channel_menus_offer_the_same_notification_choices() {
 #[test]
 #[cfg(feature = "discord")]
 fn a_server_search_names_the_server_and_heads_results_with_their_channels() {
-    use yapfast_core::chat::{Event, SearchHit};
+    use yappuccino_core::chat::{Event, SearchHit};
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
     let window = classic_window();
@@ -4998,7 +4998,7 @@ fn a_server_search_names_the_server_and_heads_results_with_their_channels() {
 /// Her settings for the server hide muted channels and suppress role
 /// mentions; #general mentions her.
 #[cfg(feature = "discord")]
-fn discord_server_window() -> (YapfastWindow, Rc<RefCell<Adapter>>, tempfile::TempDir) {
+fn discord_server_window() -> (YappuccinoWindow, Rc<RefCell<Adapter>>, tempfile::TempDir) {
     discord_server_window_granting(0)
 }
 
@@ -5007,7 +5007,7 @@ fn discord_server_window() -> (YapfastWindow, Rc<RefCell<Adapter>>, tempfile::Te
 #[cfg(feature = "discord")]
 fn discord_server_window_granting(
     extra: u64,
-) -> (YapfastWindow, Rc<RefCell<Adapter>>, tempfile::TempDir) {
+) -> (YappuccinoWindow, Rc<RefCell<Adapter>>, tempfile::TempDir) {
     discord_server_window_changed(extra, |_, _| {})
 }
 
@@ -5016,11 +5016,11 @@ fn discord_server_window_granting(
 fn discord_server_window_changed(
     extra: u64,
     change: impl FnOnce(
-        &mut yapfast_core::yapfast_discord::ready::Server,
-        &mut yapfast_core::yapfast_discord::marked::ServerMarks,
+        &mut yappuccino_core::yappuccino_discord::ready::Server,
+        &mut yappuccino_core::yappuccino_discord::marked::ServerMarks,
     ),
-) -> (YapfastWindow, Rc<RefCell<Adapter>>, tempfile::TempDir) {
-    use yapfast_core::yapfast_discord::{
+) -> (YappuccinoWindow, Rc<RefCell<Adapter>>, tempfile::TempDir) {
+    use yappuccino_core::yappuccino_discord::{
         marked::{MarkedServer, ServerMarks},
         notifications::Notifications,
         ready::{self, permission},
@@ -5082,7 +5082,7 @@ fn discord_server_window_changed(
 #[test]
 #[cfg(feature = "discord")]
 fn a_discord_servers_menus_show_and_change_its_notifications() {
-    use yapfast_core::chat::{Muting, NotificationChange, NotifyLevel};
+    use yappuccino_core::chat::{Muting, NotificationChange, NotifyLevel};
     let (window, adapter, _directory) = discord_server_window();
     let texts = |rows: ModelRc<MenuRow>| -> Vec<String> {
         rows.iter().map(|row| row.text.to_string()).collect()
@@ -5249,7 +5249,7 @@ fn categories_of_the_same_name_head_and_fold_their_own_channels() {
 #[test]
 #[cfg(feature = "discord")]
 fn pinned_channels_leave_their_categories_for_the_top() {
-    use yapfast_core::yapfast_discord::notifications::{Notifications, Override};
+    use yappuccino_core::yappuccino_discord::notifications::{Notifications, Override};
     let (window, adapter, _directory) = discord_server_window_changed(0, |_, marks| {
         let mut settings = Notifications::clone(&marks.notifications);
         settings.overrides.insert(
@@ -5313,7 +5313,7 @@ fn pinned_channels_leave_their_categories_for_the_top() {
 #[test]
 #[cfg(feature = "discord")]
 fn a_community_server_lists_the_channels_followed_and_offers_following() {
-    use yapfast_core::yapfast_discord::notifications::Notifications;
+    use yappuccino_core::yappuccino_discord::notifications::Notifications;
     let (window, adapter, _directory) = discord_server_window_changed(0, |server, marks| {
         let mut settings = Notifications::clone(&marks.notifications);
         settings.flags = 1 << 14;
@@ -5381,7 +5381,7 @@ fn browse_channels_opens_from_a_community_servers_list_and_searches() {
     assert!(!window.get_browse_open());
     window.invoke_open_browse();
     assert!(window.get_browse_open());
-    let rows = |window: &YapfastWindow| -> Vec<(String, String, bool, bool)> {
+    let rows = |window: &YappuccinoWindow| -> Vec<(String, String, bool, bool)> {
         window
             .get_browse_rows()
             .iter()
@@ -5454,12 +5454,12 @@ fn empty_categories_go_where_discords_order_puts_them() {
 #[cfg(feature = "discord")]
 fn the_invite_dialog_shows_its_link_and_how_long_it_lasts() {
     let (window, adapter, _directory) = discord_server_window();
-    let show = |invite: yapfast_core::application::InviteDialog| {
+    let show = |invite: yappuccino_core::application::InviteDialog| {
         let mut adapter = adapter.borrow_mut();
         adapter.app.state.invite = Some(invite);
         adapter.refresh(&window);
     };
-    let invite = yapfast_core::application::InviteDialog {
+    let invite = yappuccino_core::application::InviteDialog {
         server: "Test".into(),
         room: "discord:10:14".into(),
         channel: "Lounge".into(),
@@ -5484,7 +5484,7 @@ fn the_invite_dialog_shows_its_link_and_how_long_it_lasts() {
 
     // Choosing others stays while the dialog is open.
     window.set_invite_age(6);
-    show(yapfast_core::application::InviteDialog {
+    show(yappuccino_core::application::InviteDialog {
         link: Some("https://discord.gg/abc".into()),
         making: false,
         ..invite.clone()
@@ -5497,7 +5497,7 @@ fn the_invite_dialog_shows_its_link_and_how_long_it_lasts() {
     );
     assert_eq!(window.get_invite_age(), 6);
 
-    show(yapfast_core::application::InviteDialog {
+    show(yappuccino_core::application::InviteDialog {
         max_age: 0,
         max_uses: 1,
         channel: "general".into(),
@@ -5516,10 +5516,10 @@ fn the_invite_dialog_shows_its_link_and_how_long_it_lasts() {
 #[test]
 #[cfg(feature = "discord")]
 fn channel_menus_and_their_dialog_make_change_and_delete_channels() {
-    use yapfast_core::{
+    use yappuccino_core::{
         application::{ChannelAsk, ChannelDialog},
         chat::{ChannelKind, ChannelSettings},
-        yapfast_discord::ready::permission,
+        yappuccino_discord::ready::permission,
     };
     let (window, adapter, _directory) = discord_server_window_granting(permission::MANAGE_CHANNELS);
     let texts = |rows: ModelRc<MenuRow>| -> Vec<String> {
@@ -5606,7 +5606,7 @@ fn channel_menus_and_their_dialog_make_change_and_delete_channels() {
 #[cfg(feature = "discord")]
 fn channel_settings_cover_the_window_with_overview_and_permissions() {
     use slint::Model;
-    use yapfast_core::yapfast_discord::ready::permission;
+    use yappuccino_core::yappuccino_discord::ready::permission;
     let (window, adapter, _directory) =
         discord_server_window_granting(permission::MANAGE_CHANNELS | permission::MANAGE_ROLES);
     window.invoke_prepare_menu("discord:10:11".into(), false);
@@ -5726,7 +5726,7 @@ fn leaving_a_server_asks_first_in_red() {
 #[test]
 #[cfg(feature = "discord")]
 fn leaving_a_group_dm_asks_first_and_offers_to_tell_no_one() {
-    use yapfast_core::yapfast_discord::service::{Conversation, Snapshot, Status};
+    use yappuccino_core::yappuccino_discord::service::{Conversation, Snapshot, Status};
     let (window, adapter, _directory) = discord_server_window();
     adapter
         .borrow_mut()
@@ -5770,7 +5770,7 @@ fn leaving_a_group_dm_asks_first_and_offers_to_tell_no_one() {
 #[test]
 #[cfg(feature = "discord")]
 fn edit_server_profile_opens_the_per_server_profile_editor() {
-    use yapfast_core::yapfast_discord::ready::permission;
+    use yappuccino_core::yappuccino_discord::ready::permission;
     let (window, adapter, _directory) = discord_server_window_granting(permission::CHANGE_NICKNAME);
     window.invoke_prepare_menu("header:discord:10".into(), false);
     let texts: Vec<String> = window
@@ -5793,9 +5793,9 @@ fn edit_server_profile_opens_the_per_server_profile_editor() {
         let mut adapter = adapter.borrow_mut();
         adapter.app.apply(Event::OwnProfile {
             server: Some("discord:10".into()),
-            result: Ok(yapfast_core::chat::OwnProfile {
+            result: Ok(yappuccino_core::chat::OwnProfile {
                 pronouns: "she/her".into(),
-                fallback: yapfast_core::chat::Profile {
+                fallback: yappuccino_core::chat::Profile {
                     name: "Alice".into(),
                     handle: "alice".into(),
                     bio: "Main bio".into(),
@@ -5839,12 +5839,12 @@ fn edit_server_profile_opens_the_per_server_profile_editor() {
 #[cfg(feature = "discord")]
 fn server_settings_open_from_the_menu_and_hold_their_changes_until_saved() {
     use slint::Model;
-    use yapfast_core::{
+    use yappuccino_core::{
         chat::{ServerProfile, ServerSettingsPage, SettingsSection},
-        yapfast_discord::ready::permission,
+        yappuccino_discord::ready::permission,
     };
     let (window, adapter, _directory) = discord_server_window_granting(permission::MANAGE_GUILD);
-    let texts = |window: &YapfastWindow| -> Vec<String> {
+    let texts = |window: &YappuccinoWindow| -> Vec<String> {
         window
             .get_menu_rows()
             .iter()
@@ -5925,9 +5925,9 @@ fn server_settings_open_from_the_menu_and_hold_their_changes_until_saved() {
 #[cfg(feature = "discord")]
 fn engagement_and_boost_perks_show_their_choices_and_locks() {
     use slint::Model;
-    use yapfast_core::{
+    use yappuccino_core::{
         chat::{GuildSettings, ServerSettingsPage, SettingsSection},
-        yapfast_discord::ready::permission,
+        yappuccino_discord::ready::permission,
     };
     let (window, adapter, _directory) = discord_server_window_granting(permission::MANAGE_GUILD);
     let names = |list: ModelRc<SharedString>| -> Vec<String> {
@@ -6003,9 +6003,9 @@ fn engagement_and_boost_perks_show_their_choices_and_locks() {
 #[test]
 fn moderation_shows_safety_setup_and_bans_as_discords_pages_do() {
     use slint::Model;
-    use yapfast_core::{
+    use yappuccino_core::{
         chat::{Ban, GuildSettings, RoleMember, ServerSettingsPage, SettingsSection},
-        yapfast_discord::ready::permission,
+        yappuccino_discord::ready::permission,
     };
     let (window, adapter, _directory) =
         discord_server_window_granting(permission::BAN_MEMBERS | permission::MANAGE_GUILD);
@@ -6126,9 +6126,9 @@ fn moderation_shows_safety_setup_and_bans_as_discords_pages_do() {
 #[test]
 fn audit_log_shows_rows_that_open_their_numbered_lines() {
     use slint::Model;
-    use yapfast_core::{
+    use yappuccino_core::{
         chat::{AuditEntry, AuditLog, AuditUser, ServerSettingsPage, SettingsSection},
-        yapfast_discord::ready::permission,
+        yappuccino_discord::ready::permission,
     };
     let (window, adapter, _directory) = discord_server_window_granting(permission::VIEW_AUDIT_LOG);
     window.invoke_prepare_menu("header:discord:10".into(), false);
@@ -6141,7 +6141,7 @@ fn audit_log_shows_rows_that_open_their_numbered_lines() {
         .collect();
     assert_eq!(rows, ["MODERATION", "Audit Log", "Bans"]);
     // A kick an hour ago, with its reason, and an unban without lines.
-    let now = yapfast_core::clock::now_ms();
+    let now = yappuccino_core::clock::now_ms();
     let id = |ago_ms: u64| (((now - ago_ms) - 1_420_070_400_000) << 22).to_string();
     let entry = |id: String, action: u16, reason: Option<&str>| AuditEntry {
         id,
@@ -6218,12 +6218,12 @@ fn audit_log_shows_rows_that_open_their_numbered_lines() {
 #[test]
 fn members_and_invites_list_as_discords_pages_do() {
     use slint::Model;
-    use yapfast_core::{
+    use yappuccino_core::{
         chat::{
             GuildSettings, JoinMethod, ListedMember, RoleMember, ServerInvite, ServerSettingsPage,
             SettingsSection,
         },
-        yapfast_discord::ready::permission,
+        yappuccino_discord::ready::permission,
     };
     let (window, adapter, _directory) = discord_server_window_changed(
         permission::KICK_MEMBERS | permission::MANAGE_GUILD | permission::CREATE_INSTANT_INVITE,
@@ -6255,7 +6255,7 @@ fn members_and_invites_list_as_discords_pages_do() {
     // Members: a moderator joined three days ago, timed out, and someone
     // whose join Discord doesn't know.
     window.invoke_server_settings_section(7);
-    let now = yapfast_core::clock::now_ms();
+    let now = yappuccino_core::clock::now_ms();
     let member = |id: &str, name: &str, roles: &[&str], joined_by| ListedMember {
         person: RoleMember {
             id: id.into(),
@@ -6431,12 +6431,12 @@ fn delete_server_ends_the_owners_sidebar_and_asks_for_the_name() {
 #[test]
 fn emoji_and_stickers_show_as_discords_pages_do() {
     use slint::Model;
-    use yapfast_core::{
+    use yappuccino_core::{
         chat::{
             GuildSettings, RoleMember, ServerEmoji, ServerSettingsPage, ServerSticker,
             SettingsSection, StickerForm,
         },
-        yapfast_discord::ready::permission,
+        yappuccino_discord::ready::permission,
     };
     let (window, adapter, _directory) =
         discord_server_window_changed(permission::CREATE_GUILD_EXPRESSIONS, |_, _| {});
@@ -6574,9 +6574,9 @@ fn emoji_and_stickers_show_as_discords_pages_do() {
 #[cfg(feature = "discord")]
 fn roles_lock_what_ranks_above_her_and_the_permissions_she_lacks() {
     use slint::Model;
-    use yapfast_core::{
+    use yappuccino_core::{
         chat::{RoleDetail, ServerRoles, ServerSettingsPage, SettingsSection},
-        yapfast_discord::ready::permission,
+        yappuccino_discord::ready::permission,
     };
     // She holds Staff, which may kick.
     let (window, adapter, _directory) =
@@ -6673,7 +6673,7 @@ fn roles_lock_what_ranks_above_her_and_the_permissions_she_lacks() {
 #[cfg(feature = "discord")]
 fn the_two_factor_prompt_offers_discords_methods() {
     use slint::Model;
-    use yapfast_core::chat::MfaMethod;
+    use yappuccino_core::chat::MfaMethod;
     let (window, adapter, _directory) = discord_server_window_granting(0);
     {
         let mut adapter = adapter.borrow_mut();
@@ -6723,10 +6723,10 @@ fn edit_profile_opens_the_main_profile_editor() {
         let mut adapter = adapter.borrow_mut();
         adapter.app.apply(Event::OwnProfile {
             server: None,
-            result: Ok(yapfast_core::chat::OwnProfile {
+            result: Ok(yappuccino_core::chat::OwnProfile {
                 name: "Alice".into(),
                 accent: Some(0x112233),
-                fallback: yapfast_core::chat::Profile {
+                fallback: yappuccino_core::chat::Profile {
                     name: "alice".into(),
                     handle: "alice".into(),
                     ..Default::default()
@@ -6801,9 +6801,9 @@ fn a_theme_paints_the_window_and_the_mentions_in_its_rows() {
     let message = ChatMessage {
         body: "hi @Bob".into(),
         formatted: true,
-        mentions: vec![yapfast_core::mention::Mentioned {
+        mentions: vec![yappuccino_core::mention::Mentioned {
             text: "@Bob".into(),
-            target: yapfast_core::mention::Target::User("2".into()),
+            target: yappuccino_core::mention::Target::User("2".into()),
             color: None,
             at: vec![3],
         }],
@@ -6853,7 +6853,7 @@ fn a_chosen_theme_is_kept_and_survives_a_window_made_again() {
     assert_eq!(theme::Theme::shown(&again), nord);
     assert_eq!(again.get_theme_id(), "nord");
 
-    // An id Yapfast doesn't know changes nothing, and a stored one it no longer
+    // An id Yappuccino doesn't know changes nothing, and a stored one it no longer
     // has shows Yap.
     again.invoke_choose_theme("missing".into());
     assert_eq!(theme::Theme::shown(&again), nord);
@@ -6934,7 +6934,7 @@ fn a_custom_theme_keeps_its_colours_by_name_and_falls_back_to_its_base() {
         custom
     );
 
-    // A base Yapfast doesn't know is Yap.
+    // A base Yappuccino doesn't know is Yap.
     let unknown: theme::Custom =
         serde_json::from_value(serde_json::json!({ "base": "gone" })).unwrap();
     assert_eq!((unknown.base, unknown.theme), ("yap", theme::YAP));
@@ -7210,8 +7210,8 @@ fn the_thread_beside_keeps_its_rows_when_a_new_layout_builds_them_again() {
 #[cfg(feature = "discord")]
 #[test]
 fn requests_list_someone_once_with_their_message() {
-    use yapfast_core::chat::{ChatRoom, FriendRequest, Reacts, RequestPreview};
-    use yapfast_core::network::Network;
+    use yappuccino_core::chat::{ChatRoom, FriendRequest, Reacts, RequestPreview};
+    use yappuccino_core::network::Network;
     let request = |id: &str, name: &str, incoming, spam| FriendRequest {
         id: id.into(),
         name: name.into(),
@@ -7340,9 +7340,9 @@ fn join_a_server_shows_the_invites_server_and_a_link_opens_it() {
     assert_eq!(prompt.status, "Looking up the invite...");
 
     let mut adapter = adapter.borrow_mut();
-    adapter.app.state.join = Some(yapfast_core::application::JoinDialog {
+    adapter.app.state.join = Some(yappuccino_core::application::JoinDialog {
         code: Some("abc".into()),
-        preview: Some(yapfast_core::chat::InvitePreview {
+        preview: Some(yappuccino_core::chat::InvitePreview {
             code: "abc".into(),
             server: "discord:20".into(),
             name: "Builders".into(),
@@ -7383,7 +7383,7 @@ fn a_handed_link_waits_for_the_open_dialog() {
     );
     let shown = query(&adapter);
     assert!(shown.is_some());
-    // Another app hands Yapfast a link to a different application while
+    // Another app hands Yappuccino a link to a different application while
     // the dialog is open: an Authorize click is still for the first.
     {
         let mut adapter = adapter.borrow_mut();
@@ -7404,8 +7404,8 @@ fn a_handed_link_waits_for_the_open_dialog() {
 #[test]
 #[cfg(feature = "discord")]
 fn authorizing_an_app_says_what_it_asks_for_and_where_it_goes() {
-    use yapfast_core::application::OAuthDialog;
-    use yapfast_core::chat::{OAuthGuild, OAuthPreview};
+    use yappuccino_core::application::OAuthDialog;
+    use yappuccino_core::chat::{OAuthGuild, OAuthPreview};
     let (window, adapter, _directory) = discord_server_window();
     adapter.borrow_mut().refresh(&window);
     // A plain bot link is the dialog's, not the browser's.
@@ -7545,7 +7545,7 @@ fn discord_links_open_channels_messages_and_profiles_here() {
 
 #[test]
 fn a_card_of_components_shows_headings_files_and_only_link_buttons_working() {
-    use yapfast_core::chat::{
+    use yappuccino_core::chat::{
         Attachment, ButtonStyle, Card, CardButton as Button, CardRow as Row, Placement,
     };
     i_slint_backend_testing::init_no_event_loop();
@@ -7615,7 +7615,7 @@ fn headings_in_fenced_code_stay_as_typed() {
     let levels: Vec<_> = blocks.iter().map(|block| block.level).collect();
     assert_eq!(levels, [5, 2]);
     assert_eq!(
-        i_slint_core::yapfast_selection::plain(&blocks[0].text),
+        i_slint_core::yappuccino_selection::plain(&blocks[0].text),
         "# not a heading"
     );
 }
@@ -7642,7 +7642,7 @@ fn a_message_shows_its_headings_quotes_and_code_apart() {
             (
                 block.level,
                 block.quoted,
-                i_slint_core::yapfast_selection::plain(&block.text),
+                i_slint_core::yappuccino_selection::plain(&block.text),
             )
         })
         .collect();
@@ -7675,7 +7675,7 @@ fn text_alone_shows_as_one() {
     i_slint_backend_testing::init_no_event_loop();
     let row = message_row_plain(&formatted("plain **text**\n- and a list"));
     assert_eq!(row.blocks.row_count(), 0);
-    assert!(i_slint_core::yapfast_selection::plain(&row.styled).starts_with("plain text\n"));
+    assert!(i_slint_core::yappuccino_selection::plain(&row.styled).starts_with("plain text\n"));
 }
 
 #[test]
@@ -7685,7 +7685,7 @@ fn text_beside_a_heading_keeps_its_formatting_and_blank_lines() {
     let plain: Vec<_> = row
         .blocks
         .iter()
-        .map(|block| i_slint_core::yapfast_selection::plain(&block.text))
+        .map(|block| i_slint_core::yappuccino_selection::plain(&block.text))
         .collect();
     assert_eq!(plain, ["Title", "\u{a0}\nbold\n---"]);
 }
@@ -7699,7 +7699,7 @@ fn html_in_a_block_shows_as_typed() {
     let row = message_row_plain(&formatted(body));
     let last = row.blocks.iter().last().unwrap();
     assert_eq!(
-        i_slint_core::yapfast_selection::plain(&last.text),
+        i_slint_core::yappuccino_selection::plain(&last.text),
         "<font color=\"#ff0000\">red</font>"
     );
 }
@@ -7709,9 +7709,9 @@ fn a_mention_in_a_quote_still_links() {
     i_slint_backend_testing::init_no_event_loop();
     let mut message = formatted("# Hi\n> and @Bob");
     let plain = message_row_plain(&message);
-    message.mentions = vec![yapfast_core::mention::Mentioned {
+    message.mentions = vec![yappuccino_core::mention::Mentioned {
         text: "@Bob".into(),
-        target: yapfast_core::mention::Target::User("2".into()),
+        target: yappuccino_core::mention::Target::User("2".into()),
         color: None,
         at: vec![message.body.find('@').unwrap()],
     }];
@@ -7719,7 +7719,7 @@ fn a_mention_in_a_quote_still_links() {
     let quote = |row: &MessageRow| row.blocks.row_data(1).unwrap().text;
     assert!(quote(&plain) != quote(&mentioned));
     assert_eq!(
-        i_slint_core::yapfast_selection::plain(&quote(&mentioned)),
+        i_slint_core::yappuccino_selection::plain(&quote(&mentioned)),
         "and @Bob"
     );
 }
@@ -7747,15 +7747,15 @@ fn spoilers_count_on_across_blocks() {
 fn an_embed_shows_headings_and_code_in_its_description_and_fields() {
     i_slint_backend_testing::init_no_event_loop();
     let message = ChatMessage {
-        embeds: vec![yapfast_core::chat::Embed {
+        embeds: vec![yappuccino_core::chat::Embed {
             description: "## Status\n```\nall good\n```".into(),
             fields: vec![
-                yapfast_core::chat::EmbedField {
+                yappuccino_core::chat::EmbedField {
                     name: "Plain".into(),
                     value: "just **text**".into(),
                     inline: false,
                 },
-                yapfast_core::chat::EmbedField {
+                yappuccino_core::chat::EmbedField {
                     name: "Quoted".into(),
                     value: "> said".into(),
                     inline: false,
@@ -7780,7 +7780,7 @@ fn an_embed_shows_headings_and_code_in_its_description_and_fields() {
         .collect();
     assert_eq!(fields[0].value_blocks.row_count(), 0);
     assert_eq!(
-        i_slint_core::yapfast_selection::plain(&fields[0].value),
+        i_slint_core::yappuccino_selection::plain(&fields[0].value),
         "just text"
     );
     assert!(fields[1].value_blocks.row_data(0).unwrap().quoted);
@@ -7802,7 +7802,7 @@ fn a_found_message_shows_its_blocks_with_spoilers_hidden() {
     let plain: Vec<_> = row
         .blocks
         .iter()
-        .map(|block| i_slint_core::yapfast_selection::plain(&block.text))
+        .map(|block| i_slint_core::yappuccino_selection::plain(&block.text))
         .collect();
     assert_eq!(plain, ["Plans", "meet at (spoiler)"]);
 }
@@ -7868,7 +7868,7 @@ fn resizing_the_window_carries_the_pickers_room_with_the_composer() {
 fn the_picker_draws_the_emoji_it_shows_as_pictures_of_the_grids_size() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -7908,7 +7908,7 @@ fn the_picker_draws_the_emoji_it_shows_as_pictures_of_the_grids_size() {
 fn the_picker_lists_what_the_account_uses_for_a_message_or_a_reaction() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -7916,7 +7916,7 @@ fn the_picker_lists_what_the_account_uses_for_a_message_or_a_reaction() {
     )
     .unwrap();
     bind_callbacks(&window, &adapter);
-    adapter.borrow_mut().app.state.discord_emojis = yapfast_core::application::DiscordEmojiLists {
+    adapter.borrow_mut().app.state.discord_emojis = yappuccino_core::application::DiscordEmojiLists {
         favorites: vec!["skull_crossbones".into()],
         frequent: vec!["joy".into()],
         reactions: vec!["100".into()],
@@ -7926,7 +7926,7 @@ fn the_picker_lists_what_the_account_uses_for_a_message_or_a_reaction() {
         let cells = window.get_emoji_rows().row_data(row).unwrap().cells;
         cells.row_data(0).unwrap().key
     };
-    window.set_react_item("yapfast:composer".into());
+    window.set_react_item("yappuccino:composer".into());
     window.invoke_emoji_search("".into());
     assert_eq!(
         window.get_emoji_rows().row_data(0).unwrap().heading,
@@ -7952,7 +7952,7 @@ fn the_picker_lists_what_the_account_uses_for_a_message_or_a_reaction() {
 fn resizing_the_grid_fills_the_rows_it_is_scrolled_to() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -7995,7 +7995,7 @@ fn resizing_the_grid_fills_the_rows_it_is_scrolled_to() {
 fn only_the_rows_the_picker_shows_are_drawn() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -8028,7 +8028,7 @@ fn only_the_rows_the_picker_shows_are_drawn() {
 fn rows_far_from_those_the_picker_shows_let_go_of_their_pictures() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -8072,7 +8072,7 @@ fn rows_far_from_those_the_picker_shows_let_go_of_their_pictures() {
 fn a_closed_picker_keeps_no_grid_and_builds_it_as_it_opens() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -8148,7 +8148,7 @@ fn the_picker_asks_for_the_pictures_of_the_custom_emoji_it_shows() {
 #[test]
 fn the_emoji_grid_fits_the_width_the_picker_shows_at() {
     // The widest row of the grid, which is the emoji a row fit.
-    fn widest(window: &YapfastWindow) -> usize {
+    fn widest(window: &YappuccinoWindow) -> usize {
         let rows = window.get_emoji_rows();
         (0..rows.row_count())
             .map(|index| rows.row_data(index).unwrap().cells.row_count())
@@ -8157,7 +8157,7 @@ fn the_emoji_grid_fits_the_width_the_picker_shows_at() {
     }
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -8340,9 +8340,9 @@ fn dragging_the_pickers_left_edge_widens_it_no_further_than_the_server_list() {
 }
 
 #[test]
-fn yapfast_navigation_matches_the_reference_column_width() {
+fn yappuccino_navigation_matches_the_reference_column_width() {
     i_slint_backend_testing::init_no_event_loop();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     // The supplied 2560px reference places chat at x=376: 72px rail + 304px list.
     assert_eq!(window.get_sidebar_width(), 304.0);
     assert_eq!(window.get_sidebar_shown(), 304.0);
@@ -8355,9 +8355,9 @@ fn yapfast_navigation_matches_the_reference_column_width() {
 }
 
 #[test]
-fn yapfast_defaults_to_bonfire_and_keeps_saved_appearance_choices() {
+fn yappuccino_defaults_to_bonfire_and_keeps_saved_appearance_choices() {
     i_slint_backend_testing::init_no_event_loop();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     Layout::default().apply_appearance(&window);
     assert_eq!(window.get_theme_id(), "bonfire");
     assert_eq!(window.get_sidebar_width(), 304.0);
@@ -8373,10 +8373,10 @@ fn yapfast_defaults_to_bonfire_and_keeps_saved_appearance_choices() {
 }
 
 #[test]
-fn yapfast_caption_buttons_keep_the_existing_window_actions() {
+fn yappuccino_caption_buttons_keep_the_existing_window_actions() {
     use slint::platform::{PointerEventButton, WindowEvent};
     i_slint_backend_testing::init_no_event_loop();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     window.set_own_title_bar(true);
     let actions = Rc::new(RefCell::new(Vec::new()));
     let seen = actions.clone();
@@ -8414,7 +8414,7 @@ fn yapfast_caption_buttons_keep_the_existing_window_actions() {
 }
 
 #[test]
-fn yapfast_inset_account_card_keeps_settings_and_audio_actions_reachable() {
+fn yappuccino_inset_account_card_keeps_settings_and_audio_actions_reachable() {
     use slint::platform::{PointerEventButton, WindowEvent};
     let window = one_message("Synthetic message");
     window.global::<ClientStyle>().set_enabled(true);
@@ -8452,7 +8452,7 @@ fn yapfast_inset_account_card_keeps_settings_and_audio_actions_reachable() {
 }
 
 #[test]
-fn yapfast_docked_profile_opens_the_existing_full_profile() {
+fn yappuccino_docked_profile_opens_the_existing_full_profile() {
     use slint::platform::{PointerEventButton, WindowEvent};
     let window = one_message("Synthetic message");
     window.global::<ClientStyle>().set_enabled(true);
@@ -8486,7 +8486,7 @@ fn yapfast_docked_profile_opens_the_existing_full_profile() {
 }
 
 #[test]
-fn yapfast_dm_heading_keeps_friend_and_new_message_actions() {
+fn yappuccino_dm_heading_keeps_friend_and_new_message_actions() {
     use slint::platform::{PointerEventButton, WindowEvent};
     let window = one_message("Synthetic message");
     window.global::<ClientStyle>().set_enabled(true);
@@ -8532,10 +8532,10 @@ fn yapfast_dm_heading_keeps_friend_and_new_message_actions() {
 }
 
 #[test]
-fn yapfast_settings_navigation_and_header_keep_the_existing_actions() {
+fn yappuccino_settings_navigation_and_header_keep_the_existing_actions() {
     use slint::platform::{Key, PointerEventButton, WindowEvent};
     i_slint_backend_testing::init_no_event_loop();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     window.set_own_title_bar(true);
     window.set_account_name("Alex".into());
     window.set_account_initial("A".into());
@@ -8605,7 +8605,7 @@ fn yapfast_settings_navigation_and_header_keep_the_existing_actions() {
 }
 
 #[test]
-fn yapfast_account_popover_copies_its_id_and_opens_settings_without_changing_status() {
+fn yappuccino_account_popover_copies_its_id_and_opens_settings_without_changing_status() {
     use slint::platform::{PointerEventButton, WindowEvent};
     let window = one_message("Synthetic message");
     window.global::<ClientStyle>().set_enabled(true);
@@ -8646,10 +8646,10 @@ fn yapfast_account_popover_copies_its_id_and_opens_settings_without_changing_sta
 }
 
 #[test]
-fn yapfast_server_rail_keeps_home_pinned_without_a_duplicate_separator() {
+fn yappuccino_server_rail_keeps_home_pinned_without_a_duplicate_separator() {
     use slint::platform::{PointerEventButton, WindowEvent};
     i_slint_backend_testing::init_no_event_loop();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     window.set_workspace(true);
     let mut rows = vec![ServerRow {
         divider: true,
@@ -8723,9 +8723,9 @@ fn yapfast_server_rail_keeps_home_pinned_without_a_duplicate_separator() {
 }
 
 #[test]
-fn yapfast_typography_is_compact_and_preserves_explicit_text_sizes() {
+fn yappuccino_typography_is_compact_and_preserves_explicit_text_sizes() {
     i_slint_backend_testing::init_no_event_loop();
-    let window = yapfast::window().unwrap();
+    let window = yappuccino::window().unwrap();
     assert_eq!(window.global::<ClientStyle>().get_font_family(), "DM Sans");
     assert_eq!(window.get_message_font_size(), 15.);
     window.set_text_size(0);
@@ -8746,7 +8746,7 @@ fn yapfast_typography_is_compact_and_preserves_explicit_text_sizes() {
 /// renderer: the testing backend here has no option to choose Skia.
 #[test]
 #[ignore = "manual renderer benchmark with the Skia testing feature"]
-fn yapfast_server_rail_scroll_snapshot_benchmark() {
+fn yappuccino_server_rail_scroll_snapshot_benchmark() {
     use slint::platform::WindowEvent;
     use std::time::Instant;
     slint::platform::set_platform(Box::new(i_slint_backend_testing::TestingBackend::new(
@@ -8756,7 +8756,7 @@ fn yapfast_server_rail_scroll_snapshot_benchmark() {
         },
     )))
     .unwrap();
-    let window = yapfast::window().unwrap();
+    let window = yappuccino::window().unwrap();
     Layout::default().apply_appearance(&window);
     let directory = tempfile::tempdir().unwrap();
     let adapter = Adapter::new(
@@ -8802,7 +8802,7 @@ fn yapfast_server_rail_scroll_snapshot_benchmark() {
     for _ in 0..10 {
         window.window().take_snapshot().unwrap();
     }
-    if let Some(path) = std::env::var_os("YAPFAST_REVIEW_SNAPSHOT") {
+    if let Some(path) = std::env::var_os("YAPPUCCINO_REVIEW_SNAPSHOT") {
         let frame = window.window().take_snapshot().unwrap();
         image::save_buffer(
             path,
@@ -8883,7 +8883,7 @@ fn an_avatars_colour_is_worked_out_once_it_has_arrived() {
 fn a_long_message_folds_until_show_more_only_with_the_switch_on() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
-    let window = YapfastWindow::new().unwrap();
+    let window = YappuccinoWindow::new().unwrap();
     let adapter = Adapter::new(
         Arc::new(BackgroundRuntime::new().unwrap()),
         directory.path().into(),
@@ -8898,7 +8898,7 @@ fn a_long_message_folds_until_show_more_only_with_the_switch_on() {
         .window()
         .set_size(slint::LogicalSize::new(1120., 760.));
     // A frame or so: the list lays its rows out as time moves on.
-    let settle = |window: &YapfastWindow| {
+    let settle = |window: &YappuccinoWindow| {
         for _ in 0..5 {
             i_slint_backend_testing::mock_elapsed_time(Duration::from_millis(1));
             slint::platform::update_timers_and_animations();
@@ -8953,7 +8953,7 @@ fn a_long_message_folds_until_show_more_only_with_the_switch_on() {
 
 #[test]
 fn a_servers_voice_card_lists_who_is_in_each_channel() {
-    use yapfast_core::chat::{ChatRoom, ChatServer, Reacts, VoicePerson};
+    use yappuccino_core::chat::{ChatRoom, ChatServer, Reacts, VoicePerson};
     let person = |id: &str| VoicePerson {
         id: id.into(),
         name: id.into(),

@@ -2,7 +2,7 @@
 
 Bug fixes and features are both welcome. Before a large change, say what you're
 building in an issue or on the
-[Yapfast Discord server](https://yapfast.com/discord-invite), so two people
+[Yappuccino Discord server](https://yapfast.com/discord-invite), so two people
 don't build the same thing. A small fix can go straight to a pull request.
 
 ## Build and test
@@ -36,7 +36,7 @@ Matrix shares.
 
 `scripts/test-fake-discord` runs the Discord service tests against
 `testing/fake_discord.ts`, and needs Bun, Python and curl. Run it when you change
-`crates/yapfast-discord`, `discord_text` or the fake; while you work, name the
+`crates/yappuccino-discord`, `discord_text` or the fake; while you work, name the
 area you changed, as `scripts/test-fake-discord forum`.
 
 If you can't run a script (on Windows, say), run what you can of its steps by hand
@@ -54,18 +54,18 @@ it layer by layer. Look up the endpoint, payload or gateway event on
 https://docs.discord.food, and give the fake the same shape.
 
 To see a Discord change, run your build against the fake, with the fake in one
-terminal and Yapfast in another:
+terminal and Yappuccino in another:
 
 ```sh
 bun testing/fake_discord.ts --port 18400
-YAPFAST_DISCORD_TEST_SERVER=http://127.0.0.1:18400 cargo run --locked --profile fast -- --data-dir .local/fake-discord
+YAPPUCCINO_DISCORD_TEST_SERVER=http://127.0.0.1:18400 cargo run --locked --profile fast -- --data-dir .local/fake-discord
 ```
 
-`YAPFAST_DISCORD_TEST_SERVER` makes Yapfast use a test token kept in memory and
+`YAPPUCCINO_DISCORD_TEST_SERVER` makes Yappuccino use a test token kept in memory and
 leave the system's credential store alone. Keep it on every run: without it,
-Yapfast signs in to any Discord account linked on your machine. `--data-dir`
+Yappuccino signs in to any Discord account linked on your machine. `--data-dir`
 keeps the run's settings and cache apart from your own, and lets it run beside a
-Yapfast you already have open. Add `YAPFAST_DISCORD_TEST_UNLINKED=1` to go through
+Yappuccino you already have open. Add `YAPPUCCINO_DISCORD_TEST_UNLINKED=1` to go through
 linking an account against the fake. The comment at the top of
 `testing/fake_discord.ts` lists its options, such as `--servers 3` and `--dms 50`.
 
@@ -110,10 +110,10 @@ quality, default to the cheaper setting and put the heavier one behind a switch.
   or another contributor.
 
 Your contribution is licensed under the [GPL, version 3 or later](LICENSE), as
-the rest of Yapfast is.
+the rest of Yappuccino is.
 
 ## Reporting a bug
 
-Give the Yapfast version, your system and the steps that show the bug, and add a
+Give the Yappuccino version, your system and the steps that show the bug, and add a
 screenshot or video if it's visual. For voice and streaming problems, include
 your graphics card and the settings you used.

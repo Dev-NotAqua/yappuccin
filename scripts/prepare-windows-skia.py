@@ -145,7 +145,7 @@ def open_https(url):
             request_path += '?' + parsed.query
         try:
             connection.request('GET', request_path,
-                               headers={'User-Agent': 'Yapfast Skia preparation'})
+                               headers={'User-Agent': 'Yappuccino Skia preparation'})
             response = connection.getresponse()
         except (OSError, http.client.HTTPException):
             connection.close()
@@ -186,6 +186,24 @@ def fetch_to_file(url, temporary, label):
     return value.hexdigest()
 
 
+def fetch_with_retries(url, temporary, label, attempts=6):
+    # Googlesource's archive endpoints occasionally answer 503 under load; a
+    # short backoff turns that into a few seconds of waiting, not a failed
+    # preparation run. Hash mismatches and 404s still fail immediately.
+    delays = (2, 5, 10, 20, 30)
+    for attempt in range(attempts):
+        try:
+            return fetch_to_file(url, temporary, label)
+        except SystemExit as error:
+            transient = any(f'HTTP {code}' in str(error)
+                            for code in (429, 500, 502, 503, 504))
+            if not transient or attempt == attempts - 1:
+                raise
+            delay = delays[min(attempt, len(delays) - 1)]
+            say(f'Transient download failure for {label}; retrying in {delay}s')
+            time.sleep(delay)
+
+
 def download(url, destination, expected_hash, label):
     destination.parent.mkdir(parents=True, exist_ok=True)
     expected_hash = pinned_hex(expected_hash)
@@ -200,7 +218,7 @@ def download(url, destination, expected_hash, label):
     say('Downloading ' + label)
     temporary = destination.with_name(destination.name + '.part')
     temporary.unlink(missing_ok=True)
-    actual = fetch_to_file(url, temporary, label)
+    actual = fetch_with_retries(url, temporary, label)
     if actual != expected_hash:
         temporary.unlink(missing_ok=True)
         fail(f'{label} SHA-256 mismatch: expected {expected_hash}, got {actual}')
@@ -367,7 +385,7 @@ def download_nix_archive(url, destination, expected_hash, label, *, hash_strip_r
     say('Downloading ' + label)
     temporary = destination.with_name(destination.name + '.part')
     temporary.unlink(missing_ok=True)
-    archive_hash = fetch_to_file(url, temporary, label)
+    archive_hash = fetch_with_retries(url, temporary, label)
     actual = tar_nar_hash(temporary, strip_root=hash_strip_root)
     if actual != expected:
         temporary.unlink(missing_ok=True)
@@ -827,12 +845,12 @@ def run_native_prepare(raw, raw_hash, llvm):
     helper = ROOT / 'nix/prepare-skia-native.py'
     environment = dict(os.environ)
     environment.update({
-        'YAPFAST_SKIA_TARGET': 'windows',
-        'YAPFAST_SKIA_SOURCE': str(raw),
-        'YAPFAST_SKIA_OUTPUT': str(output),
-        'YAPFAST_SKIA_STATIC_SHA256': raw_hash,
-        'YAPFAST_SKIA_NM': str(llvm['nm']),
-        'YAPFAST_SKIA_OBJCOPY': str(llvm['objcopy']),
+        'YAPPUCCINO_SKIA_TARGET': 'windows',
+        'YAPPUCCINO_SKIA_SOURCE': str(raw),
+        'YAPPUCCINO_SKIA_OUTPUT': str(output),
+        'YAPPUCCINO_SKIA_STATIC_SHA256': raw_hash,
+        'YAPPUCCINO_SKIA_NM': str(llvm['nm']),
+        'YAPPUCCINO_SKIA_OBJCOPY': str(llvm['objcopy']),
         'PATH': str(llvm['bin']) + os.pathsep + os.environ.get('PATH', ''),
     })
     say('Renaming the JPEG table and checking the native archive with nix/prepare-skia-native.py')
@@ -840,7 +858,7 @@ def run_native_prepare(raw, raw_hash, llvm):
     if result.returncode:
         fail(f'nix/prepare-skia-native.py failed with exit code {result.returncode}; inspect the helper diagnostics above')
     prepared = output / PACKAGE
-    helper_stamp = output / 'yapfast-skia-native.json'
+    helper_stamp = output / 'yappuccino-skia-native.json'
     if not prepared.is_file() or not helper_stamp.is_file():
         fail('the native Skia helper returned without producing its archive and stamp')
     return prepared, helper_stamp
@@ -900,7 +918,7 @@ def run_application_build(cargo):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Build Yapfast\'s pinned static-CRT Windows Skia archive on native Windows.')
+    parser = argparse.ArgumentParser(description='Build Yappuccino\'s pinned static-CRT Windows Skia archive on native Windows.')
     parser.add_argument('--jobs', type=int, default=os.cpu_count() or 1,
                         help='maximum Ninja jobs (default: host CPU count)')
     modes = parser.add_mutually_exclusive_group()
@@ -930,7 +948,7 @@ def main():
     inputs = build_inputs(source, args.jobs, tools, gn_args, ninja_wrapper)
     raw = WORK / PACKAGE
     prepared = WORK / 'prepared' / PACKAGE
-    helper_stamp = WORK / 'prepared/yapfast-skia-native.json'
+    helper_stamp = WORK / 'prepared/yappuccino-skia-native.json'
     stamp_path = WORK / 'build.json'
     if existing_build_is_current(stamp_path, inputs, raw, prepared, helper_stamp):
         say('The prepared Skia archive matches every stamped input; nothing to rebuild')

@@ -8,7 +8,7 @@ watches someone, op 22 pauses and op 19 ends either. Discord answers with
 STREAM_CREATE, naming the RTC server, then STREAM_SERVER_UPDATE with an
 endpoint and token. The stream gets a voice connection of its own to that
 server, reusing the call's voice session id; a stream waits for that id too,
-if this account's voice state arrives after both answers. `yapfast_discord::stream` names
+if this account's voice state arrives after both answers. `yappuccino_discord::stream` names
 streams by key (`guild:{server}:{channel}:{user}`) and
 `Discord::{go_live, watch, end_stream, pause_stream}` run the signalling. Voice
 states carry `self_stream`, which shows as a LIVE badge beside the person.
@@ -21,35 +21,35 @@ stays watched in its tile after a click beside it. While the call is off
 screen, the large tile's stream or camera, or else the stream being watched,
 or this account's own, shows in a corner (`StreamPip`), as Discord's
 picture in picture does. STREAM_CREATE and STREAM_UPDATE name a stream's
-viewers in `viewer_ids`; Yapfast keeps them for the stream it shares and the one
+viewers in `viewer_ids`; Yappuccino keeps them for the stream it shares and the one
 it watches, and shows them over the stream (`ViewerStack`) and as a count in
 the voice panel; a click on it returns to the call. This account's
 own stream has a tile of its own, which opens large as others' do, without
 watching it through Discord: it shows the worker's preview.
 
-Capture runs in a worker process, `yapfast --stream-worker`, so its buffers take
+Capture runs in a worker process, `yappuccino --stream-worker`, so its buffers take
 memory only while sharing; the process exits when sharing stops. Playing a
 video file runs there too (`Job::Play`, `video_player`), which also keeps
 FFmpeg's reading of files people sent out of the window's process. Its
 frames carry their time, which the seek bar shows.
 `stream_worker` starts it with one job as a JSON line and reads its reports
-back. On Linux it starts `/proc/self/exe`, the running Yapfast, since Yapfast's path
+back. On Linux it starts `/proc/self/exe`, the running Yappuccino, since Yappuccino's path
 names a deleted file once a rebuild or update replaces it. Frames reach the UI through `frames`, a triple buffer in a memory-mapped
 file in the runtime directory. The file is unlinked once the worker opens it.
 Windows won't delete a mapped file, so there it's a temporary file that
 Windows deletes once both processes close it.
-The worker's standard error goes to Yapfast's log file. If its output ends
+The worker's standard error goes to Yappuccino's log file. If its output ends
 without an `ended` report, as when it crashes, the popup says "Screen sharing
-stopped unexpectedly." and Yapfast logs a warning, "the stream worker ended
+stopped unexpectedly." and Yappuccino logs a warning, "the stream worker ended
 without saying why", with how it exited (`exit="signal=11 (SIGSEGV)"` on Unix,
 the exit code on Windows), the job (`share`, `watch`, `play` or `glance`), the
 encoder's `engine` and `codec` from the last stats a share reported, and the
 picture `size` (or "up to" the job's bounds before one was reported).
 `a_worker_that_dies_says_how` runs a worker script that kills itself, through
-`YAPFAST_STREAM_WORKER`, which names the program to start instead of Yapfast.
+`YAPPUCCINO_STREAM_WORKER`, which names the program to start instead of Yappuccino.
 On Linux, libwebrtc's capturer asks the screen sharing portal what to share.
 The portal answers over D-Bus through GLib, so the worker runs GLib's main
-context while it waits for the dialog and for frames. Yapfast tells Discord it's
+context while it waits for the dialog and for frames. Yappuccino tells Discord it's
 live only once frames flow, so a cancelled dialog shares nothing. Windows has
 no such dialog, so the share menu lists the screens and windows libwebrtc's
 capturers find (`stream_worker::shareable`), and the worker captures the one
@@ -60,7 +60,7 @@ ending the stream: the worker starts a second capturer (on Linux, through the
 dialog again) and keeps sending the first one's frames. When the second one
 gives a frame, it replaces the first. If the dialog is cancelled, the first
 one goes on. The encoder takes the new size on the same connection.
-`YAPFAST_STREAM_TEST_PATTERN=1` shares moving colour bars instead of a screen.
+`YAPPUCCINO_STREAM_TEST_PATTERN=1` shares moving colour bars instead of a screen.
 
 A camera can be shared too, such as OBS's virtual camera (v4l2loopback on
 Linux, its DirectShow filter on Windows). The share menu lists the cameras
@@ -72,21 +72,21 @@ capture module (`camera::Camera::open_at`), asking for the stream's
 resolution and frame rate rather than the call camera's 720p at 30, and
 copies each picture into one buffer it keeps for the next before the encoder
 takes it. Switching between a camera and a screen works as between two
-screens. `YAPFAST_CAMERA_TEST_PATTERN=1` lists a test pattern camera to share.
+screens. `YAPPUCCINO_CAMERA_TEST_PATTERN=1` lists a test pattern camera to share.
 
-Once Discord has started the stream, Yapfast unpauses it with op 22, as
+Once Discord has started the stream, Yappuccino unpauses it with op 22, as
 Discord-video-stream does, and the worker gets its server and sends the video
-there (`yapfast_discord::stream_connection`). The connection is a call's
+there (`yappuccino_discord::stream_connection`). The connection is a call's
 (`voice_connection.rs`), on voice gateway version 8 as Discord's clients use:
 heartbeats acknowledge the last sequence number, and binary DAVE messages start
 with one. It identifies with the stream's RTC server and `video: true`,
 discovers its address, then uses `aead_aes256_gcm_rtpsize` transport
-encryption. Yapfast offers H264, and AV1 then H265 before it where the GPU
+encryption. Yappuccino offers H264, and AV1 then H265 before it where the GPU
 encodes them ([Encoding on the GPU](#encoding-on-the-gpu)), and announces its
 size with op 12, again whenever someone connects. H264 frames come from x264 (`vendor/x264-src`,
 built from source) through `native/h264.c`, with a keyframe at least every 3 s
 and whenever RTCP asks for one; [Choosing the H264
-encoder](#choosing-the-h264-encoder) says how it's set up and why. Yapfast also
+encoder](#choosing-the-h264-encoder) says how it's set up and why. Yappuccino also
 has VP8 (`native/vp8.c`, still built and tested); every Go Live sender known to
 work sends H264. H264 goes as whole NAL units or FU-A fragments, H265 as whole
 units or FU fragments (RFC 7798), and AV1 in AOM's [RTP payload
@@ -100,7 +100,7 @@ frame's last OBU without its size, its trailer after it, and receivers keep
 it so, since DAVE's decryptor reads the frame as it was sealed. Past a
 frame's first 8 packets, 4 go out
 each millisecond: a 1080p keyframe of 200 sent at once can overflow buffers on
-the way. Yapfast keeps the last 2048 video packets, and when a viewer reports
+the way. Yappuccino keeps the last 2048 video packets, and when a viewer reports
 some lost with a generic NACK (RTCP 205), resends up to 128 of them as
 Discord's client does: on the RTX SSRC with RTX's payload type and numbering,
 the original sequence number before the payload (RFC 4588), and the repaired
@@ -110,9 +110,9 @@ out every second.
 Before sharing, the share button's menu picks a resolution and a frame rate, as
 Discord's client asks for them: 720p, 1080p or the screen's own size (up to
 4K), at 15, 30 or 60 fps. Its "Higher quality" checkbox, which Discord's client
-doesn't have, has x264 work harder on each frame. Yapfast remembers the choice
+doesn't have, has x264 work harder on each frame. Yappuccino remembers the choice
 beside the chosen audio devices (`devices.json`), and starts at 1080p30 without
-it. Larger screens, and those of another shape, are scaled down to fit. Yapfast
+it. Larger screens, and those of another shape, are scaled down to fit. Yappuccino
 sends them at the bitrates Discord's client uses: at most 3.5 Mbit/s up to 720p
 and 9 Mbit/s above, the cap op 12 announces, with the frame rate as its
 `max_framerate`. Like Discord's client it also follows the server's bandwidth
@@ -124,21 +124,21 @@ captured frames to I420 with libyuv, scales them with libyuv's filtering
 scaler, and encodes those; the preview is the same picture scaled down to 720p.
 
 Discord shows a still of each stream, in the call and to people outside it.
-Like Discord's client, Yapfast makes one once the stream connects and the
+Like Discord's client, Yappuccino makes one once the stream connects and the
 picture isn't black any more (a screen is black until what's shared draws),
 then every 5 minutes: the picture scaled down to fit 512 by 288, a JPEG at
-quality 92. The worker reports it as a data URI, and Yapfast uploads it with
+quality 92. The worker reports it as a data URI, and Yappuccino uploads it with
 `POST /streams/{stream key}/preview`. A failed upload is tried again a minute
 later, up to three times; a newer still replaces an upload not done yet, and
 stopping the share cancels it.
 
 A shared screen carries the sound every other application plays, as Discord's
-client and Vesktop share it; Yapfast's own sound stays out, so viewers never hear
+client and Vesktop share it; Yappuccino's own sound stays out, so viewers never hear
 the call echoed back (`stream_audio`, with `audio_io::others` hearing the
 applications). On Linux, PulseAudio or PipeWire's
 PulseAudio server monitors each application's playback stream on its own
 (`pa_stream_set_monitor_stream`, as pavucontrol's level meters do), and
-streams from Yapfast's processes are skipped by process id. So are other Discord
+streams from Yappuccino's processes are skipped by process id. So are other Discord
 clients' (Discord, Vesktop, Equibop, WebCord, Legcord, ArmCord, by application
 name or program): with one of them in the call too, its sound echoed the call
 back to the people in it. The worker mixes them every 20 ms, waiting until an
@@ -147,11 +147,11 @@ Opus at 64 kbit/s, what Discord's client gives a stream's sound. Frames go out
 as plain Opus RTP on the stream's audio SSRC, DAVE-encrypted, with sender
 reports, and op 5 marks them as shared sound (speaking flag 2). Nothing is
 sent while no application plays. On Windows, WASAPI's process loopback hears
-everything but Yapfast's own process tree as one stream, from Windows 10's 2004
+everything but Yappuccino's own process tree as one stream, from Windows 10's 2004
 update on; it can't leave other Discord clients out. Other systems share
 video only for now, and so does the test pattern. Two ignored tests check the capture against the
 machine's sound server with a quiet tone: another process's is heard, and
-Yapfast's own is not.
+Yappuccino's own is not.
 
 Each video packet carries the one-byte extensions a Discord client sends: a
 transport-wide sequence number (id 5), playout delay (6), screen content
@@ -163,12 +163,12 @@ server drops every packet, and viewers time out with error 2012.
 DAVE follows songbird's handshake (`dave.rs`) and encrypts each frame once the
 group is ready. A stream's MLS group isn't the voice channel's: its id is the
 RTC server id minus one, which Discord-video-stream found too. If the server's
-proposals or commits name another group, Yapfast moves to it. The vendored
+proposals or commits name another group, Yappuccino moves to it. The vendored
 davey's `set_channel_id` keeps the key package already sent, so the streamer's
-welcome still opens. Yapfast accepts the people op 11 names into the group, and
+welcome still opens. Yappuccino accepts the people op 11 names into the group, and
 also those named in video attributes (op 12) or in the stream key.
 
-With `YAPFAST_LOG=debug`, Yapfast logs every 5 s while sharing what it sent and the
+With `YAPPUCCINO_LOG=debug`, Yappuccino logs every 5 s while sharing what it sent and the
 RTCP that came back (`stream sent`): receiver reports with the highest
 sequence number Discord's server got and its echo of our sender reports
 (`lsr`), its bitrate estimate (REMB), and keyframe requests, and each change
@@ -195,7 +195,7 @@ are frames while none has come yet, and after one the decoder was too far
 behind to take. The connection asks for a keyframe with a picture loss
 indication, at most every 500 ms. It sends a receiver report every second
 (packets lost, the highest received, and the streamer's last sender report
-echoed). With `YAPFAST_LOG=debug` it logs what it received every 5 s (`stream
+echoed). With `YAPPUCCINO_LOG=debug` it logs what it received every 5 s (`stream
 received`): packets out of order, resent, recovered, given up on, and keyframes
 asked for. The worker decodes with libvpx or with the FFmpeg H264 decoder in
 libwebrtc's archive (`native/decode.c`), AV1 with the dav1d in the same
@@ -210,11 +210,11 @@ sharing in another channel joins it first, once asked, and watches once the
 call is connected; Discord drops a watch sent before. The stream's sound, Opus
 on the streamer's audio SSRC, is DAVE-decrypted as audio and played by the
 worker through `audio_io.rs` on the call's speakers (`stream_audio::Player`),
-about 100 ms queued; being deafened silences it, which Yapfast tells the worker
-with a `hear` control. Yapfast's workers play as "Yapfast", which sharing
+about 100 ms queued; being deafened silences it, which Yappuccino tells the worker
+with a `hear` control. Yappuccino's workers play as "Yappuccino", which sharing
 leaves out, so a stream you watch never reaches one you share. Watching a
 stream from Discord's own client works: H264 with DAVE. Discord's client shows
-Yapfast's stream at 1080p with its sound, without the call's.
+Yappuccino's stream at 1080p with its sound, without the call's.
 
 The fake server (`testing/fake_discord.ts`) checks what a stream sends, without
 DAVE, and streams its recordings to viewers; its header lists the controls
@@ -288,14 +288,14 @@ than the one after it at the same bitrate. When the stream starts, the
 worker opens each to see that it opens, and keeps the first: an encoder
 FFmpeg has isn't enough, the GPU and its driver must encode the codec. There
 is no AV1 encoder on the processor, so with "Encode streams with the GPU"
-off, the stream offers H264 alone. Discord picks the codec Yapfast offers
+off, the stream offers H264 alone. Discord picks the codec Yappuccino offers
 first that every viewer's client decodes (op 4's `video_codec`), and when
 someone who can't decode it starts watching, switches the stream with op
-14; Yapfast then opens the other encoder and starts it with a keyframe,
+14; Yappuccino then opens the other encoder and starts it with a keyframe,
 dropping frames still in the old codec. When AV1 or H265 fails mid-stream,
-or doesn't open again for a new size or after a switch, Yapfast withdraws
+or doesn't open again for a new size or after a switch, Yappuccino withdraws
 it with its own op 14 `codecs`, marking it not to encode, and goes on in the
-next codec offered, H264 last. Another Yapfast watching keeps the stream in
+next codec offered, H264 last. Another Yappuccino watching keeps the stream in
 AV1 or H265. Which of Discord's own clients decode H265 and AV1 isn't
 checked yet.
 
@@ -307,7 +307,7 @@ before those have no AV1 encoder, so the stream offers H265 and H264. On an
 RX 7900 XTX with AMD's driver 32.0.31041.1004 on Windows, `native/hwenc.c`,
 built on its own with FFmpeg's Windows build, encoded with `av1_amf`,
 `h264_amf` and `hevc_amf`, forced keyframes and a bitrate change included,
-and dav1d decoded the AV1; a whole Yapfast hasn't run there yet, nor AV1 on
+and dav1d decoded the AV1; a whole Yappuccino hasn't run there yet, nor AV1 on
 Linux, NVIDIA's or Intel's. The packetizer was checked against libaom's AV1
 of the test recording, which dav1d decodes to the same pictures after the
 packets are put back together, and against DAVE, which decrypts it.
@@ -319,6 +319,6 @@ RTP can't carry, so viewers may see the extra rows at the bottom; sizes
 such as 1280x720 fit the blocks. See AMD's [alignment
 documentation](https://github.com/GPUOpen-LibrariesAndSDKs/AMF/wiki/AV1-Encoder#av1-specific-api)
 and [the issue about it](https://github.com/GPUOpen-LibrariesAndSDKs/AMF/issues/423).
-The Stream tab gives the size Yapfast encodes, before the rounding.
+The Stream tab gives the size Yappuccino encodes, before the rounding.
 
 Wine has no AMF runtime, so there AMF fails to open and x264 encodes.

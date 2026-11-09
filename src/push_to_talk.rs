@@ -1,8 +1,8 @@
 //! The push-to-talk key, held in any app: through the GlobalShortcuts portal
 //! on Wayland, XInput 2's raw key events on X11, and a low-level keyboard or
 //! mouse hook on Windows. Where none of these works, the key works while
-//! Yapfast's window has the focus, and settings say so. Each tells
-//! [`yapfast_core::push_to_talk::hold`] when the key goes down or comes up.
+//! Yappuccino's window has the focus, and settings say so. Each tells
+//! [`yappuccino_core::push_to_talk::hold`] when the key goes down or comes up.
 use std::sync::{
     Arc, Mutex,
     atomic::{AtomicBool, AtomicU32, Ordering},
@@ -16,7 +16,7 @@ use slint::winit_030::winit::{
     keyboard::{Key, KeyLocation, NamedKey, PhysicalKey},
     platform::scancode::PhysicalKeyExtScancode,
 };
-use yapfast_core::runtime::BackgroundRuntime;
+use yappuccino_core::runtime::BackgroundRuntime;
 
 /// Mouse buttons share the saved scan-code field, tagged above Windows' 16-bit
 /// scan codes so existing keyboard bindings keep their meaning.
@@ -180,7 +180,7 @@ pub enum Reach {
     /// In every app; with the shortcut the desktop gave it, in its own
     /// words, when it says.
     Everywhere(Option<String>),
-    /// Only while Yapfast's window has the focus, for this reason, which
+    /// Only while Yappuccino's window has the focus, for this reason, which
     /// the note goes on from.
     Focused(&'static str),
 }
@@ -189,7 +189,7 @@ impl Reach {
     /// What settings say under the key.
     pub fn note(&self) -> String {
         match self {
-            Reach::Asking => "Asking your desktop to let Yapfast use the key in every app...".into(),
+            Reach::Asking => "Asking your desktop to let Yappuccino use the key in every app...".into(),
             Reach::Everywhere(None) => "Hold the key in any app to talk.".into(),
             Reach::Everywhere(Some(shortcut)) if shortcut.is_empty() => {
                 "Your desktop hasn't allowed this shortcut yet. Approve it in your system's global shortcuts settings.".into()
@@ -198,7 +198,7 @@ impl Reach {
                 "Your desktop gave push to talk the shortcut {shortcut}. Hold it in any app to talk; change it in your system's global shortcuts settings."
             ),
             Reach::Focused(why) => format!(
-                "{why}, so push to talk works only while Yapfast's window is in front."
+                "{why}, so push to talk works only while Yappuccino's window is in front."
             ),
         }
     }
@@ -239,16 +239,16 @@ pub fn window_event(event: &WindowEvent) {
         WindowEvent::KeyboardInput { event, .. }
             if !event.repeat && event.physical_key.to_scancode() == Some(key) =>
         {
-            yapfast_core::push_to_talk::hold(event.state == ElementState::Pressed);
+            yappuccino_core::push_to_talk::hold(event.state == ElementState::Pressed);
         }
         #[cfg(windows)]
         WindowEvent::MouseInput { state, button, .. }
             if (key == MOUSE_4 && *button == MouseButton::Back)
                 || (key == MOUSE_5 && *button == MouseButton::Forward) =>
         {
-            yapfast_core::push_to_talk::hold(*state == ElementState::Pressed);
+            yappuccino_core::push_to_talk::hold(*state == ElementState::Pressed);
         }
-        WindowEvent::Focused(false) => yapfast_core::push_to_talk::hold(false),
+        WindowEvent::Focused(false) => yappuccino_core::push_to_talk::hold(false),
         _ => {}
     }
 }
@@ -294,7 +294,7 @@ impl Watcher {
         {
             let _ = runtime;
             report(Reach::Focused(
-                "Yapfast can't watch keys in other apps on this system yet",
+                "Yappuccino can't watch keys in other apps on this system yet",
             ));
         }
         Self {
@@ -321,7 +321,7 @@ impl Drop for Watcher {
     fn drop(&mut self) {
         FOCUSED_KEY.store(NONE, Ordering::Relaxed);
         TALK_KEY.store(NONE, Ordering::Relaxed);
-        yapfast_core::push_to_talk::hold(false);
+        yappuccino_core::push_to_talk::hold(false);
     }
 }
 
@@ -348,7 +348,7 @@ mod linux {
         },
         rust_connection::RustConnection,
     };
-    use yapfast_core::runtime::{BackgroundRuntime, BackgroundTask};
+    use yappuccino_core::runtime::{BackgroundRuntime, BackgroundTask};
     use zbus::{
         Connection, MessageStream,
         zvariant::{ObjectPath, OwnedObjectPath, OwnedValue, Value},
@@ -379,7 +379,7 @@ mod linux {
                                 "no global push-to-talk key through the portal"
                             );
                             report(Reach::Focused(
-                                "Your desktop doesn't offer Yapfast a global shortcut",
+                                "Your desktop doesn't offer Yappuccino a global shortcut",
                             ));
                         }
                     }),
@@ -395,7 +395,7 @@ mod linux {
                         error = format!("{error:#}"),
                         "no global push-to-talk key on X11"
                     );
-                    report(Reach::Focused("Yapfast couldn't watch keys in other apps"));
+                    report(Reach::Focused("Yappuccino couldn't watch keys in other apps"));
                     None
                 }
             }
@@ -405,7 +405,7 @@ mod linux {
     const PORTAL: &str = "org.freedesktop.portal.Desktop";
     const PATH: &str = "/org/freedesktop/portal/desktop";
     const SHORTCUTS: &str = "org.freedesktop.portal.GlobalShortcuts";
-    /// The one shortcut Yapfast binds.
+    /// The one shortcut Yappuccino binds.
     const SHORTCUT: &str = "push-to-talk";
 
     /// Binds the key through the GlobalShortcuts portal and holds it as the
@@ -413,7 +413,7 @@ mod linux {
     /// the connection.
     async fn portal(trigger: Option<String>, report: &Report) -> Result<()> {
         let connection = Connection::session().await?;
-        // Names Yapfast to the portal, which outside a sandbox can't tell
+        // Names Yappuccino to the portal, which outside a sandbox can't tell
         // the app otherwise; older portals don't have it.
         let _ = connection
             .call_method(
@@ -434,7 +434,7 @@ mod linux {
             .context("no name on the session bus")?
             .trim_start_matches(':')
             .replace('.', "_");
-        let token = format!("yapfast_{}", std::process::id());
+        let token = format!("yappuccino_{}", std::process::id());
         let request = |step: &str| format!("{PATH}/request/{sender}/{token}_{step}");
 
         let options = HashMap::from([
@@ -502,7 +502,7 @@ mod linux {
                 && path == *session
                 && id == SHORTCUT
             {
-                yapfast_core::push_to_talk::hold(held);
+                yappuccino_core::push_to_talk::hold(held);
             }
         }
         Err(anyhow!("the session bus closed"))
@@ -607,21 +607,21 @@ mod linux {
             // X11 keycodes are evdev's plus 8.
             let keycode = scancode + 8;
             std::thread::Builder::new()
-                .name("yapfast-talk-key".into())
+                .name("yappuccino-talk-key".into())
                 .spawn(move || {
                     while !stopped.load(Ordering::Relaxed) {
                         match waiting.wait_for_event() {
                             Ok(Event::XinputRawKeyPress(event)) if event.detail == keycode => {
-                                yapfast_core::push_to_talk::hold(true);
+                                yappuccino_core::push_to_talk::hold(true);
                             }
                             Ok(Event::XinputRawKeyRelease(event)) if event.detail == keycode => {
-                                yapfast_core::push_to_talk::hold(false);
+                                yappuccino_core::push_to_talk::hold(false);
                             }
                             Ok(_) => {}
                             Err(error) => {
                                 tracing::warn!(%error, "lost the X server's keys");
-                                yapfast_core::push_to_talk::hold(false);
-                                report(Reach::Focused("Yapfast lost the X server's keys"));
+                                yappuccino_core::push_to_talk::hold(false);
+                                report(Reach::Focused("Yappuccino lost the X server's keys"));
                                 break;
                             }
                         }
@@ -656,7 +656,7 @@ mod linux {
         /// Waits up to two seconds for the key to be `held` or not.
         fn wait_held(held: bool) {
             let until = Instant::now() + Duration::from_secs(2);
-            while yapfast_core::push_to_talk::held() != held {
+            while yappuccino_core::push_to_talk::held() != held {
                 assert!(Instant::now() < until, "the key wasn't held: {held}");
                 std::thread::sleep(Duration::from_millis(10));
             }
@@ -686,7 +686,7 @@ mod linux {
                 .status()
                 .unwrap();
             std::thread::sleep(Duration::from_millis(100));
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
             drop(x11);
         }
 
@@ -813,7 +813,7 @@ mod linux {
             let runtime = BackgroundRuntime::new().unwrap();
             let _task = runtime.spawn(async move { portal(Some("v".into()), &report).await });
             let until = Instant::now() + Duration::from_secs(5);
-            while !yapfast_core::push_to_talk::held() {
+            while !yappuccino_core::push_to_talk::held() {
                 assert!(
                     Instant::now() < until,
                     "the shortcut wasn't held: {:?}",
@@ -868,7 +868,7 @@ mod windows {
             let mouse = matches!(scancode, super::MOUSE_4 | super::MOUSE_5);
             let (started, thread) = mpsc::sync_channel(1);
             let spawned = std::thread::Builder::new()
-                .name("yapfast-talk-key".into())
+                .name("yappuccino-talk-key".into())
                 .spawn(move || {
                     // SAFETY: the hook procedure below only reads the event
                     // Windows hands it; the message loop runs on this thread,
@@ -907,7 +907,7 @@ mod windows {
                 }
                 None => {
                     report(Reach::Focused(
-                        "Windows didn't let Yapfast watch keys in other apps",
+                        "Windows didn't let Yappuccino watch keys in other apps",
                     ));
                     None
                 }
@@ -937,8 +937,8 @@ mod windows {
             };
             if key.scanCode | extended == KEY.load(Ordering::Relaxed) {
                 match wparam as u32 {
-                    WM_KEYDOWN | WM_SYSKEYDOWN => yapfast_core::push_to_talk::hold(true),
-                    WM_KEYUP | WM_SYSKEYUP => yapfast_core::push_to_talk::hold(false),
+                    WM_KEYDOWN | WM_SYSKEYDOWN => yappuccino_core::push_to_talk::hold(true),
+                    WM_KEYUP | WM_SYSKEYUP => yappuccino_core::push_to_talk::hold(false),
                     _ => {}
                 }
             }
@@ -960,8 +960,8 @@ mod windows {
             };
             if button == KEY.load(Ordering::Relaxed) {
                 match wparam as u32 {
-                    WM_XBUTTONDOWN => yapfast_core::push_to_talk::hold(true),
-                    WM_XBUTTONUP => yapfast_core::push_to_talk::hold(false),
+                    WM_XBUTTONDOWN => yappuccino_core::push_to_talk::hold(true),
+                    WM_XBUTTONUP => yappuccino_core::push_to_talk::hold(false),
                     _ => {}
                 }
             }
@@ -1032,7 +1032,7 @@ mod windows {
 
         fn wait_held(held: bool) {
             let until = Instant::now() + Duration::from_secs(2);
-            while yapfast_core::push_to_talk::held() != held {
+            while yappuccino_core::push_to_talk::held() != held {
                 assert!(Instant::now() < until, "the key wasn't held: {held}");
                 std::thread::sleep(Duration::from_millis(10));
             }
@@ -1087,17 +1087,17 @@ mod windows {
                 button,
             };
             super::super::FOCUSED_KEY.store(super::super::MOUSE_4, Ordering::Relaxed);
-            yapfast_core::push_to_talk::hold(false);
+            yappuccino_core::push_to_talk::hold(false);
             crate::push_to_talk::window_event(&mouse(MouseButton::Forward, ElementState::Pressed));
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
             crate::push_to_talk::window_event(&mouse(MouseButton::Back, ElementState::Pressed));
-            assert!(yapfast_core::push_to_talk::held());
+            assert!(yappuccino_core::push_to_talk::held());
             crate::push_to_talk::window_event(&WindowEvent::Focused(false));
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
             crate::push_to_talk::window_event(&mouse(MouseButton::Back, ElementState::Pressed));
-            assert!(yapfast_core::push_to_talk::held());
+            assert!(yappuccino_core::push_to_talk::held());
             crate::push_to_talk::window_event(&mouse(MouseButton::Back, ElementState::Released));
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
             super::super::FOCUSED_KEY.store(super::super::NONE, Ordering::Relaxed);
         }
 
@@ -1125,22 +1125,22 @@ mod windows {
                 }
             }
 
-            yapfast_core::push_to_talk::hold(false);
+            yappuccino_core::push_to_talk::hold(false);
             KEY.store(super::super::MOUSE_4, Ordering::Relaxed);
             event(WM_XBUTTONDOWN, XBUTTON2);
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
             event(WM_XBUTTONDOWN, XBUTTON1);
-            assert!(yapfast_core::push_to_talk::held());
+            assert!(yappuccino_core::push_to_talk::held());
             event(WM_XBUTTONUP, XBUTTON2);
-            assert!(yapfast_core::push_to_talk::held());
+            assert!(yappuccino_core::push_to_talk::held());
             event(WM_XBUTTONUP, XBUTTON1);
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
 
             KEY.store(super::super::MOUSE_5, Ordering::Relaxed);
             event(WM_XBUTTONDOWN, XBUTTON2);
-            assert!(yapfast_core::push_to_talk::held());
+            assert!(yappuccino_core::push_to_talk::held());
             event(WM_XBUTTONUP, XBUTTON2);
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
             KEY.store(super::super::NONE, Ordering::Relaxed);
         }
 
@@ -1160,7 +1160,7 @@ mod windows {
             send_mouse(XBUTTON2, false);
             send_mouse(XBUTTON2, true);
             std::thread::sleep(Duration::from_millis(100));
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
             drop(hook);
         }
 
@@ -1180,7 +1180,7 @@ mod windows {
             send(0x30, false); // B
             send(0x30, true);
             std::thread::sleep(Duration::from_millis(100));
-            assert!(!yapfast_core::push_to_talk::held());
+            assert!(!yappuccino_core::push_to_talk::held());
             drop(hook);
         }
     }

@@ -1,6 +1,6 @@
 Copyright notices of the display name fonts (DisplayName-*.ttf), as their
-name tables carry them. Discord Inc. made the copies Yapfast uses (renamed
-where the licence reserves a name, subset to Latin) and Yapfast subset the
+name tables carry them. Discord Inc. made the copies Yappuccino uses (renamed
+where the licence reserves a name, subset to Latin) and Yappuccino subset the
 largest further; all are licensed as below. Medieval and Vampyre, which
 come from their designers, have their own: LICENSE-OIFL-Medieval.txt and
 LICENSE-OFL-Vampyre.txt.

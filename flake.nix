@@ -1,8 +1,8 @@
 {
-  description = "Yapfast, a native Discord client";
+  description = "Yappuccino, a native Discord client";
 
   # Development happens in nix/flake.nix's shells; this flake only builds the
-  # app, so `nix profile add github:yapfast/yapfast` needs no checkout.
+  # app, so `nix profile add github:yappuccino/yappuccino` needs no checkout.
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     rust-overlay = {
@@ -17,10 +17,10 @@
       pkgs = import nixpkgs { inherit system; overlays = [ rust-overlay.overlays.default ]; };
     in {
       packages.${system} = rec {
-        yapfast = import ./nix/package.nix { inherit pkgs; };
+        yappuccino = import ./nix/package.nix { inherit pkgs; };
         # The AppDir and runtime scripts/package-linux.py packs into the AppImage.
-        appdir = import ./nix/appimage.nix { inherit pkgs yapfast; };
-        default = yapfast;
+        appdir = import ./nix/appimage.nix { inherit pkgs yappuccino; };
+        default = yappuccino;
       };
     };
 }

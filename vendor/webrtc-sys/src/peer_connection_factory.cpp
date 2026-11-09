@@ -51,7 +51,7 @@ namespace livekit_ffi {
 
 class PeerConnectionObserver;
 
-// Yapfast: hands each block of captured audio to the application's processor,
+// Yappuccino: hands each block of captured audio to the application's processor,
 // which sets its gain; see capture.rs.
 class CaptureLeveling : public webrtc::CustomProcessing {
  public:
@@ -80,7 +80,7 @@ class CaptureLeveling : public webrtc::CustomProcessing {
     }
   }
 
-  std::string ToString() const override { return "YapfastLeveling"; }
+  std::string ToString() const override { return "YappuccinoLeveling"; }
 
   void SetRuntimeSetting(webrtc::AudioProcessing::RuntimeSetting) override {}
 
@@ -115,7 +115,7 @@ PeerConnectionFactory::PeerConnectionFactory(
       std::move(std::make_unique<livekit_ffi::VideoDecoderFactory>());
   dependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
   dependencies.audio_decoder_factory = webrtc::CreateBuiltinAudioDecoderFactory();
-  // Yapfast: captured audio goes through Yapfast's leveling after WebRTC's processing.
+  // Yappuccino: captured audio goes through Yappuccino's leveling after WebRTC's processing.
   auto audio_processing = std::make_unique<webrtc::BuiltinAudioProcessingBuilder>();
   audio_processing->SetCapturePostProcessing(std::make_unique<CaptureLeveling>());
   dependencies.audio_processing_builder = std::move(audio_processing);

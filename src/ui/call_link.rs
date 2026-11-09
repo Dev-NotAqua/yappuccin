@@ -5,7 +5,7 @@
 
 use std::fmt::Write;
 
-use yapfast_core::voice::LinkStats;
+use yappuccino_core::voice::LinkStats;
 
 use super::*;
 
@@ -14,7 +14,7 @@ use super::*;
 const GRAPH: (f32, f32) = (300.0, 100.0);
 const SPAN: usize = 60;
 
-pub(super) fn bind(window: &YapfastWindow, adapter: &Rc<RefCell<Adapter>>) {
+pub(super) fn bind(window: &YappuccinoWindow, adapter: &Rc<RefCell<Adapter>>) {
     let state = Rc::downgrade(adapter);
     let weak = window.as_weak();
     window.global::<CallLink>().on_read(move || {
@@ -28,7 +28,7 @@ pub(super) fn bind(window: &YapfastWindow, adapter: &Rc<RefCell<Adapter>>) {
         let stats = voice
             .link
             .as_ref()
-            .map(yapfast_core::voice::Link::read)
+            .map(yappuccino_core::voice::Link::read)
             .unwrap_or_default();
         show(
             &window.global::<CallLink>(),

@@ -1,6 +1,6 @@
 //! Twemoji's pictures, which Discord's client draws its emoji from, in a font
 //! `build.rs` makes of them for the program to carry; see
-//! `vendor/twemoji/README.yapfast.md`. The font is mapped from the program's file,
+//! `vendor/twemoji/README.yappuccino.md`. The font is mapped from the program's file,
 //! so what it holds costs memory only as far as it's read, and it can be given
 //! back: message text draws it as glyphs ([`crate::emoji_text`]).
 //!

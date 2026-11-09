@@ -100,7 +100,7 @@ fn main() {
     for library in lines("libs.txt") {
         println!("cargo:rustc-link-lib={library}");
     }
-    cc::Build::new().objects(objects).compile("yapfast_ffmpeg");
+    cc::Build::new().objects(objects).compile("yappuccino_ffmpeg");
 }
 
 // FFmpeg's configured MSVC build uses GNU inline assembly in x86 code, which

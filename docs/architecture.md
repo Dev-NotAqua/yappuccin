@@ -1,12 +1,12 @@
 # Application core and client UI
 
-Yapfast's Cargo workspace has five packages, all in one process. The root `yapfast`
+Yappuccino's Cargo workspace has five packages, all in one process. The root `yappuccino`
 package is the executable: the Slint adapter and the command-line entry point.
-[`crates/yapfast-core`](../crates/yapfast-core) holds application behavior and the
+[`crates/yappuccino-core`](../crates/yappuccino-core) holds application behavior and the
 native Matrix, Discord and voice backend.
-[`crates/yapfast-discord`](../crates/yapfast-discord) holds the Discord protocol:
-login, the gateway, the HTTP API and voice. [`crates/yapfast-ui`](../crates/yapfast-ui)
-compiles `ui/yapfast.slint` and the files it imports in its `build.rs`, so editing
+[`crates/yappuccino-discord`](../crates/yappuccino-discord) holds the Discord protocol:
+login, the gateway, the HTTP API and voice. [`crates/yappuccino-ui`](../crates/yappuccino-ui)
+compiles `ui/yappuccino.slint` and the files it imports in its `build.rs`, so editing
 any `.slint` file rebuilds only that crate, and in a
 [live-preview build](building.md#seeing-the-app) nothing at all.
 [`crates/feature-union`](../crates/feature-union) holds no code; `scripts/check`
@@ -24,30 +24,30 @@ flowchart LR
 
 ## Where things live
 
-`crates/yapfast-ui` holds only the Slint build: `build.rs` compiles
-`ui/yapfast.slint` and `src/lib.rs` includes the generated code. It is a
+`crates/yappuccino-ui` holds only the Slint build: `build.rs` compiles
+`ui/yappuccino.slint` and `src/lib.rs` includes the generated code. It is a
 path dependency outside the Cargo workspace, so Clippy doesn't lint that
 code. The Slint files themselves are `ui/*.slint`, and the Rust that fills
 them is `src/ui.rs` and `src/ui/`. The menus a right click opens are in
 `src/ui/menus.rs`.
 
-The Discord connection is `crates/yapfast-discord/src/service.rs`, with its
+The Discord connection is `crates/yappuccino-discord/src/service.rs`, with its
 parts in `service/`: `tracker.rs` keeps the account's servers, voice, DMs,
 friends and settings current from gateway events, `publisher.rs` sends out
 snapshots of it, and `member_lists.rs` keeps the member lists beside
 channels. The service publishes an `Arc<Snapshot>` on a watch channel;
-`crates/yapfast-core/src/discord_text.rs` receives it and passes it on as
+`crates/yappuccino-core/src/discord_text.rs` receives it and passes it on as
 `Event::Discord`, which `show_snapshot` in `application/discord_account.rs`
 applies. `discord.rs` turns a snapshot into rooms and servers, making again
 only those that changed.
 
-Media in `crates/yapfast-core/src/`: `playback.rs` is the video playing in
+Media in `crates/yappuccino-core/src/`: `playback.rs` is the video playing in
 the conversation view, which `video_player.rs` plays in the stream worker.
 `stream_worker.rs` runs Go Live and video playback in a child process,
-`yapfast --stream-worker`, so their memory goes when they stop. `video.rs`
+`yappuccino --stream-worker`, so their memory goes when they stop. `video.rs`
 reads video files, `encode.rs` encodes Go Live and the camera, and
 `decode.rs` decodes a watched stream, each through C in `native/*.c`.
-`audio_io.rs` and `audio_io/` are Yapfast's own sound devices.
+`audio_io.rs` and `audio_io/` are Yappuccino's own sound devices.
 
 `vendor/` holds patched Slint, webrtc-sys, matrix-rtc-livekit, davey and
 tungstenite, plus x264's and FFmpeg's C source; see
@@ -55,12 +55,12 @@ tungstenite, plus x264's and FFmpeg's C source; see
 from crates.io, not `vendor/`.
 
 Two experiments stay in the tree: `experiment.rs` behind `--call-experiment`
-and `voice_demo.rs` behind `--voice-demo`, both in yapfast-core and
+and `voice_demo.rs` behind `--voice-demo`, both in yappuccino-core and
 dispatched from `src/main.rs`.
 
 ## Shared application behavior
 
-[`application.rs`](../crates/yapfast-core/src/application.rs) owns navigation,
+[`application.rs`](../crates/yappuccino-core/src/application.rs) owns navigation,
 remembered channels, per-room drafts, reply and edit modes, delete confirmation,
 selected timelines, account and trust status, history loading, call controls and
 voice-switch confirmation. The backend saves drafts in the encrypted session
@@ -75,7 +75,7 @@ rows a backend sends again unchanged when they didn't change. Its rooms and
 servers are `Arc`s shared with each network's own lists, which keep a room
 or server while it stays the same. `dispatch`
 routes each action to a method in the module for its area, under
-[`application/`](../crates/yapfast-core/src/application); the `mod` lines at
+[`application/`](../crates/yappuccino-core/src/application); the `mod` lines at
 the top of `application.rs` list them. For example, `compose` holds the
 composer, `aside` shows a Discord thread beside the open channel, and
 `places` builds the menus of Discord servers, categories and channels.
@@ -85,7 +85,7 @@ the interface in [`ui/*.slint`](../ui), owns input widgets, password masking,
 focus, filtering, scroll position, list virtualization, device selectors, window
 state, theme and icons. `Adapter::refresh`, in
 [`src/ui/refresh.rs`](../src/ui/refresh.rs), shows the application's state one
-area at a time. `ui/yapfast.slint` holds the window and imports its parts
+area at a time. `ui/yappuccino.slint` holds the window and imports its parts
 from the files beside it. The adapter updates widgets after model changes. A
 programmatic composer update uses the new room's draft, so it cannot overwrite that draft with
 the previous room's text.
@@ -116,7 +116,7 @@ Virtualized server, DM, member, friend and message rows carry avatar URLs.
 `PictureStore` resolves them only when Slint instantiates their components,
 queues missing pictures for one batch, and updates visible bindings when
 pictures arrive. Its source registry holds weak pointers. The UI has
-yapfast-core decode pictures into Slint's pixel buffers (`set_pixel_buffers`), so
+yappuccino-core decode pictures into Slint's pixel buffers (`set_pixel_buffers`), so
 a Slint image of a picture shares its pixels rather than copying them.
 Converted avatars and gallery previews share an 8 MiB Slint image cache;
 profiles and call controls still request their visible pictures directly. A one-second timer
@@ -128,8 +128,8 @@ and stops itself when no decoders need checking.
 A visible change usually touches each of these steps:
 
 1. **Slint.** A component in `ui/<area>.slint` declares a property or callback.
-   Rust sees only `YapfastWindow` in `ui/yapfast.slint` and the structs and globals
-   it exports, so `YapfastWindow` declares a matching property or callback and
+   Rust sees only `YappuccinoWindow` in `ui/yappuccino.slint` and the structs and globals
+   it exports, so `YappuccinoWindow` declares a matching property or callback and
    binds it to the component. Colours are the exception: components read the
    `Theme` global, which `src/ui/theme.rs` sets whole. The areas are the files
    in `ui/*.slint`, such as `composer`, `messages` and `server_settings`.
@@ -148,21 +148,21 @@ A visible change usually touches each of these steps:
    the call, with who's speaking, only the call's views (`Reach` in
    `src/ui/refresh.rs`). The sidebar is built again only once what it shows
    changed. `Action` and
-   `dispatch` are in `crates/yapfast-core/src/application.rs`, which routes each
-   action to the module for its area in `crates/yapfast-core/src/application/`.
+   `dispatch` are in `crates/yappuccino-core/src/application.rs`, which routes each
+   action to the module for its area in `crates/yappuccino-core/src/application/`.
 5. **Backend.** An `Effect::Backend(Command)` goes through `Backend::send` to
-   the chat actor in `crates/yapfast-core/src/chat.rs`, which routes it to the
+   the chat actor in `crates/yappuccino-core/src/chat.rs`, which routes it to the
    network its room id names, or to voice. Matrix lives
    in `matrix_chat.rs` and `matrix_voice.rs`; Discord in `discord.rs`,
    `discord_text.rs` with its modules in `discord_text/`, `discord_voice.rs`,
    `discord_audio.rs` and `discord_link.rs`, all under
-   `crates/yapfast-core/src/`. The Discord protocol itself is in
-   `crates/yapfast-discord`, and `src/event.rs` there names the gateway's
+   `crates/yappuccino-core/src/`. The Discord protocol itself is in
+   `crates/yappuccino-discord`, and `src/event.rs` there names the gateway's
    events. Backend events come back through `Application::apply`.
 
-Yapfast's own sound outside LiveKit's calls goes through
-[`audio_io.rs`](../crates/yapfast-core/src/audio_io.rs): Discord voice, the input
-meter, ringing, Yapfast's sounds, a watched stream's or a video's sound, and what
+Yappuccino's own sound outside LiveKit's calls goes through
+[`audio_io.rs`](../crates/yappuccino-core/src/audio_io.rs): Discord voice, the input
+meter, ringing, Yappuccino's sounds, a watched stream's or a video's sound, and what
 other applications play for Go Live. It opens a microphone or speakers by the
 device id LiveKit lists, `None` being the system's default, and reads or writes
 on the caller's thread in the caller's own buffers. On Linux that's
@@ -172,13 +172,13 @@ mode, with WebRTC's device ids naming its endpoints.
 Each `ChatRoom` carries its `network` and its `capabilities`, such as
 whether its messages can be forwarded or its channels sit under
 categories, which its backend sets
-([`network.rs`](../crates/yapfast-core/src/network.rs)). The application and
+([`network.rs`](../crates/yappuccino-core/src/network.rs)). The application and
 the UI ask a room for these rather than reading its id; code that holds
 only an id reads its network with `Network::of`.
 
 ## Native backend ownership
 
-[`backend.rs`](../crates/yapfast-core/src/backend.rs) starts the chat actor and owns
+[`backend.rs`](../crates/yappuccino-core/src/backend.rs) starts the chat actor and owns
 its command sender, background task and runtime reference. The client retains
 this handle for the session, independently of the selected text or voice channel.
 Incoming events arrive through a Tokio receiver, so each UI framework can choose
@@ -203,7 +203,7 @@ behavior without claiming the native backend already runs on the web or Android.
 
 ## Adding another native UI
 
-1. Depend on `yapfast-core` and render its `AppState`.
+1. Depend on `yappuccino-core` and render its `AppState`.
 2. Dispatch user actions and execute returned effects. For a start effect, retain
    the `Backend` handle and receive its events. For a command effect, call `send`.
 3. Feed rejected commands to `Application::backend_failed` and closed event streams
@@ -221,7 +221,7 @@ implement their own drafts, send handling or voice lifecycle.
 `scripts/check` checks the whole workspace, including the headless build
 (`--no-default-features --features matrix,discord`); see
 [building](building.md#checks). Ignored chat and voice tests belong to
-`yapfast-core`, so select them with `cargo test -p yapfast-core`.
+`yappuccino-core`, so select them with `cargo test -p yappuccino-core`.
 
 Library tests keep disposable fixtures under the workspace's
 ignored `.local` directory even though Cargo runs them from the crate directory.

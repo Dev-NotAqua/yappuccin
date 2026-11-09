@@ -2,7 +2,7 @@
 //! two-factor prompt Discord's held-back requests open; see
 //! `ui/server_settings.slint` and `ui/mfa.slint`.
 
-use yapfast_core::{
+use yappuccino_core::{
     application::{
         AFK_TIMEOUTS, AUDIT_ACTIONS, AuditInput, AuditKind, AuditLogPage, AuditSpan, AuditWords,
         BOOSTED, BanInput, BansPage, DEFAULT_ROLE_COLOR, EmojiInput, EmojiPage, ExpressionRules,
@@ -19,7 +19,7 @@ use yapfast_core::{
 };
 
 use super::{messages::escape_markdown, *};
-use yapfast_core::clock;
+use yappuccino_core::clock;
 
 /// A page's id in the sidebar and the screen.
 fn section_id(section: SettingsSection) -> i32 {
@@ -112,7 +112,7 @@ fn method(id: i32) -> Option<MfaMethod> {
 
 impl Adapter {
     /// The open server's settings, as their screen shows them.
-    pub(super) fn show_server_settings(&mut self, window: &YapfastWindow) {
+    pub(super) fn show_server_settings(&mut self, window: &YappuccinoWindow) {
         let Some(settings) = self.app.state.server_settings.as_ref() else {
             if window.get_server_settings_open() {
                 window.set_server_settings_open(false);
@@ -226,7 +226,7 @@ impl Adapter {
                     window.set_server_settings_description(page.description.as_str().into());
                 }
                 let (icon, new_icon) = page.icon();
-                let left = yapfast_core::application::DESCRIPTION_LIMIT as i64
+                let left = yappuccino_core::application::DESCRIPTION_LIMIT as i64
                     - page.description.trim().chars().count() as i64;
                 prompt.profile = ServerProfilePrompt {
                     icon_url: icon.unwrap_or_default().into(),
@@ -304,7 +304,7 @@ impl Adapter {
                 prompt.bans = bans_prompt(
                     page,
                     self.app
-                        .may(&settings.server, yapfast_core::chat::Permission::Ban),
+                        .may(&settings.server, yappuccino_core::chat::Permission::Ban),
                 );
             }
             Some(SettingsPage::AuditLog(page)) => {
@@ -400,7 +400,7 @@ impl Adapter {
         }
     }
 
-    pub(super) fn show_mfa(&self, window: &YapfastWindow) {
+    pub(super) fn show_mfa(&self, window: &YappuccinoWindow) {
         let Some(prompt) = self.app.mfa_prompt() else {
             if window.get_mfa_open() {
                 window.set_mfa_open(false);
@@ -445,7 +445,7 @@ impl Adapter {
                 "Backup code",
             ),
             Some(MfaMethod::Passkey) | None => (
-                "Discord asks for a passkey or security key, which Yapfast can't use. Confirm in Discord's app, then try again."
+                "Discord asks for a passkey or security key, which Yappuccino can't use. Confirm in Discord's app, then try again."
                     .to_owned(),
                 "",
             ),
@@ -1595,7 +1595,7 @@ fn role_input(what: i32, text: SharedString, number: i32) -> Option<RoleInput> {
     })
 }
 
-pub(super) fn bind(window: &YapfastWindow, adapter: &Rc<RefCell<Adapter>>) {
+pub(super) fn bind(window: &YappuccinoWindow, adapter: &Rc<RefCell<Adapter>>) {
     macro_rules! act {
         ($callback:ident($($arg:ident),*) => $action:expr) => {{
             let state = adapter.clone();

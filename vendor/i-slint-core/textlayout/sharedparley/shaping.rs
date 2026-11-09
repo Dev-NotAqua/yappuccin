@@ -27,7 +27,7 @@ pub(super) struct Brush {
     pub(super) override_fill_color: Option<Color>,
     pub(super) stroke: Option<TextStrokeStyle>,
     pub(super) link_color: Option<Color>,
-    /// Yapfast: a link's text, underlined only while the pointer is on the link, as in
+    /// Yappuccino: a link's text, underlined only while the pointer is on the link, as in
     /// Discord's client. Not a mention, whose pill marks it, nor an emoji's picture.
     pub(super) underline_on_hover: bool,
 }
@@ -100,7 +100,7 @@ impl LayoutWithoutLineBreaksBuilder {
             let font_families: &[parley::style::FontFamilyName] = if let Some(family) =
                 &font_request.family
             {
-                // Yapfast: `monospace` is the system's monospace font, as inline code's, for
+                // Yappuccino: `monospace` is the system's monospace font, as inline code's, for
                 // fenced code.
                 let named = match family.as_str() {
                     "monospace" => parley::style::FontFamilyName::Generic(
@@ -231,7 +231,7 @@ impl LayoutWithoutLineBreaksBuilder {
                     Style::Underline => {
                         builder.push(parley::StyleProperty::Underline(true), span.range);
                     }
-                    // Yapfast: a link in a colour is a mention, drawn in its colour on a pill of
+                    // Yappuccino: a link in a colour is a mention, drawn in its colour on a pill of
                     // it (see `TextParagraph::mentions`), without the underline.
                     Style::Link if pills.iter().any(|(range, _)| range == &span.range) => {
                         let color = pills.iter().find(|(range, _)| range == &span.range).map(|(_, c)| *c);
@@ -246,7 +246,7 @@ impl LayoutWithoutLineBreaksBuilder {
                         );
                     }
                     Style::Link => {
-                        // Yapfast: an emoji's link is its picture, and a picture
+                        // Yappuccino: an emoji's link is its picture, and a picture
                         // has nothing to underline: the line would show across
                         // the bottom of it.
                         let underline_on_hover = !is_pictures(&text[span.range.clone()]);
@@ -309,7 +309,7 @@ pub(super) fn create_text_paragraphs(
     font_context: &mut FontContext,
     text: PlainOrStyledText,
     link_color: Color,
-    marks: Option<crate::yapfast_marks::Marks>,
+    marks: Option<crate::yappuccino_marks::Marks>,
 ) -> Vec<TextParagraph> {
     let paragraph_from_text =
         |font_context: &mut FontContext,
@@ -323,15 +323,15 @@ pub(super) fn create_text_paragraphs(
                 .map(|s| s.range.clone())
                 .collect();
 
-            // Yapfast: a coloured link is drawn on a pill only when it's a mention, of a
+            // Yappuccino: a coloured link is drawn on a pill only when it's a mention, of a
             // person, a role or everyone; others, such as a notice's links, show in the colour
             // alone.
             let mut mentions = mention_ranges(&formatting);
             mentions.retain(|(range, _)| {
                 links.iter().find(|(link, _)| link == range).is_none_or(|(_, url)| {
-                    url.starts_with("yapfast:user/")
-                        || url.starts_with("yapfast:role/")
-                        || url == "yapfast:everyone"
+                    url.starts_with("yappuccino:user/")
+                        || url.starts_with("yappuccino:role/")
+                        || url == "yappuccino:everyone"
                 })
             });
             let control_characters = text
@@ -341,7 +341,7 @@ pub(super) fn create_text_paragraphs(
 
             let layout = layout_builder.build(font_context, text, formatting, Some(link_color));
 
-            // Yapfast: the glyphs an animation may stand in for, found while the
+            // Yappuccino: the glyphs an animation may stand in for, found while the
             // text is at hand rather than in every draw.
             let pictures = text
                 .char_indices()
@@ -365,7 +365,7 @@ pub(super) fn create_text_paragraphs(
     match text {
         PlainOrStyledText::Plain(ref text) => {
             for range in paragraph_ranges(text) {
-                // Yapfast: a marked part is drawn as a mention is, a link in a colour span.
+                // Yappuccino: a marked part is drawn as a mention is, a link in a colour span.
                 let formatting = marks
                     .iter()
                     .flat_map(|marks| marks.iter())
@@ -490,7 +490,7 @@ pub(super) fn shape_paragraphs(
 }
 
 pub(super) struct TextParagraph {
-    /// Yapfast: the runs that are one emoji glyph, each with the glyph it
+    /// Yappuccino: the runs that are one emoji glyph, each with the glyph it
     /// draws, in the order they come. Kept instead of the text itself, which
     /// would copy every message into its layout.
     pub(super) pictures: alloc::vec::Vec<(Range<usize>, char)>,
@@ -504,12 +504,12 @@ pub(super) struct TextParagraph {
     pub(super) code_ranges: std::vec::Vec<Range<usize>>,
     /// Ascending byte offsets of the control characters in the paragraph's text.
     pub(super) control_characters: std::vec::Vec<usize>,
-    /// Yapfast: links inside a colour span, which are mentions: drawn in the colour on a
+    /// Yappuccino: links inside a colour span, which are mentions: drawn in the colour on a
     /// translucent pill of it.
     pub(super) mentions: std::vec::Vec<(Range<usize>, Color)>,
 }
 
-/// Yapfast: the links that lie inside a colour span, each with that colour.
+/// Yappuccino: the links that lie inside a colour span, each with that colour.
 fn mention_ranges(
     formatting: &[i_slint_common::styled_text::FormattedSpan],
 ) -> std::vec::Vec<(Range<usize>, Color)> {
@@ -530,7 +530,7 @@ fn mention_ranges(
         .collect()
 }
 
-/// Yapfast: whether `text` is only emoji as Yapfast draws them, each a picture
+/// Yappuccino: whether `text` is only emoji as Yappuccino draws them, each a picture
 /// in a colour bitmap font it makes at runtime, at a code point in the
 /// Supplementary Private Use Area B.
 fn is_pictures(text: &str) -> bool {

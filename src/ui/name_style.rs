@@ -6,7 +6,7 @@
 //! does, which the client uses, and the rows wearing it share them.
 
 use slint::Color;
-use yapfast_core::chat::NameStyle;
+use yappuccino_core::chat::NameStyle;
 
 use super::*;
 
@@ -276,7 +276,7 @@ fn palette(style: &NameStyle, name: &str, ground: u32) -> NameStyleRow {
     }
 }
 
-/// A name in a Discord server, as Yapfast draws it there: the style's font
+/// A name in a Discord server, as Yappuccino draws it there: the style's font
 /// alone, in the row's own colour, with none of its colours or effect, even
 /// while it's pointed at. Profiles, DMs and the style's own editor show the
 /// whole style.
@@ -317,8 +317,8 @@ thread_local! {
 /// where names show as [`font_only_in`] says.
 pub(super) fn in_server(place: Option<&str>) -> bool {
     place
-        .and_then(yapfast_core::discord::parse_room)
-        .is_some_and(|(guild, _)| guild != yapfast_core::discord::DM_GUILD)
+        .and_then(yappuccino_core::discord::parse_room)
+        .is_some_and(|(guild, _)| guild != yappuccino_core::discord::DM_GUILD)
 }
 
 #[cfg(test)]

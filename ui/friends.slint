@@ -284,7 +284,7 @@ export component ActiveNowCard inherits Rectangle {
     property <brush> ground: touch.has-hover ? Theme.hover : Theme.raised;
     border-radius: 8px;
     background: root.ground;
-    animate background { duration: 120ms; }
+    animate background { duration: Theme.quick; }
     border-width: 1px; border-color: Theme.line;
     height: body.preferred-height;
     accessible-role: button;

@@ -1,5 +1,5 @@
-import { DmHeading } from "yapfast/dm-heading.slint";
-import { ClientStyle } from "yapfast/style.slint";
+import { DmHeading } from "yappuccino/dm-heading.slint";
+import { ClientStyle } from "yappuccino/style.slint";
 import { ListView } from "scrollview.slint";
 import { Theme, Tip, Middle, Label } from "theme.slint";
 import { Avatar, Nameplate, PictureStore, Picture, StatusText, StyledName, NameStyleRow, VoiceSpot, ServerTagChip } from "controls.slint";
@@ -191,14 +191,14 @@ export component RailItem inherits Rectangle {
         height: root.selected ? 40px : pointer.has-hover ? 20px : root.unread ? 8px : 0px;
         border-top-right-radius: 4px; border-bottom-right-radius: 4px;
         background: Theme.text;
-        animate height { duration: 200ms; easing: ease-out; }
+        animate height { duration: Theme.medium; easing: ease-out; }
     }
     // A picture only changes shape when lit, as in Discord.
     tile := Rectangle {
         x: root.tile-left; width: root.tile-size; height: root.tile-size;
         border-radius: ClientStyle.enabled ? 12px : root.lit ? 16px : 24px;
         background: root.lit && root.shown-picture.width == 0 ? Theme.accent : Theme.raised;
-        animate border-radius, background { duration: 160ms; easing: ease-out; }
+        animate border-radius, background { duration: Theme.medium; easing: ease-out; }
         clip: true;
         // An animated server icon plays while pointed at, as in Discord.
         if root.shown-picture.width > 0: Picture {
@@ -321,12 +321,12 @@ component FolderItem inherits Rectangle {
         height: root.open ? 0px : root.selected ? 40px : pointer.has-hover ? 20px : root.unread ? 8px : 0px;
         border-top-right-radius: 4px; border-bottom-right-radius: 4px;
         background: Theme.text;
-        animate height { duration: 200ms; easing: ease-out; }
+        animate height { duration: Theme.medium; easing: ease-out; }
     }
     tile := Rectangle {
         x: root.tile-left; width: root.tile-size; height: root.tile-size; border-radius: ClientStyle.folder-radius;
         background: root.open ? transparent : root.tint.with-alpha(pointer.has-hover ? 0.55 : 0.4);
-        animate background { duration: 160ms; easing: ease-out; }
+        animate background { duration: Theme.medium; easing: ease-out; }
         if root.open: Image {
             source: @image-url("icons/folder.svg"); width: 24px; height: 24px; colorize: root.tint;
         }
@@ -511,7 +511,7 @@ export component ChannelRow inherits Rectangle {
     height: root.person ? ClientStyle.dm-row-height : ClientStyle.channel-row-height;
     border-radius: 6px;
     background: root.selected ? Theme.active : pointer.has-hover ? Theme.hover : transparent;
-    animate background { duration: 90ms; }
+    animate background { duration: Theme.quick; }
     border-width: focus.has-focus ? 2px : 0px;
     border-color: Theme.accent;
     accessible-role: button;
@@ -753,7 +753,7 @@ component CategoryHeading inherits Rectangle {
             source: @image-url("icons/chevron-down.svg");
             width: 12px; image-fit: contain; colorize: root.ink;
             transform-rotation: root.collapsed ? -90deg : 0deg;
-            animate transform-rotation { duration: 120ms; easing: ease-out; }
+            animate transform-rotation { duration: Theme.quick; easing: ease-out; }
         }
         Rectangle { horizontal-stretch: 1; }
     }
@@ -872,7 +872,7 @@ export component ServerHeader inherits Rectangle {
             Image {
                 source: @image-url("icons/chevron-down.svg"); width: ClientStyle.enabled ? 16px : 20px; height: ClientStyle.enabled ? 16px : 20px; y: (parent.height - self.height) / 2;
                 colorize: root.on-banner ? #ffffff : ClientStyle.enabled ? Theme.secondary : Theme.muted; transform-rotation: root.open ? 180deg : 0deg;
-                animate transform-rotation { duration: 120ms; easing: ease-out; }
+                animate transform-rotation { duration: Theme.quick; easing: ease-out; }
             }
         }
     }
@@ -1287,7 +1287,7 @@ export component RoomList inherits Rectangle {
                     }
                 }
                 // Discord reports who is in every voice channel; Matrix
-                // only shows the call Yapfast is in, below.
+                // only shows the call Yappuccino is in, below.
                 if room.voice && room.id != root.voice-channel && room.people.length > 0: VerticalLayout {
                     padding-left: 32px; padding-bottom: 4px; spacing: 0px;
                     for person in room.people: Rectangle {
@@ -1298,7 +1298,7 @@ export component RoomList inherits Rectangle {
                         property <string> tip: person.elsewhere ? "Connected on another client" : "";
                         height: 30px; border-radius: 4px;
                         background: person-touch.has-hover ? Theme.hover : transparent;
-                        animate background { duration: 90ms; }
+                        animate background { duration: Theme.quick; }
                         opacity: person.elsewhere && !person-touch.has-hover ? 0.5 : 1;
                         accessible-role: button;
                         accessible-label: person.elsewhere ? person.name + ", connected on another client" : person.name;
@@ -1362,7 +1362,7 @@ export component RoomList inherits Rectangle {
                         // menu, as above.
                         height: 30px; border-radius: 4px;
                         background: participant-touch.has-hover ? Theme.hover : transparent;
-                        animate background { duration: 90ms; }
+                        animate background { duration: Theme.quick; }
                         accessible-role: button; accessible-label: person.name;
                         accessible-description: "Show their profile";
                         accessible-action-default => {
@@ -1456,10 +1456,10 @@ export component ServerVoiceCard inherits Rectangle {
     // It slides in from the icon, as the plain tooltip pops.
     property <bool> shown: false;
     opacity: root.shown ? 1 : 0;
-    animate opacity { duration: 120ms; easing: ease-out; }
+    animate opacity { duration: Theme.quick; easing: ease-out; }
     transform-scale: root.shown ? 1 : 0.96;
     transform-origin: { x: 0px, y: self.height / 2 };
-    animate transform-scale { duration: 120ms; easing: ease-out; }
+    animate transform-scale { duration: Theme.quick; easing: ease-out; }
     Timer {
         interval: 16ms;
         running: true;

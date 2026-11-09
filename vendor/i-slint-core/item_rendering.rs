@@ -559,9 +559,9 @@ pub trait RenderString: HasFont {
     fn link_color(self: Pin<&Self>) -> Color {
         Default::default()
     }
-    /// Yapfast: parts of a plain text drawn in a colour on a pill of it; see
-    /// [`crate::yapfast_marks`]. Like `link_color`, they're baked into the shaped glyphs.
-    fn marks(self: Pin<&Self>) -> Option<crate::yapfast_marks::Marks> {
+    /// Yappuccino: parts of a plain text drawn in a colour on a pill of it; see
+    /// [`crate::yappuccino_marks`]. Like `link_color`, they're baked into the shaped glyphs.
+    fn marks(self: Pin<&Self>) -> Option<crate::yappuccino_marks::Marks> {
         None
     }
     /// The factor applied to the font's natural line height, or `None` for the natural height.
@@ -609,7 +609,7 @@ impl RenderString for TextForWidth<'_> {
     fn link_color(self: Pin<&Self>) -> Color {
         self.0.link_color()
     }
-    fn marks(self: Pin<&Self>) -> Option<crate::yapfast_marks::Marks> {
+    fn marks(self: Pin<&Self>) -> Option<crate::yappuccino_marks::Marks> {
         self.0.marks()
     }
     fn line_height_factor(self: Pin<&Self>) -> Option<f32> {
@@ -649,16 +649,16 @@ pub trait RenderText: RenderString {
     fn wrap(self: Pin<&Self>) -> TextWrap;
     fn overflow(self: Pin<&Self>) -> TextOverflow;
     fn is_markdown(self: Pin<&Self>) -> bool;
-    /// Yapfast: the selected bytes, the paragraphs counted as if joined by newlines, and the
+    /// Yappuccino: the selected bytes, the paragraphs counted as if joined by newlines, and the
     /// colour behind them.
-    fn yapfast_selection(self: Pin<&Self>) -> Option<(core::ops::Range<usize>, Color)> {
+    fn yappuccino_selection(self: Pin<&Self>) -> Option<(core::ops::Range<usize>, Color)> {
         None
     }
     /// The part of the text drawn as selected, if any.
     fn selection(self: Pin<&Self>) -> Option<TextSelection> {
         None
     }
-    /// Yapfast: where the link under the pointer ends, the paragraphs counted as if joined by
+    /// Yappuccino: where the link under the pointer ends, the paragraphs counted as if joined by
     /// newlines, so its text is underlined.
     fn hovered_link(self: Pin<&Self>) -> Option<usize> {
         None

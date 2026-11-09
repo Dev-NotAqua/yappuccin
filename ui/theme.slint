@@ -64,11 +64,19 @@ export global Theme {
     in-out property <color> reply-spine: #4a4c56;
     /// The ground of the window's tooltip and the zoom level's note.
     in-out property <color> tooltip: #0b0c0e;
-    /// An avatar's ground before Yapfast knows the person's own tint.
+    /// An avatar's ground before Yappuccino knows the person's own tint.
     in-out property <color> avatar: #6b7280;
     /// Whether the theme is dark, for the std-widgets that follow the system's scheme.
     in-out property <bool> dark: true;
-    out property <duration> quick: 120ms;
+    /// Interface animations: hovers, switches, popups and tiles. Off, every
+    /// one of them lands at once. GIFs, emoji and stickers have their own
+    /// setting, under Messages.
+    in-out property <bool> interface-animations: true;
+    out property <duration> instant: self.interface-animations ? 50ms : 0ms;
+    out property <duration> quick: self.interface-animations ? 120ms : 0ms;
+    out property <duration> medium: self.interface-animations ? 180ms : 0ms;
+    out property <duration> slow: self.interface-animations ? 280ms : 0ms;
+    out property <duration> slower: self.interface-animations ? 400ms : 0ms;
 }
 
 // One tooltip for the whole window, drawn above everything else.
@@ -143,7 +151,7 @@ export global Popup {
     /// fading card into a layer as large as what changed, which is the
     /// whole window under a dimmed backdrop, so there the card only grows.
     in property <bool> fade: true;
-    out property <duration> duration: 100ms;
+    out property <duration> duration: Theme.quick;
     /// The card's size and opacity for how far it's open, from 0 to 1.
     public pure function scale(amount: float) -> float { 0.8 + 0.2 * amount }
     public pure function opacity(amount: float) -> float { root.fade ? amount : (amount > 0 ? 1 : 0) }

@@ -1,5 +1,5 @@
 [package]
-name = "yapfast-skia-static-builder"
+name = "yappuccino-skia-static-builder"
 version = "0.1.0"
 edition = "2024"
 publish = false

@@ -58,8 +58,8 @@ jobs:
         with:
           name: linux
           path: |
-            target/dist/linux/Yapfast-*
-            target/dist/linux/yapfast-*.pkg.tar.zst
+            target/dist/linux/Yappuccino-*
+            target/dist/linux/yappuccino-*.pkg.tar.zst
           if-no-files-found: error
           compression-level: 0
 
@@ -96,7 +96,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: target/dist/discord/Yapfast-*
+          path: target/dist/discord/Yappuccino-*
           if-no-files-found: error
           compression-level: 0
 
@@ -125,11 +125,11 @@ jobs:
           set -o pipefail
           # Both jobs zip the commit's source; SOURCE.txt and each BUILD.json
           # name the one file the release carries.
-          cmp "dist/linux/Yapfast-$VERSION-source.zip" "dist/windows/Yapfast-$VERSION-source.zip"
+          cmp "dist/linux/Yappuccino-$VERSION-source.zip" "dist/windows/Yappuccino-$VERSION-source.zip"
           mkdir release
-          mv dist/linux/Yapfast-* dist/linux/yapfast-*.pkg.tar.zst release/
-          mv dist/windows/Yapfast-*-windows-x64* release/
-          (cd release && sha256sum Yapfast-* yapfast-*.pkg.tar.zst > SHA256SUMS.txt)
+          mv dist/linux/Yappuccino-* dist/linux/yappuccino-*.pkg.tar.zst release/
+          mv dist/windows/Yappuccino-*-windows-x64* release/
+          (cd release && sha256sum Yappuccino-* yappuccino-*.pkg.tar.zst > SHA256SUMS.txt)
           # The newest nightly, or before the first one the latest release.
           previous=$(gh release list --exclude-drafts --limit 100 --json tagName \
             --jq '[.[].tagName | select(contains("-nightly."))][0] // empty')
@@ -154,4 +154,4 @@ jobs:
           # Titled as the stable releases are, with the commit: the version
           # already says it's a nightly.
           gh release create "v$VERSION" release/* --prerelease --target "$COMMIT" \
-            --title "Yapfast $VERSION (${COMMIT:0:7})" --notes-file notes.md
+            --title "Yappuccino $VERSION (${COMMIT:0:7})" --notes-file notes.md

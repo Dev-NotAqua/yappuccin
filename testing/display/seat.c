@@ -114,13 +114,13 @@ static void destroy_seat(struct wl_listener *listener, void *data) {
 
 WL_EXPORT int wet_module_init(struct weston_compositor *compositor, int *argc, char *argv[]) {
     (void)argc; (void)argv;
-    weston_seat_init(&seat, compositor, "yapfast-private-virtual-seat");
+    weston_seat_init(&seat, compositor, "yappuccino-private-virtual-seat");
     if (weston_seat_init_pointer(&seat) < 0 || weston_seat_init_keyboard(&seat, NULL) < 0)
         return -1;
     weston_compositor_add_destroy_listener_once(compositor, &cleanup, destroy_seat);
     const char *runtime = getenv("XDG_RUNTIME_DIR");
-    if (!runtime || !getenv("YAPFAST_FRAMEWORK_ISOLATED_DISPLAY")) return -1;
-    const char *log_path = getenv("YAPFAST_FRAMEWORK_SURFACE_LOG");
+    if (!runtime || !getenv("YAPPUCCINO_FRAMEWORK_ISOLATED_DISPLAY")) return -1;
+    const char *log_path = getenv("YAPPUCCINO_FRAMEWORK_SURFACE_LOG");
     if (log_path && log_path[0]) {
         surface_log = fopen(log_path, "w");
         if (!surface_log) {
@@ -137,7 +137,7 @@ WL_EXPORT int wet_module_init(struct weston_compositor *compositor, int *argc, c
         }
     }
     struct sockaddr_un address = {.sun_family = AF_UNIX};
-    if (snprintf(address.sun_path, sizeof(address.sun_path), "%s/yapfast-input.sock", runtime) >= (int)sizeof(address.sun_path)) return -1;
+    if (snprintf(address.sun_path, sizeof(address.sun_path), "%s/yappuccino-input.sock", runtime) >= (int)sizeof(address.sun_path)) return -1;
     input_fd = socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
     if (input_fd < 0 || bind(input_fd, (struct sockaddr *)&address, sizeof(address)) < 0) return -1;
     input_source = wl_event_loop_add_fd(wl_display_get_event_loop(compositor->wl_display), input_fd, WL_EVENT_READABLE, input_event, NULL);

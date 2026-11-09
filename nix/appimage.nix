@@ -8,9 +8,9 @@
 # libraries every desktop has, and loads the GPU, display, audio and screen
 # capture ones at runtime. The glibc it was built against sets the oldest
 # distribution it runs on.
-{ pkgs, yapfast }:
+{ pkgs, yappuccino }:
 let
-  id = "io.github.yapfast.Yapfast";
+  id = "io.github.yappuccino.Yappuccino";
   native = import ./native.nix { inherit pkgs; };
   # The newest glibc and libstdc++ the binary may ask for: Ubuntu 24.04's and
   # Fedora 40's. Nix builds against a newer glibc, so a nixpkgs update can
@@ -30,7 +30,7 @@ let
     sha256 = "0396xi3km1yd0z4329lbjxmv82ddc40gd0x8hca0ylcj7i28pjig";
   };
   # Where AppImageUpdate and the AppImage managers look for a newer release.
-  updateInformation = "gh-releases-zsync|yapfast|yapfast|latest|Yapfast-*-x86_64.AppImage.zsync";
+  updateInformation = "gh-releases-zsync|yappuccino|yappuccino|latest|Yappuccino-*-x86_64.AppImage.zsync";
   # What scripts/package-linux.py adds to the release's BUILD.json.
   build = builtins.toJSON {
     glibc_floor = glibcFloor;
@@ -43,9 +43,9 @@ let
     update_information = updateInformation;
   };
 in
-pkgs.runCommand "yapfast-appdir-${yapfast.version}" {
+pkgs.runCommand "yappuccino-appdir-${yappuccino.version}" {
   nativeBuildInputs = with pkgs; [ patchelf binutils librsvg ];
-  inherit (yapfast) version;
+  inherit (yappuccino) version;
   inherit updateInformation build;
 } ''
   appdir="$out/AppDir"
@@ -53,32 +53,32 @@ pkgs.runCommand "yapfast-appdir-${yapfast.version}" {
   printf '%s\n' "$build" > "$out/build.json"
   mkdir -p "$appdir/usr/bin"
   # wrapProgram's wrapper sets Nix's library path; the binary itself is beside it.
-  cp ${yapfast}/bin/.yapfast-wrapped "$appdir/usr/bin/yapfast"
-  chmod u+w "$appdir/usr/bin/yapfast"
-  patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 --remove-rpath "$appdir/usr/bin/yapfast"
+  cp ${yappuccino}/bin/.yappuccino-wrapped "$appdir/usr/bin/yappuccino"
+  chmod u+w "$appdir/usr/bin/yappuccino"
+  patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 --remove-rpath "$appdir/usr/bin/yappuccino"
 
-  needed=$(readelf -d "$appdir/usr/bin/yapfast" | sed -n 's/.*(NEEDED).*\[\(.*\)\]/\1/p')
+  needed=$(readelf -d "$appdir/usr/bin/yappuccino" | sed -n 's/.*(NEEDED).*\[\(.*\)\]/\1/p')
   for library in $needed; do
     case " ${toString hostLibraries} " in
       *" $library "*) ;;
-      *) echo "yapfast links $library, which not every distribution has; bundle it or load it at runtime" >&2; exit 1 ;;
+      *) echo "yappuccino links $library, which not every distribution has; bundle it or load it at runtime" >&2; exit 1 ;;
     esac
   done
   newest() {
-    readelf -V "$appdir/usr/bin/yapfast" | grep -o "Name: $1_[0-9.]*" | sed "s/Name: $1_//" | sort -uV | tail -1
+    readelf -V "$appdir/usr/bin/yappuccino" | grep -o "Name: $1_[0-9.]*" | sed "s/Name: $1_//" | sort -uV | tail -1
   }
   for pair in GLIBC:${glibcFloor} GLIBCXX:${libstdcxxFloor}; do
     name=''${pair%%:*} floor=''${pair#*:} asked=$(newest "''${pair%%:*}")
     if [ "$(printf '%s\n' "$asked" "$floor" | sort -V | tail -1)" != "$floor" ]; then
-      echo "yapfast asks for $name $asked, newer than the $floor the AppImage promises" >&2
+      echo "yappuccino asks for $name $asked, newer than the $floor the AppImage promises" >&2
       exit 1
     fi
   done
 
-  share=${yapfast}/share
+  share=${yappuccino}/share
   cp -r "$share" "$appdir/usr/share"
   chmod -R u+w "$appdir/usr/share"
-  ln -s usr/bin/yapfast "$appdir/AppRun"
+  ln -s usr/bin/yappuccino "$appdir/AppRun"
   ln -s usr/share/applications/${id}.desktop "$appdir/${id}.desktop"
   ln -s usr/share/icons/hicolor/scalable/apps/${id}.svg "$appdir/${id}.svg"
   # File managers show .DirIcon as the AppImage's thumbnail, and want a PNG.

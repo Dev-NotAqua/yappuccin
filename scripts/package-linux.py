@@ -36,7 +36,7 @@ def main():
         ["cargo", "metadata", "--locked", "--format-version", "1", "--filter-platform", TARGET, *FEATURES],
         cwd=ROOT, timeout=30,
     ))
-    version = next(package["version"] for package in metadata["packages"] if package["name"] == "yapfast")
+    version = next(package["version"] for package in metadata["packages"] if package["name"] == "yappuccino")
     skia_url = urllib.parse.urlparse(os.environ["SKIA_BINARIES_URL"])
     if skia_url.scheme != "file":
         raise SystemExit("Packaging requires the pinned local Skia archive")
@@ -44,11 +44,11 @@ def main():
     webrtc = Path(os.environ["LK_CUSTOM_WEBRTC"])
     output = args.output
     output.mkdir(parents=True, exist_ok=True)
-    base = f"Yapfast-{version}"
+    base = f"Yappuccino-{version}"
     image = output / f"{base}-x86_64.AppImage"
     source_path = output / f"{base}-source.zip"
     build = json.loads((parts / "build.json").read_text())
-    with tempfile.TemporaryDirectory(prefix="yapfast-linux-package-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="yappuccino-linux-package-") as temporary:
         temporary = Path(temporary)
         rtc = source_snapshot(metadata, base, temporary, source_path)
         if rtc:
@@ -58,20 +58,20 @@ def main():
         shutil.copytree(parts / "AppDir", appdir, symlinks=True)
         for directory in [appdir, *(path for path in appdir.rglob("*") if path.is_dir() and not path.is_symlink())]:
             directory.chmod(0o755)
-        executable = appdir / "usr/bin/yapfast"
+        executable = appdir / "usr/bin/yappuccino"
         contents = executable.read_bytes()
         if names_home(contents):
             raise SystemExit(f"{executable} names {Path.home()}; it should come from the Nix build")
         del contents
 
-        doc = appdir / "usr/share/doc/yapfast"
+        doc = appdir / "usr/share/doc/yappuccino"
         doc.mkdir(parents=True)
         shutil.copy2(ROOT / "LICENSE", doc / "LICENSE")
         (doc / "SOURCE.txt").write_text(
-            f"The source code of this build of Yapfast {version} is published with it:\n\n"
-            f"  https://github.com/yapfast/yapfast/releases/tag/v{version}\n"
+            f"The source code of this build of Yappuccino {version} is published with it:\n\n"
+            f"  https://github.com/Dev-NotAqua/yapfast/releases/tag/v{version}\n"
             f"  {source_path.name}, SHA-256 in BUILD.json\n\n"
-            "and in the repository, https://github.com/yapfast/yapfast. The licenses folder\n"
+            "and in the repository, https://github.com/Dev-NotAqua/yapfast. The licenses folder\n"
             "holds every dependency's own license and notices.\n",
             encoding="utf-8",
         )

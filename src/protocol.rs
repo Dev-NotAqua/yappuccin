@@ -1,6 +1,6 @@
-//! Opening Discord's own protocol links in Yapfast: a current-user
+//! Opening Discord's own protocol links in Yappuccino: a current-user
 //! protocol registration on Windows, and the person's default
-//! applications on Linux. Yapfast's own `yapfast:` scheme is registered by
+//! applications on Linux. Yappuccino's own `yappuccino:` scheme is registered by
 //! its installer or desktop entry; this claims `discord:` only when
 //! Settings says to, and gives the previous handler back when turned off.
 
@@ -9,17 +9,17 @@ use std::path::Path;
 /// Whether this platform can claim Discord's protocol links.
 pub const SUPPORTED: bool = cfg!(any(windows, target_os = "linux"));
 
-/// Whether Discord protocol links open in this Yapfast.
+/// Whether Discord protocol links open in this Yappuccino.
 pub fn discord_enabled(root: &Path) -> bool {
     platform::enabled(root)
 }
 
-/// Claims Discord protocol links for this Yapfast, or gives them back.
+/// Claims Discord protocol links for this Yappuccino, or gives them back.
 pub fn set_discord_enabled(root: &Path, enabled: bool) -> std::io::Result<()> {
     platform::set(root, enabled)
 }
 
-/// Points a claimed registration at this Yapfast after its folder moved
+/// Points a claimed registration at this Yappuccino after its folder moved
 /// or an update replaced it. A handler someone else chose since is left.
 pub fn refresh(root: &Path) {
     if let Err(error) = platform::refresh(root) {
@@ -27,13 +27,13 @@ pub fn refresh(root: &Path) {
     }
 }
 
-/// This Yapfast as a command: itself, its data folder when it isn't the
+/// This Yappuccino as a command: itself, its data folder when it isn't the
 /// usual one, then the link the desktop hands it.
 #[cfg(windows)]
 fn command(root: &Path) -> std::io::Result<Vec<String>> {
     use crate::autostart::path_text;
     let mut command = vec![path_text(std::env::current_exe()?)?];
-    let usual = yapfast_core::default_directory().ok();
+    let usual = yappuccino_core::default_directory().ok();
     if usual.as_deref() != Some(root) {
         command.extend([
             "--data-dir".to_owned(),
@@ -49,7 +49,7 @@ use linux as platform;
 use none as platform;
 #[cfg(windows)]
 use windows as platform;
-// src/notify.rs registers Yapfast's toasts with it.
+// src/notify.rs registers Yappuccino's toasts with it.
 #[cfg(windows)]
 pub(crate) use windows::set_string;
 
@@ -85,11 +85,11 @@ mod windows {
     };
 
     const PROTOCOL: &str = r"Software\Classes\discord";
-    const YAPFAST_PROTOCOL: &str = r"Software\Classes\yapfast";
-    const YAPFAST_COMMAND: &str = r"Software\Classes\yapfast\shell\open\command";
-    const YAPFAST_ICON: &str = r"Software\Classes\yapfast\DefaultIcon";
+    const YAPPUCCINO_PROTOCOL: &str = r"Software\Classes\yappuccino";
+    const YAPPUCCINO_COMMAND: &str = r"Software\Classes\yappuccino\shell\open\command";
+    const YAPPUCCINO_ICON: &str = r"Software\Classes\yappuccino\DefaultIcon";
     const COMMAND: &str = r"Software\Classes\discord\shell\open\command";
-    const BACKUP: &str = r"Software\Yapfast\DiscordProtocol";
+    const BACKUP: &str = r"Software\Yappuccino\DiscordProtocol";
     const PREVIOUS_COMMAND: &str = "PreviousCommand";
     const HAD_COMMAND: &str = "HadCommand";
     const HAD_URL_PROTOCOL: &str = "HadUrlProtocol";
@@ -127,7 +127,7 @@ mod windows {
                         },
                     )?;
                 }
-                register_yapfast(root, &ours)?;
+                register_yappuccino(root, &ours)?;
                 if query_string(PROTOCOL, Some("URL Protocol")).is_none() {
                     set_string(PROTOCOL, Some("URL Protocol"), "")?;
                 }
@@ -160,33 +160,33 @@ mod windows {
             && query_string(COMMAND, None).as_deref().is_some_and(is_ours)
         {
             let ours = command_line(&super::command(root)?);
-            register_yapfast(root, &ours)?;
+            register_yappuccino(root, &ours)?;
             set_string(COMMAND, None, &ours)?;
         }
         Ok(())
     }
 
-    /// Registers Yapfast's own scheme for this copy, as the installer
-    /// does, so a portable copy can be handed `yapfast:` links too.
-    fn register_yapfast(root: &Path, ours: &str) -> io::Result<()> {
-        set_string(YAPFAST_PROTOCOL, None, "URL:Yapfast Protocol")?;
-        set_string(YAPFAST_PROTOCOL, Some("URL Protocol"), "")?;
+    /// Registers Yappuccino's own scheme for this copy, as the installer
+    /// does, so a portable copy can be handed `yappuccino:` links too.
+    fn register_yappuccino(root: &Path, ours: &str) -> io::Result<()> {
+        set_string(YAPPUCCINO_PROTOCOL, None, "URL:Yappuccino Protocol")?;
+        set_string(YAPPUCCINO_PROTOCOL, Some("URL Protocol"), "")?;
         let program = super::command(root)?
             .into_iter()
             .next()
-            .ok_or_else(|| io::Error::other("Yapfast's own path is unavailable"))?;
+            .ok_or_else(|| io::Error::other("Yappuccino's own path is unavailable"))?;
         set_string(
-            YAPFAST_ICON,
+            YAPPUCCINO_ICON,
             None,
             &format!("{},0", crate::autostart::windows_argument(&program)),
         )?;
-        set_string(YAPFAST_COMMAND, None, ours)
+        set_string(YAPPUCCINO_COMMAND, None, ours)
     }
 
     /// The registered command line, with the link last, after
     /// `--open-link`. Windows puts the link in as it comes, quotes
     /// included, so whatever it splits into follows the marker, where
-    /// Yapfast reads no option. The program comes first, quoted as Windows
+    /// Yappuccino reads no option. The program comes first, quoted as Windows
     /// names one.
     fn command_line(command: &[String]) -> String {
         let mut line: Vec<String> = command
@@ -201,11 +201,11 @@ mod windows {
         line.join(" ")
     }
 
-    /// Whether a registered command runs a Yapfast, wherever it lives,
+    /// Whether a registered command runs a Yappuccino, wherever it lives,
     /// with or without `--open-link`, as earlier builds registered it.
     fn is_ours(command: &str) -> bool {
         let command = command.to_ascii_lowercase();
-        command.contains("yapfast.exe") && command.contains("%1")
+        command.contains("yappuccino.exe") && command.contains("%1")
     }
 
     pub(crate) fn set_string(key: &str, name: Option<&str>, value: &str) -> io::Result<()> {
@@ -318,12 +318,12 @@ mod windows {
 
         #[test]
         fn recognises_its_own_registered_command() {
-            assert!(is_ours(r#""C:\Apps\Yapfast\yapfast.exe" --open-link "%1""#));
-            assert!(is_ours(r#""C:\Apps\Yapfast\yapfast.exe" "%1""#));
+            assert!(is_ours(r#""C:\Apps\Yappuccino\yappuccino.exe" --open-link "%1""#));
+            assert!(is_ours(r#""C:\Apps\Yappuccino\yappuccino.exe" "%1""#));
             assert!(!is_ours(r#""C:\Apps\Discord\Discord.exe" "%1""#));
             assert_eq!(
-                command_line(&[r"C:\Apps\Yapfast\yapfast.exe".into()]),
-                r#""C:\Apps\Yapfast\yapfast.exe" --open-link "%1""#
+                command_line(&[r"C:\Apps\Yappuccino\yappuccino.exe".into()]),
+                r#""C:\Apps\Yappuccino\yappuccino.exe" --open-link "%1""#
             );
         }
 
@@ -345,9 +345,9 @@ mod windows {
 #[cfg(target_os = "linux")]
 mod linux {
     //! The person's own `mimeapps.list` is the setting: it's on while its
-    //! default applications name Yapfast first for `discord:`. Yapfast's
-    //! desktop entry declares only `yapfast:`, so without a Discord app
-    //! installed the desktop doesn't fall back to Yapfast for Discord's
+    //! default applications name Yappuccino first for `discord:`. Yappuccino's
+    //! desktop entry declares only `yappuccino:`, so without a Discord app
+    //! installed the desktop doesn't fall back to Yappuccino for Discord's
     //! links; gio and xdg-open follow a default all the same.
 
     use std::{
@@ -357,12 +357,12 @@ mod linux {
 
     use crate::desktop_entry;
 
-    /// What the switch claims: Discord's links, and Yapfast's own, which
+    /// What the switch claims: Discord's links, and Yappuccino's own, which
     /// another app may have been chosen for.
-    const SCHEMES: [&str; 2] = ["x-scheme-handler/discord", "x-scheme-handler/yapfast"];
+    const SCHEMES: [&str; 2] = ["x-scheme-handler/discord", "x-scheme-handler/yappuccino"];
     const DEFAULTS: &str = "[Default Applications]";
     /// In the data folder: each scheme's line in `mimeapps.list` before
-    /// Yapfast claimed it, as it was, or nothing when there was none.
+    /// Yappuccino claimed it, as it was, or nothing when there was none.
     const PREVIOUS: &str = "discord-protocol-previous";
 
     fn desktop() -> String {
@@ -378,7 +378,7 @@ mod linux {
         if enabled {
             desktop_entry::install();
             if !desktop_exists() {
-                return Err(io::Error::other("Yapfast's desktop entry isn't installed"));
+                return Err(io::Error::other("Yappuccino's desktop entry isn't installed"));
             }
         }
         apply(&list, &root.join(PREVIOUS), enabled)
@@ -386,17 +386,17 @@ mod linux {
 
     pub fn refresh(_: &Path) -> io::Result<()> {
         // A package or the AppImage entry itself names the current
-        // Yapfast; the default names only that entry.
+        // Yappuccino; the default names only that entry.
         Ok(())
     }
 
     fn enabled_in(list: &Path) -> bool {
         std::fs::read_to_string(list)
-            .is_ok_and(|text| default_line(&text, SCHEMES[0]).is_some_and(names_yapfast))
+            .is_ok_and(|text| default_line(&text, SCHEMES[0]).is_some_and(names_yappuccino))
     }
 
     /// Claims the schemes in `list`, keeping their lines in `previous`, or
-    /// puts those lines back where Yapfast still has them.
+    /// puts those lines back where Yappuccino still has them.
     fn apply(list: &Path, previous: &Path, enabled: bool) -> io::Result<()> {
         let current = match std::fs::read_to_string(list) {
             Err(error) if error.kind() == io::ErrorKind::NotFound => String::new(),
@@ -404,11 +404,11 @@ mod linux {
         };
         let mut text = current.clone();
         if enabled {
-            // Kept from the first claim on: a line naming Yapfast is no
+            // Kept from the first claim on: a line naming Yappuccino is no
             // one else's to give back.
             if !previous.exists() {
                 let lines = SCHEMES.map(|scheme| {
-                    default_line(&current, scheme).filter(|line| !names_yapfast(line))
+                    default_line(&current, scheme).filter(|line| !names_yappuccino(line))
                 });
                 let kept: String = lines
                     .into_iter()
@@ -423,7 +423,7 @@ mod linux {
         } else {
             let kept = std::fs::read_to_string(previous).unwrap_or_default();
             for scheme in SCHEMES {
-                if default_line(&text, scheme).is_some_and(names_yapfast) {
+                if default_line(&text, scheme).is_some_and(names_yappuccino) {
                     let line = kept.lines().find(|line| key(line) == Some(scheme));
                     text = with_line(&text, scheme, line);
                 }
@@ -441,8 +441,8 @@ mod linux {
         Ok(())
     }
 
-    /// Whether a default line names Yapfast first.
-    fn names_yapfast(line: &str) -> bool {
+    /// Whether a default line names Yappuccino first.
+    fn names_yappuccino(line: &str) -> bool {
         line.split_once('=')
             .and_then(|(_, value)| value.split(';').next())
             .is_some_and(|first| first.trim() == desktop())
@@ -610,7 +610,7 @@ mod linux {
                 claimed.contains("[Added Associations]\nx-scheme-handler/discord=other.desktop;")
             );
             assert!(claimed.contains(&format!(
-                "x-scheme-handler/yapfast={};\n\n[Removed",
+                "x-scheme-handler/yappuccino={};\n\n[Removed",
                 desktop()
             )));
             // A second claim keeps what the first kept.
@@ -628,7 +628,7 @@ mod linux {
             assert_eq!(
                 read(&folders.list),
                 format!(
-                    "[Default Applications]\nx-scheme-handler/discord={0};\nx-scheme-handler/yapfast={0};\n",
+                    "[Default Applications]\nx-scheme-handler/discord={0};\nx-scheme-handler/yappuccino={0};\n",
                     desktop()
                 )
             );

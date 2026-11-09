@@ -1,24 +1,24 @@
-//! Starting Yapfast when the person signs in to their computer: a value in the
+//! Starting Yappuccino when the person signs in to their computer: a value in the
 //! registry's Run key on Windows, an XDG autostart entry on Linux. The entry is
 //! the setting, so one turned off in Task Manager, or a deleted file, shows as
-//! off in Settings too. It starts Yapfast with `--background`, in the tray.
+//! off in Settings too. It starts Yappuccino with `--background`, in the tray.
 
 use std::path::PathBuf;
 
-/// Whether this platform can start Yapfast at sign-in.
+/// Whether this platform can start Yappuccino at sign-in.
 pub const SUPPORTED: bool = cfg!(any(target_os = "linux", windows));
 
 /// The name the entry goes by: the Run key's value, and the Inno Setup
 /// installer's, which writes the same one.
 #[cfg(windows)]
-const NAME: &str = "Yapfast";
+const NAME: &str = "Yappuccino";
 
-/// Whether Yapfast starts when the person signs in.
+/// Whether Yappuccino starts when the person signs in.
 pub fn enabled() -> bool {
     platform::enabled()
 }
 
-/// Starts Yapfast at sign-in, or stops it.
+/// Starts Yappuccino at sign-in, or stops it.
 pub fn set(on: bool) -> std::io::Result<()> {
     match on {
         true => platform::write(&command()?),
@@ -26,7 +26,7 @@ pub fn set(on: bool) -> std::io::Result<()> {
     }
 }
 
-/// Points an entry at this Yapfast, after its folder moved or an update.
+/// Points an entry at this Yappuccino, after its folder moved or an update.
 pub fn refresh() {
     if enabled()
         && let Err(error) = set(true)
@@ -35,7 +35,7 @@ pub fn refresh() {
     }
 }
 
-/// What starts Yapfast in the tray, with the data folder this one uses.
+/// What starts Yappuccino in the tray, with the data folder this one uses.
 fn command() -> std::io::Result<Vec<String>> {
     let program = std::env::current_exe()?;
     #[cfg(target_os = "linux")]
@@ -166,8 +166,8 @@ mod linux {
             .map(|argument| desktop_entry::quoted(argument))
             .collect();
         let text = format!(
-            "[Desktop Entry]\nType=Application\nName=Yapfast\n\
-             Comment=Starts Yapfast in the system tray when you sign in\n\
+            "[Desktop Entry]\nType=Application\nName=Yappuccino\n\
+             Comment=Starts Yappuccino in the system tray when you sign in\n\
              Exec={}\nIcon={}\nTerminal=false\nX-GNOME-Autostart-enabled=true\n",
             exec.join(" "),
             crate::icon::APP_ID,
@@ -184,7 +184,7 @@ mod linux {
             let config = tempfile::tempdir().unwrap();
             assert!(!entry_enabled(config.path()));
             let command = [
-                "/opt/Yapfast Builds/yapfast".to_owned(),
+                "/opt/Yappuccino Builds/yappuccino".to_owned(),
                 "--background".to_owned(),
                 "--data-dir".to_owned(),
                 "/home/a/100% $data".to_owned(),
@@ -193,15 +193,15 @@ mod linux {
             assert!(entry_enabled(config.path()));
             let text = std::fs::read_to_string(entry(config.path())).unwrap();
             assert!(text.contains(
-                r#"Exec="/opt/Yapfast Builds/yapfast" --background --data-dir "/home/a/100%% \$data""#
+                r#"Exec="/opt/Yappuccino Builds/yappuccino" --background --data-dir "/home/a/100%% \$data""#
             ));
-            assert!(text.contains("Name=Yapfast\n"));
+            assert!(text.contains("Name=Yappuccino\n"));
         }
 
         #[test]
         fn an_entry_a_desktop_turned_off_is_off() {
             let config = tempfile::tempdir().unwrap();
-            write_entry(config.path(), &["yapfast".to_owned()]).unwrap();
+            write_entry(config.path(), &["yappuccino".to_owned()]).unwrap();
             let path = entry(config.path());
             let text = std::fs::read_to_string(&path).unwrap();
             std::fs::write(&path, text.replace("enabled=true", "enabled=false")).unwrap();
@@ -340,7 +340,7 @@ mod windows {
             remove().unwrap();
             assert!(!enabled());
             write(&[
-                r"C:\Program Files\Yapfast\yapfast.exe".into(),
+                r"C:\Program Files\Yappuccino\yappuccino.exe".into(),
                 "--background".into(),
             ])
             .unwrap();
@@ -353,7 +353,7 @@ mod windows {
                 .collect();
             assert_eq!(
                 String::from_utf16(&text).unwrap(),
-                r#""C:\Program Files\Yapfast\yapfast.exe" --background"#
+                r#""C:\Program Files\Yappuccino\yappuccino.exe" --background"#
             );
             // Task Manager turns it off with an odd first byte.
             let disabled = [3u8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -369,7 +369,7 @@ mod windows {
             };
             checked(status).unwrap();
             assert!(!enabled());
-            write(&["yapfast.exe".into()]).unwrap();
+            write(&["yappuccino.exe".into()]).unwrap();
             assert!(enabled(), "turning it on here turns it on in Task Manager");
             remove().unwrap();
             assert!(!enabled());
@@ -403,8 +403,8 @@ mod tests {
     fn quotes_windows_arguments_as_windows_splits_them() {
         assert_eq!(windows_argument("--background"), "--background");
         assert_eq!(
-            windows_argument(r"C:\Users\A B\Yapfast\yapfast.exe"),
-            r#""C:\Users\A B\Yapfast\yapfast.exe""#
+            windows_argument(r"C:\Users\A B\Yappuccino\yappuccino.exe"),
+            r#""C:\Users\A B\Yappuccino\yappuccino.exe""#
         );
         assert_eq!(windows_argument(r"C:\A B\"), r#""C:\A B\\""#);
         assert_eq!(windows_argument(r#"say "hi""#), r#""say \"hi\"""#);
@@ -414,12 +414,12 @@ mod tests {
     #[test]
     fn quotes_a_program_whether_or_not_it_needs_it() {
         assert_eq!(
-            windows_program(r"C:\Apps\Yapfast\yapfast.exe"),
-            r#""C:\Apps\Yapfast\yapfast.exe""#
+            windows_program(r"C:\Apps\Yappuccino\yappuccino.exe"),
+            r#""C:\Apps\Yappuccino\yappuccino.exe""#
         );
         assert_eq!(
-            windows_program(r"C:\A B\yapfast.exe"),
-            r#""C:\A B\yapfast.exe""#
+            windows_program(r"C:\A B\yappuccino.exe"),
+            r#""C:\A B\yappuccino.exe""#
         );
     }
 }

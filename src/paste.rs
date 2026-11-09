@@ -15,7 +15,7 @@ pub enum Clipboard {
     Files(Vec<PathBuf>),
     /// A picture's file contents, and the extension for its type.
     Picture(Vec<u8>, &'static str),
-    /// Text, or nothing Yapfast can attach.
+    /// Text, or nothing Yappuccino can attach.
     Other,
 }
 
@@ -28,7 +28,7 @@ const PICTURES: [(&str, &str); 4] = [
 ];
 
 /// Reads the clipboard. Blocks while the copying app sends its data, so it
-/// runs off the UI thread; Yapfast itself may be that app.
+/// runs off the UI thread; Yappuccino itself may be that app.
 pub fn read() -> Clipboard {
     #[cfg(target_os = "linux")]
     {
@@ -138,8 +138,8 @@ mod wayland {
 #[cfg(target_os = "linux")]
 mod x11 {
     //! The CLIPBOARD selection, asked of its owner as the ICCCM has it: its
-    //! targets, then the one Yapfast takes, each into a property on a window
-    //! of Yapfast's own. Data too big for one request comes in parts (INCR).
+    //! targets, then the one Yappuccino takes, each into a property on a window
+    //! of Yappuccino's own. Data too big for one request comes in parts (INCR).
     //! Text comes before pictures, as office suites offer a picture of the
     //! cells or text they copy.
 
@@ -172,7 +172,7 @@ mod x11 {
         let (connection, screen) = x11rb::connect(None)?;
         let names = [
             "CLIPBOARD",
-            "YAPFAST_PASTE",
+            "YAPPUCCINO_PASTE",
             "INCR",
             "TARGETS",
             "text/uri-list",
@@ -347,7 +347,7 @@ mod windows {
 
     use super::{Clipboard, PICTURES, bitmap, png};
 
-    // The standard formats Yapfast takes, from WinUser.h.
+    // The standard formats Yappuccino takes, from WinUser.h.
     const CF_TEXT: u32 = 1;
     const CF_OEMTEXT: u32 = 7;
     const CF_DIB: u32 = 8;

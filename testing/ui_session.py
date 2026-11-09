@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Run Yapfast on the private display and act on commands from scripts/ui-session.
+"""Run Yappuccino on the private display and act on commands from scripts/ui-session.
 
 scripts/ui-session starts this inside scripts/run-framework-isolated. It
-starts Yapfast (and, with --discord, testing/fake_discord.ts), then reads
+starts Yappuccino (and, with --discord, testing/fake_discord.ts), then reads
 "ID<TAB>COMMAND" lines appended to STATE/commands and answers each with
 "ID<TAB>ok|error<TAB>JSON_OUTPUT" in STATE/results. See scripts/ui-session for the
 commands.
@@ -35,9 +35,9 @@ parser.add_argument('--fake-args', default='')
 parser.add_argument('--tray', type=Path, help='testing/tray_host.rs, built, to run as the tray')
 parser.add_argument('--record', type=Path, help='testing/record_host.rs, built, for record')
 parser.add_argument('--cursor', type=int, metavar='SIZE', help="show the pointer, Adwaita's, this many pixels tall")
-parser.add_argument('yapfast_args', nargs=argparse.REMAINDER)
+parser.add_argument('yappuccino_args', nargs=argparse.REMAINDER)
 args = parser.parse_args()
-yapfast_args = args.yapfast_args[1:] if args.yapfast_args[:1] == ['--'] else args.yapfast_args
+yappuccino_args = args.yappuccino_args[1:] if args.yappuccino_args[:1] == ['--'] else args.yappuccino_args
 state = args.state
 
 KEYS = {
@@ -63,14 +63,14 @@ CHARACTERS.update({' ': (57, False), '-': (12, False), '=': (13, False), ';': (3
                    '%': (6, True), '^': (7, True), '&': (8, True), '*': (9, True), '+': (13, True)})
 
 fake = None
-# Yapfast reads commands for its window from this file; see `test_control` in src/ui.rs.
+# Yappuccino reads commands for its window from this file; see `test_control` in src/ui.rs.
 window_control = state / 'window-control'
-environment = dict(os.environ, YAPFAST_UI_TEST_SIZE=args.size, YAPFAST_UI_TEST_CONTROL=str(window_control))
+environment = dict(os.environ, YAPPUCCINO_UI_TEST_SIZE=args.size, YAPPUCCINO_UI_TEST_CONTROL=str(window_control))
 if args.cursor:
     # Weston draws the pointer the window asks for, and winit finds none
     # without a theme; the shell gives one, as the desktop's isn't here.
     environment.update(XCURSOR_THEME='Adwaita', XCURSOR_SIZE=str(args.cursor),
-                       XCURSOR_PATH=os.environ['YAPFAST_FRAMEWORK_CURSORS'])
+                       XCURSOR_PATH=os.environ['YAPPUCCINO_FRAMEWORK_CURSORS'])
 if args.discord:
     with socket.socket() as probe:
         probe.bind(('127.0.0.1', 0))
@@ -89,10 +89,10 @@ if args.discord:
             if fake.poll() is not None or time.monotonic() > deadline:
                 raise SystemExit('The fake Discord did not start; see ' + str(state / 'fake.log'))
             time.sleep(.2)
-    environment['YAPFAST_DISCORD_TEST_SERVER'] = discord
+    environment['YAPPUCCINO_DISCORD_TEST_SERVER'] = discord
 
 data = state / 'data'
-yapfast = None
+yappuccino = None
 tray = None
 # The pointer's position, where Weston puts it until the first move.
 pointer = [100., 100.]
@@ -135,24 +135,24 @@ def tray_command(rest):
     result = subprocess.run([str(args.tray), *values], capture_output=True, text=True, timeout=10)
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or f'tray_host exited with {result.returncode}')
-    # The window opens, or the menu acts, as Yapfast hears it.
+    # The window opens, or the menu acts, as Yappuccino hears it.
     time.sleep(.8)
     return result.stdout.strip()
 
 
 def launch(extra=()):
-    global yapfast
-    # A new Yapfast would run every line again.
+    global yappuccino
+    # A new Yappuccino would run every line again.
     window_control.write_text('')
-    # Yapfast takes --preview only before --data-dir.
-    yapfast = subprocess.Popen([str(args.bin), '--renderer', args.renderer, *yapfast_args, *extra,
+    # Yappuccino takes --preview only before --data-dir.
+    yappuccino = subprocess.Popen([str(args.bin), '--renderer', args.renderer, *yappuccino_args, *extra,
                                 '--data-dir', str(data)],
-                            env=environment, stdout=(state / 'yapfast.log').open('ab'),
+                            env=environment, stdout=(state / 'yappuccino.log').open('ab'),
                             stderr=subprocess.STDOUT, start_new_session=True)
-    (state / 'yapfast.pid').write_text(f'{yapfast.pid}\n')
+    (state / 'yappuccino.pid').write_text(f'{yappuccino.pid}\n')
     time.sleep(2)
-    if yapfast.poll() is not None:
-        raise RuntimeError(f'Yapfast exited with {yapfast.returncode}; see {state / "yapfast.log"}')
+    if yappuccino.poll() is not None:
+        raise RuntimeError(f'Yappuccino exited with {yappuccino.returncode}; see {state / "yappuccino.log"}')
 
 
 def stop(process):
@@ -180,7 +180,7 @@ def shot(name, *crop):
     shots.mkdir(exist_ok=True)
     path = shots / f'{name}.png'
     time.sleep(.4)
-    with tempfile.TemporaryDirectory(prefix='yapfast-shot-') as folder:
+    with tempfile.TemporaryDirectory(prefix='yappuccino-shot-') as folder:
         subprocess.run(['weston-screenshooter'], env=dict(os.environ, XDG_PICTURES_DIR=folder),
                        check=True, timeout=10, capture_output=True)
         picture = next(Path(folder).glob('*.png'))
@@ -348,11 +348,11 @@ def perform(command):
     verb, _, rest = command.partition(' ')
     values = rest.split()
     if verb == 'relaunch':
-        stop(yapfast)
+        stop(yappuccino)
         launch(values)
-        return f'pid {yapfast.pid}'
+        return f'pid {yappuccino.pid}'
     if verb == 'pid':
-        return str(yapfast.pid)
+        return str(yappuccino.pid)
     if verb == 'sleep':
         time.sleep(float(rest))
         return ''
@@ -364,8 +364,8 @@ def perform(command):
         return tray_command(rest)
     if verb == 'record':
         return record(rest)
-    if yapfast.poll() is not None:
-        raise RuntimeError(f'Yapfast exited with {yapfast.returncode}; see {state / "yapfast.log"}, or relaunch')
+    if yappuccino.poll() is not None:
+        raise RuntimeError(f'Yappuccino exited with {yappuccino.returncode}; see {state / "yappuccino.log"}, or relaunch')
     if verb == 'click':
         # Then modifiers held down for the click, as shift or ctrl+shift, and
         # glide [SECONDS] to move there as a hand would first.
@@ -456,7 +456,7 @@ def perform(command):
             raise ValueError(f'no file at {path}')
         with window_control.open('a') as window:
             window.write(f'{verb} {path}\n')
-        # Yapfast reads the file every half second.
+        # Yappuccino reads the file every half second.
         time.sleep(.8)
     elif verb == 'theme':
         with window_control.open('a') as window:
@@ -505,6 +505,6 @@ try:
         time.sleep(.05)
 finally:
     stop_recording()
-    stop(yapfast)
+    stop(yappuccino)
     stop(tray)
     stop(fake)

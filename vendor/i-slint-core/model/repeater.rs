@@ -143,26 +143,26 @@ struct RepeaterInner {
     /// ListView-specific layout state (offset, cached heights, scroll position).
     layout_state: RepeaterLayoutState,
     scroll_to_row: Option<scroll::ScrollToRowRequest>,
-    /// Yapfast: see `YapfastHold`.
-    yapfast_hold: YapfastHold,
+    /// Yappuccino: see `YappuccinoHold`.
+    yappuccino_hold: YappuccinoHold,
 }
 
-/// Yapfast: what `yapfast_anchor::hold` asks of a ListView's layout, and what the layout at the
+/// Yappuccino: what `yappuccino_anchor::hold` asks of a ListView's layout, and what the layout at the
 /// end of the list needs from the one before.
 #[derive(Clone, Copy, Default, Debug)]
-struct YapfastHold {
+struct YappuccinoHold {
     /// Rows went in above the instances, and the first instance's height then, when they went in
     /// right above it.
     added: Option<Option<Coord>>,
     /// The row that keeps its bottom edge where it is in the view, as its height changes, once
     /// rows went in right above it, until it isn't instantiated anymore.
-    anchor: Option<YapfastAnchor>,
+    anchor: Option<YappuccinoAnchor>,
     /// The `content-height` the last layout set.
     content_height: Coord,
 }
 
 #[derive(Clone, Copy, Debug)]
-struct YapfastAnchor {
+struct YappuccinoAnchor {
     row: usize,
     /// Its bottom edge in the view, when `content-y` was `content_y`; scrolling moves it.
     bottom: Coord,
@@ -200,9 +200,9 @@ trait RepeaterInstanceOps {
     /// Height of the instance, or `None` if not yet created.
     fn height(&self, instance_idx: usize) -> Option<Coord>;
 
-    /// Yapfast: the height of the instance once the parts its data shows or hides are made, which
+    /// Yappuccino: the height of the instance once the parts its data shows or hides are made, which
     /// otherwise happens when it's next visited, such as to draw it.
-    fn yapfast_settled_height(&self, instance_idx: usize) -> Option<Coord> {
+    fn yappuccino_settled_height(&self, instance_idx: usize) -> Option<Coord> {
         self.height(instance_idx)
     }
 
@@ -258,8 +258,8 @@ pub trait ListViewProperties {
     /// Register the content properties as dependencies of the current
     /// binding evaluation without reading them.
     fn register_as_dependencies(&self);
-    /// Yapfast: set `content-y`, ending an animation of it.
-    fn yapfast_content_y_reset(&self, value: LogicalLength) {
+    /// Yappuccino: set `content-y`, ending an animation of it.
+    fn yappuccino_content_y_reset(&self, value: LogicalLength) {
         self.content_y_set(value);
     }
 }
@@ -296,7 +296,7 @@ impl ListViewProperties for TypedListViewProps<'_> {
             content_height.set(value);
         }
     }
-    fn yapfast_content_y_reset(&self, value: LogicalLength) {
+    fn yappuccino_content_y_reset(&self, value: LogicalLength) {
         // A binding of its own replaces the animation's, then setting the value drops it.
         self.content_y.set_binding(move || value);
         self.content_y.set(value);
@@ -329,7 +329,7 @@ fn update_visible_instances(
     props: &dyn ListViewProperties,
     listview_width: LogicalLength,
     listview_height: LogicalLength,
-    yapfast: &mut YapfastHold,
+    yappuccino: &mut YappuccinoHold,
 ) -> bool {
     let zero = LogicalLength::default();
     let mut content_width_value = listview_width.get();
@@ -341,7 +341,7 @@ fn update_visible_instances(
         props.content_height_set(zero);
         props.content_y_set(zero);
         props.content_width_set(listview_width);
-        yapfast.content_height = 0 as Coord;
+        yappuccino.content_height = 0 as Coord;
         return false;
     }
     // A height of zero or less, like before the window has a size, leaves no viewport to fill.
@@ -362,29 +362,29 @@ fn update_visible_instances(
         content_y_value = content_y_value.min(0 as Coord);
     }
 
-    // Yapfast: `content-y` moved to the end of the list or past it, as when a chat's timeline
+    // Yappuccino: `content-y` moved to the end of the list or past it, as when a chat's timeline
     // follows its newest row, or a scroll reaches the end. The rows are laid out up from the
     // last, which ends at the bottom of the view. Laid out down from the row the average height
     // puts at that `content-y`, they end short of the end or past it: `content-height` changes
     // again, and whatever follows the end moves `content-y` again, a round of change handlers
     // each time, until the average settles.
-    if yapfast.added.is_none()
+    if yappuccino.added.is_none()
         && scroll_to_row.is_none()
         && props.computes_content_height()
         && content_y_value != state.previous_content_y
         && listview_height > 0 as Coord
-        && yapfast.content_height > listview_height
-        && content_y_value <= listview_height - yapfast.content_height + 0.5 as Coord
+        && yappuccino.content_height > listview_height
+        && content_y_value <= listview_height - yappuccino.content_height + 0.5 as Coord
     {
-        yapfast.anchor = None;
-        return yapfast_layout_end(
+        yappuccino.anchor = None;
+        return yappuccino_layout_end(
             ops,
             state,
             row_count,
             props,
             listview_width,
             listview_height,
-            yapfast,
+            yappuccino,
         );
     }
 
@@ -429,31 +429,31 @@ fn update_visible_instances(
     let one_and_a_half_screen = listview_height * 3 as Coord / 2 as Coord;
     #[allow(unused_mut)]
     let mut first_item_y = state.anchor_y;
-    // Yapfast: rows went in above, inside `yapfast_anchor::hold`. When they went in right above the
+    // Yappuccino: rows went in above, inside `yappuccino_anchor::hold`. When they went in right above the
     // first instance, it keeps its bottom edge where it was, as its top part can change with the
     // rows now before it, and goes on doing so as its height settles.
-    let added = yapfast.added.take();
+    let added = yappuccino.added.take();
     if let Some(Some(height)) = added {
-        yapfast.anchor = Some(YapfastAnchor {
+        yappuccino.anchor = Some(YappuccinoAnchor {
             row: state.offset,
             bottom: state.anchor_y + state.previous_content_y + height,
             content_y: state.previous_content_y,
         });
     }
     let mut anchor_bottom = None;
-    if let Some(anchor) = yapfast.anchor {
+    if let Some(anchor) = yappuccino.anchor {
         match anchor.row.checked_sub(state.offset).filter(|instance| *instance < ops.len()) {
             Some(instance) => {
                 let bottom = anchor.bottom + content_y_value - anchor.content_y;
                 let mut top = bottom;
                 for i in 0..=instance {
                     changed |= ops.ensure_updated(i, state.offset + i);
-                    top -= ops.yapfast_settled_height(i).unwrap_or(0 as Coord);
+                    top -= ops.yappuccino_settled_height(i).unwrap_or(0 as Coord);
                 }
                 first_item_y = top - content_y_value;
                 anchor_bottom = Some(bottom);
             }
-            None => yapfast.anchor = None,
+            None => yappuccino.anchor = None,
         }
     }
     let last_item_bottom = first_item_y + element_height * ops.len() as Coord;
@@ -627,11 +627,11 @@ fn update_visible_instances(
         // Recompute coordinates for the scrollbar.
         state.cached_item_height = (y - new_offset_y) / ops.len() as Coord;
         state.anchor_y = state.cached_item_height * state.offset as Coord;
-        yapfast.content_height = state.cached_item_height * row_count as Coord;
-        props.content_height_set(LogicalLength::new(yapfast.content_height));
+        yappuccino.content_height = state.cached_item_height * row_count as Coord;
+        props.content_height_set(LogicalLength::new(yappuccino.content_height));
         props.content_width_set(LogicalLength::new(content_width_value));
         let new_content_y = -state.anchor_y + new_offset_y;
-        if let (Some(anchor), Some(bottom)) = (&mut yapfast.anchor, anchor_bottom) {
+        if let (Some(anchor), Some(bottom)) = (&mut yappuccino.anchor, anchor_bottom) {
             anchor.bottom = bottom;
             anchor.content_y = new_content_y;
         }
@@ -641,9 +641,9 @@ fn update_visible_instances(
         // content_width and content_height, but the content_y is not yet consistent.
         // So the physics animations limit value may be inconsistent.
         if added.is_some() {
-            // Yapfast: rows went in above inside `yapfast_anchor::hold`. An animation, such as a
+            // Yappuccino: rows went in above inside `yappuccino_anchor::hold`. An animation, such as a
             // wheel's, would scroll on to where it was going regardless, moving the rows shown.
-            props.yapfast_content_y_reset(LogicalLength::new(new_content_y));
+            props.yappuccino_content_y_reset(LogicalLength::new(new_content_y));
         } else if new_content_y != props.content_y_get_internal().get() {
             // If a physics animation is ongoing (e.g. due to a flick), we should not interrupt it.
             // The physics animation implements intercept_set, and is therefore not interrupted by
@@ -675,17 +675,17 @@ fn update_visible_instances(
     changed
 }
 
-/// Yapfast: lays the rows out up from the last, whose bottom edge is the bottom of the view, for
+/// Yappuccino: lays the rows out up from the last, whose bottom edge is the bottom of the view, for
 /// `content-y` at the end of the list; see `update_visible_instances`. Returns whether any instance
 /// was created.
-fn yapfast_layout_end(
+fn yappuccino_layout_end(
     ops: &mut impl RepeaterInstanceOps,
     state: &mut RepeaterLayoutState,
     row_count: usize,
     props: &dyn ListViewProperties,
     listview_width: LogicalLength,
     listview_height: Coord,
-    yapfast: &mut YapfastHold,
+    yappuccino: &mut YappuccinoHold,
 ) -> bool {
     let mut changed = false;
     // The instances run on to the last row: the rows after them go in, unless there are more of
@@ -705,13 +705,13 @@ fn yapfast_layout_end(
     while top > 0 as Coord && first > 0 {
         first -= 1;
         changed |= ops.ensure_updated(first, state.offset + first);
-        top -= ops.yapfast_settled_height(first).unwrap_or(0 as Coord);
+        top -= ops.yappuccino_settled_height(first).unwrap_or(0 as Coord);
     }
     while top > 0 as Coord && state.offset > 0 {
         state.offset -= 1;
         ops.splice(0, 0, 1);
         changed |= ops.ensure_updated(0, state.offset);
-        top -= ops.yapfast_settled_height(0).unwrap_or(0 as Coord);
+        top -= ops.yappuccino_settled_height(0).unwrap_or(0 as Coord);
     }
     if first > 0 {
         ops.splice(0, first, 0);
@@ -728,12 +728,12 @@ fn yapfast_layout_end(
 
     state.cached_item_height = (y - top) / ops.len() as Coord;
     state.anchor_y = state.cached_item_height * state.offset as Coord;
-    yapfast.content_height = state.cached_item_height * row_count as Coord;
-    props.content_height_set(LogicalLength::new(yapfast.content_height));
+    yappuccino.content_height = state.cached_item_height * row_count as Coord;
+    props.content_height_set(LogicalLength::new(yappuccino.content_height));
     props.content_width_set(LogicalLength::new(content_width_value));
     // Worked out as a timeline works out its end, `min(0px, height - content-height)`, so that
     // following the end sets the same `content-y` again.
-    let content_y = (listview_height - yapfast.content_height).min(0 as Coord);
+    let content_y = (listview_height - yappuccino.content_height).min(0 as Coord);
     if content_y != props.content_y_get_internal().get() {
         props.content_y_set(LogicalLength::new(content_y));
     }
@@ -823,7 +823,7 @@ impl RepeaterInstanceOps for RustRepeaterOps<'_> {
         self.inner.borrow().instances[instance_idx].1.as_ref().map(instance_height)
     }
 
-    fn yapfast_settled_height(&self, instance_idx: usize) -> Option<Coord> {
+    fn yappuccino_settled_height(&self, instance_idx: usize) -> Option<Coord> {
         let instance = self.inner.borrow().instances[instance_idx].1.clone()?;
         // Visiting each item makes the parts of it that show or hide with its data.
         crate::item_tree::visit_items(
@@ -850,22 +850,22 @@ impl RepeaterInner {
     /// Implements [`ModelChangeListener::row_added`].
     /// Returns whether the instances changed.
     fn row_added(&mut self, mut index: usize, mut count: usize) -> bool {
-        // Yapfast: the anchored row moves down with the rows that go in before it.
-        if let Some(anchor) = &mut self.yapfast_hold.anchor
+        // Yappuccino: the anchored row moves down with the rows that go in before it.
+        if let Some(anchor) = &mut self.yappuccino_hold.anchor
             && index <= anchor.row
         {
             anchor.row += count;
         }
-        // Yapfast: inside `yapfast_anchor::hold`, rows right above the first instance count as
+        // Yappuccino: inside `yappuccino_anchor::hold`, rows right above the first instance count as
         // before it too, and it remembers its height; see `update_visible_instances`.
-        let holding = crate::yapfast_anchor::holding();
+        let holding = crate::yappuccino_anchor::holding();
         let held = holding
             && index == self.layout_state.offset
             && self.instances.first().is_some_and(|instance| instance.1.is_some());
-        if held && self.yapfast_hold.added.flatten().is_none() {
-            self.yapfast_hold.added = Some(self.instances[0].1.as_ref().map(instance_height));
-        } else if holding && index < self.layout_state.offset && self.yapfast_hold.added.is_none() {
-            self.yapfast_hold.added = Some(None);
+        if held && self.yappuccino_hold.added.flatten().is_none() {
+            self.yappuccino_hold.added = Some(self.instances[0].1.as_ref().map(instance_height));
+        } else if holding && index < self.layout_state.offset && self.yappuccino_hold.added.is_none() {
+            self.yappuccino_hold.added = Some(None);
         }
         if index < self.layout_state.offset || held {
             if index + count <= self.layout_state.offset || held {
@@ -898,9 +898,9 @@ impl RepeaterInner {
     /// Implements [`ModelChangeListener::row_removed`].
     /// Returns whether the instances changed.
     fn row_removed(&mut self, mut index: usize, mut count: usize) -> bool {
-        // Yapfast: the anchored row moves up with the rows removed before it, and the anchor ends
+        // Yappuccino: the anchored row moves up with the rows removed before it, and the anchor ends
         // with the row.
-        self.yapfast_hold.anchor = self.yapfast_hold.anchor.and_then(|mut anchor| {
+        self.yappuccino_hold.anchor = self.yappuccino_hold.anchor.and_then(|mut anchor| {
             if index + count <= anchor.row {
                 anchor.row -= count;
             } else if index <= anchor.row {
@@ -999,8 +999,8 @@ impl<T: RepeatedItemTree> ModelChangeListener for RepeaterTracker<T> {
         self.instances_changed();
         let mut inner = self.inner.borrow_mut();
         inner.instances.clear();
-        // Yapfast: the rows the anchor counted are gone.
-        inner.yapfast_hold = YapfastHold::default();
+        // Yappuccino: the rows the anchor counted are gone.
+        inner.yappuccino_hold = YappuccinoHold::default();
     }
 }
 
@@ -1269,9 +1269,9 @@ impl<C: RepeatedItemTree + 'static> Repeater<C> {
         let row_count = model.row_count();
 
         let data = self.data();
-        let (mut layout_state, mut yapfast) = {
+        let (mut layout_state, mut yappuccino) = {
             let inner = data.inner.borrow();
-            (inner.layout_state.clone(), inner.yapfast_hold)
+            (inner.layout_state.clone(), inner.yappuccino_hold)
         };
         let mut scroll_to_row = data.inner.borrow_mut().scroll_to_row.take();
         let mut ops = RustRepeaterOps {
@@ -1287,12 +1287,12 @@ impl<C: RepeatedItemTree + 'static> Repeater<C> {
             props,
             listview_width,
             listview_height,
-            &mut yapfast,
+            &mut yappuccino,
         );
         {
             let mut inner = data.inner.borrow_mut();
             inner.layout_state = layout_state;
-            inner.yapfast_hold = yapfast;
+            inner.yappuccino_hold = yappuccino;
             // A request made while the layout ran, from a row's init code, wins.
             inner.scroll_to_row = inner.scroll_to_row.take().or(scroll_to_row);
         }
@@ -1761,7 +1761,7 @@ mod ffi {
             &props,
             listview_width,
             listview_height,
-            &mut YapfastHold::default(),
+            &mut YappuccinoHold::default(),
         );
         unsafe {
             *state = layout_state;

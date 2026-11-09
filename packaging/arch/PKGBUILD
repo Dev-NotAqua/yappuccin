@@ -1,18 +1,18 @@
-# Maintainer: the Yapfast maintainers <https://github.com/yapfast/yapfast/issues>
+# Maintainer: the Yappuccino maintainers <https://github.com/Dev-NotAqua/yapfast/issues>
 #
 # Builds the Discord-only release the way nix/package.nix does, with Arch's toolchain.
 
-pkgname=yapfast
+pkgname=yappuccino
 # The release to build, by its tag; scripts/set-version keeps it at Cargo.toml's version.
 pkgver=0.3.0
 pkgrel=1
-_id=io.github.yapfast.Yapfast
+_id=io.github.yappuccino.Yappuccino
 # The prebuilt native parts nix/native.nix pins.
 _webrtc=webrtc-51ef663
 _skia=skia-binaries-30669978c3f39a73e8a7-$CARCH-unknown-linux-gnu-ftembed-ganesh-gl-jpegd-jpege-pdf-textlayout.tar.gz
 pkgdesc='Native Discord client that stays light on memory'
 arch=(x86_64)
-url='https://github.com/yapfast/yapfast'
+url='https://github.com/Dev-NotAqua/yapfast'
 license=(GPL-3.0-or-later)
 # The binary links glib2, fontconfig, libpulse, libstdc++, libgcc and glibc; Skia brings its own FreeType. Its one ld-linux entry is
 # real: it imports __tls_get_addr from the loader, which namcap reports as an unused library.
@@ -44,7 +44,7 @@ makedepends=(cargo clang cmake curl git llvm21 nasm pkgconf protobuf python)
 # webrtc-sys compiles C++ with cc; Arch's LTO flags would leave it unlinkable.
 options=(!lto)
 source=(
-  "$pkgname::git+https://github.com/yapfast/yapfast.git#tag=v$pkgver"
+  "$pkgname::git+https://github.com/Dev-NotAqua/yapfast.git#tag=v$pkgver"
   "$_webrtc-linux-x64-release.zip::https://github.com/livekit/rust-sdks/releases/download/$_webrtc/webrtc-linux-x64-release.zip"
   "https://github.com/rust-skia/skia-binaries/releases/download/0.157.0/$_skia"
 )
@@ -59,8 +59,8 @@ prepare() {
   export RUSTUP_TOOLCHAIN=stable CARGO_HOME="$srcdir/.cargo"
   cargo fetch --locked --target host-tuple
   # The Skia archive with its JPEG table renamed, as nix/native.nix prepares it.
-  YAPFAST_SKIA_SOURCE="$srcdir/$_skia" YAPFAST_SKIA_OUTPUT="$srcdir/skia" \
-    YAPFAST_SKIA_OBJCOPY=/usr/lib/llvm21/bin/llvm-objcopy YAPFAST_SKIA_NM=/usr/lib/llvm21/bin/llvm-nm \
+  YAPPUCCINO_SKIA_SOURCE="$srcdir/$_skia" YAPPUCCINO_SKIA_OUTPUT="$srcdir/skia" \
+    YAPPUCCINO_SKIA_OBJCOPY=/usr/lib/llvm21/bin/llvm-objcopy YAPPUCCINO_SKIA_NM=/usr/lib/llvm21/bin/llvm-nm \
     python nix/prepare-skia-native.py
 }
 
@@ -76,7 +76,7 @@ build() {
   export RUSTFLAGS="${RUSTFLAGS:-} --remap-path-prefix=$srcdir=/usr/src/debug/$pkgname"
   export CFLAGS="${CFLAGS:-} -ffile-prefix-map=$srcdir=/usr/src/debug/$pkgname"
   export CXXFLAGS="${CXXFLAGS:-} -ffile-prefix-map=$srcdir=/usr/src/debug/$pkgname"
-  # With makepkg's debug option, yapfast-debug gets full debug info for yapfast's own crates and line
+  # With makepkg's debug option, yappuccino-debug gets full debug info for yappuccino's own crates and line
   # tables (file:line in backtraces) for the dependencies, which shrinks the binary makepkg has to split
   # and strip. makepkg's -C debuginfo=2 would apply to every crate, so it is taken out of RUSTFLAGS; the
   # release profile strips at link time (Cargo.toml), so that is turned off too.
@@ -85,16 +85,16 @@ build() {
     RUSTFLAGS=$(sed -E 's/(^| )-C ?debuginfo=[^ ]*//g' <<<"$RUSTFLAGS")
     export CARGO_PROFILE_RELEASE_DEBUG=line-tables-only CARGO_PROFILE_RELEASE_STRIP=false
     local _crate
-    for _crate in yapfast yapfast-core yapfast-discord yapfast-ui; do
+    for _crate in yappuccino yappuccino-core yappuccino-discord yappuccino-ui; do
       _debug+=(--config "profile.release.package.$_crate.debug=\"full\"")
     done
   fi
   cargo build --frozen "${_debug[@]}" --release --no-default-features --features desktop,discord
-  # Slint's generated source, which yapfast-debug ships, still names the build directory: it includes
+  # Slint's generated source, which yappuccino-debug ships, still names the build directory: it includes
   # the UI's icons and fonts by absolute path, and no remap flag reaches file contents. Rewriting it
   # would break the next build in the same directory. The binary holds the bytes, not the paths.
-  # yapfast-debug copies the crates' sources with their modes, and some crates ship files readable by their
-  # owner only. namcap on yapfast-debug also reports "Referenced library ... is an uninstalled dependency"
+  # yappuccino-debug copies the crates' sources with their modes, and some crates ship files readable by their
+  # owner only. namcap on yappuccino-debug also reports "Referenced library ... is an uninstalled dependency"
   # for words in those Rust sources (version strings, "README.md"); it reads source text as library names.
   chmod -R a+rX "$CARGO_HOME/registry/src"
 }
@@ -103,7 +103,7 @@ build() {
 
 package() {
   cd "$pkgname"
-  install -Dm755 target/release/yapfast -t "$pkgdir/usr/bin"
+  install -Dm755 target/release/yappuccino -t "$pkgdir/usr/bin"
   install -Dm644 packaging/icon.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/$_id.svg"
   install -Dm644 "packaging/linux/$_id.desktop" -t "$pkgdir/usr/share/applications"
   install -Dm644 "packaging/linux/$_id.metainfo.xml" -t "$pkgdir/usr/share/metainfo"

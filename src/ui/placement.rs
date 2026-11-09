@@ -1,4 +1,4 @@
-//! Where the window was and how big, kept in the layout, so Yapfast starts as
+//! Where the window was and how big, kept in the layout, so Yappuccino starts as
 //! it was left and the window made again from the tray comes back as it was.
 
 use super::*;
@@ -22,7 +22,7 @@ const SETTLE: Duration = Duration::from_secs(1);
 
 /// Gives a window not yet shown the size and place, unless they no longer
 /// fit the desktop's monitors.
-pub(super) fn place(window: &YapfastWindow, placement: &Placement) {
+pub(super) fn place(window: &YappuccinoWindow, placement: &Placement) {
     let native = window.window();
     let (size, position) = platform::fit(
         slint::PhysicalSize::new(placement.width, placement.height),
@@ -38,7 +38,7 @@ pub(super) fn place(window: &YapfastWindow, placement: &Placement) {
 
 /// The window moved, resized, maximized or came back: keeps where it is now,
 /// written once it holds still.
-pub(super) fn moved(adapter: &mut Adapter, window: &YapfastWindow) {
+pub(super) fn moved(adapter: &mut Adapter, window: &YappuccinoWindow) {
     let native = window.window();
     // Minimized, Windows puts the window far off screen.
     if native.is_minimized() {
@@ -78,7 +78,7 @@ pub(super) fn moved(adapter: &mut Adapter, window: &YapfastWindow) {
         });
 }
 
-/// Writes where the window is if it moved since the last write, as Yapfast ends.
+/// Writes where the window is if it moved since the last write, as Yappuccino ends.
 pub(super) fn flush(adapter: &Adapter) {
     if adapter.placement_due.running() {
         adapter.placement_due.stop();

@@ -1,5 +1,5 @@
 {
-  description = "Yapfast native desktop development environment";
+  description = "Yappuccino native desktop development environment";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
 
@@ -58,8 +58,8 @@
       # scripts/package-linux.py copies the notices of Skia's third-party
       # code from here; the prebuilt Linux archive carries only Skia's own.
       packages.${system}.skia-source = pkgs.symlinkJoin {
-        name = "yapfast-skia-0.157.0-linux-source";
-        paths = [ windowsSkiaSource ] ++ map (dep: pkgs.runCommand "yapfast-skia-${dep.name}" {} ''
+        name = "yappuccino-skia-0.157.0-linux-source";
+        paths = [ windowsSkiaSource ] ++ map (dep: pkgs.runCommand "yappuccino-skia-${dep.name}" {} ''
           mkdir -p "$out/third_party/externals/${dep.name}"
           cp -r ${dep.source}/. "$out/third_party/externals/${dep.name}/"
         '') linuxSkiaDependencies;
@@ -88,7 +88,7 @@
           shellHook = ''
             export LD_LIBRARY_PATH="/run/opengl-driver/lib:$LD_LIBRARY_PATH"
             # Only people see the greeting; commands run through the shell don't.
-            [ -t 1 ] && echo "Yapfast dev shell. Run scripts/check --fast or cargo run --profile fast."
+            [ -t 1 ] && echo "Yappuccino dev shell. Run scripts/check --fast or cargo run --profile fast."
           '';
         };
         windows = pkgs.mkShell {
@@ -105,10 +105,10 @@
           CXX = "clang++";
           PROTOC = "${pkgs.protobuf}/bin/protoc";
           LK_CUSTOM_WEBRTC = "${windowsWebrtc}";
-          YAPFAST_SKIA_WINDOWS_SOURCE = "${windowsSkiaSource}";
-          YAPFAST_SKIA_CLANG = "${pkgs.llvmPackages_21.clang-unwrapped}/bin/clang-cl";
-          YAPFAST_SKIA_LLD = "${pkgs.llvmPackages_21.lld}/bin/lld-link";
-          YAPFAST_SKIA_CLANG_HEADERS = "${pkgs.llvmPackages_21.clang}/resource-root/include";
+          YAPPUCCINO_SKIA_WINDOWS_SOURCE = "${windowsSkiaSource}";
+          YAPPUCCINO_SKIA_CLANG = "${pkgs.llvmPackages_21.clang-unwrapped}/bin/clang-cl";
+          YAPPUCCINO_SKIA_LLD = "${pkgs.llvmPackages_21.lld}/bin/lld-link";
+          YAPPUCCINO_SKIA_CLANG_HEADERS = "${pkgs.llvmPackages_21.clang}/resource-root/include";
           LIBCLANG_PATH = "${pkgs.llvmPackages_21.libclang.lib}/lib";
         };
       };

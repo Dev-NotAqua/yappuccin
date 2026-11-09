@@ -373,7 +373,7 @@ export struct OAuthPrompt {
     /// one server a link names, which can't be changed.
     guild-picker: bool,
     guild-name: string,
-    /// Where Discord sends the person next when Yapfast won't open it,
+    /// Where Discord sends the person next when Yappuccino won't open it,
     /// such as an app's own address, to copy.
     address: string,
     /// What the main button does, such as "Authorize"; empty for none.
@@ -696,7 +696,7 @@ component HoverEdit inherits Rectangle {
     // As measured from Discord's: a 1px line of 17% white, 7px round, in 100ms.
     border-radius: 7px; border-width: 1px;
     border-color: touch.has-hover && root.enabled ? #ffffff2c : #ffffff00;
-    animate border-color { duration: 100ms; }
+    animate border-color { duration: Theme.quick; }
     accessible-role: button;
     accessible-label: root.label;
     accessible-action-default => { if root.enabled { root.clicked(); } }
@@ -734,9 +734,9 @@ component CustomizeCell inherits Rectangle {
     // Tiles side by side share their row evenly, whatever they hold.
     horizontal-stretch: 1; min-width: 0px; preferred-width: 100px;
     background: touch.has-hover && root.enabled ? Theme.hover : Theme.raised;
-    animate background { duration: 120ms; }
+    animate background { duration: Theme.quick; }
     transform-scale: touch.has-hover && root.enabled ? 1.03 : 1;
-    animate transform-scale { duration: 120ms; easing: ease-out; }
+    animate transform-scale { duration: Theme.quick; easing: ease-out; }
     @children
     touch := TouchArea {
         enabled: root.enabled;
@@ -952,7 +952,7 @@ component ColourPopover inherits Rectangle {
 }
 
 // What a profile shows beside it. Discord's Board and Wishlist can't be set up
-// in Yapfast yet, and say so rather than offer buttons that do nothing.
+// in Yappuccino yet, and say so rather than offer buttons that do nothing.
 component ProfileTabs inherits Rectangle {
     in property <ProfileData> data;
     callback open-link(string);
@@ -963,7 +963,7 @@ component ProfileTabs inherits Rectangle {
     property <length> list-y: headings.y + headings.height + 16px;
     property <length> list-width: self.width - 18px;
     property <length> list-height: self.height - self.list-y - 8px;
-    property <string> coming-soon: "Adding more from Yapfast is coming soon.";
+    property <string> coming-soon: "Adding more from Yappuccino is coming soon.";
     horizontal-stretch: 1;
     preferred-width: 0px;
     min-width: 280px;
@@ -1223,10 +1223,10 @@ component NameStyleWindow inherits Rectangle {
                             x: mod(index, 4) * (parent.width + 8px) / 4; y: floor(index / 4) * 76px;
                             width: (parent.width - 24px) / 4; height: 68px; border-radius: 12px;
                             background: root.font == face.id ? Theme.accent.with-alpha(0.16) : face-touch.has-hover ? Theme.hover : Theme.raised;
-                            animate background { duration: 120ms; }
+                            animate background { duration: Theme.quick; }
                             border-width: root.font == face.id ? 2px : 0px; border-color: Theme.accent;
                             transform-scale: face-touch.has-hover ? 1.04 : 1;
-                            animate transform-scale { duration: 120ms; easing: ease-out; }
+                            animate transform-scale { duration: Theme.quick; easing: ease-out; }
                             accessible-role: button; accessible-label: face.family == "" ? "Usual font" : face.family;
                             Text { text: "Gg"; font-family: face.family; font-weight: face.weight; font-size: 22px; color: Theme.text; }
                             face-touch := TouchArea { mouse-cursor: MouseCursor.pointer; clicked => { root.font = face.id; } }
@@ -1246,10 +1246,10 @@ component NameStyleWindow inherits Rectangle {
                             x: mod(index, 4) * (parent.width + 8px) / 4; y: floor(index / 4) * 76px;
                             width: (parent.width - 24px) / 4; height: 68px; border-radius: 12px;
                             background: root.effect == item.id ? Theme.accent.with-alpha(0.16) : effect-touch.has-hover ? Theme.hover : Theme.raised;
-                            animate background { duration: 120ms; }
+                            animate background { duration: Theme.quick; }
                             border-width: root.effect == item.id ? 2px : 0px; border-color: Theme.accent;
                             transform-scale: effect-touch.has-hover ? 1.04 : 1;
-                            animate transform-scale { duration: 120ms; easing: ease-out; }
+                            animate transform-scale { duration: Theme.quick; easing: ease-out; }
                             accessible-role: button; accessible-label: item.label;
                             StyledName { x: (parent.width - self.preferred-width) / 2; text: item.label; font-size: 15px; font-weight: 500; styles: NameStyles.row(11, item.id, root.presets-of(item.id)[0].key, item.label); }
                             effect-touch := TouchArea { mouse-cursor: MouseCursor.pointer; clicked => { root.pick-effect(item.id); } }
@@ -1261,7 +1261,7 @@ component NameStyleWindow inherits Rectangle {
                         if !root.bar-shown: Rectangle {
                             width: 40px; border-radius: 12px;
                             background: hex-touch.has-hover || root.hex-open ? Theme.hover : Theme.raised;
-                            animate background { duration: 120ms; }
+                            animate background { duration: Theme.quick; }
                             accessible-role: button; accessible-label: "Your own colour";
                             Image { source: @image-url("icons/eyedropper.svg"); width: 16px; colorize: Theme.text; }
                             hex-touch := TouchArea { mouse-cursor: MouseCursor.pointer; clicked => { root.open-handle = 0; root.hex-open = !root.hex-open; root.load-pick(root.paint.c1); } }
@@ -1301,7 +1301,7 @@ component NameStyleWindow inherits Rectangle {
                                 : @linear-gradient(90deg, preset.c1 0%, preset.c2 25%, preset.c3 50%, preset.c4 75%, preset.c5 100%);
                             border-width: root.paint.key == preset.key ? 3px : 0px; border-color: Theme.text;
                             transform-scale: swatch-touch.has-hover ? 1.08 : 1;
-                            animate transform-scale { duration: 120ms; easing: ease-out; }
+                            animate transform-scale { duration: Theme.quick; easing: ease-out; }
                             accessible-role: button; accessible-label: "Colour " + preset.key;
                             swatch-touch := TouchArea { mouse-cursor: MouseCursor.pointer; clicked => { root.paint = preset; root.hex-open = false; root.open-handle = 0; } }
                         }
@@ -1334,7 +1334,7 @@ component NameStyleWindow inherits Rectangle {
                 Rectangle {
                     x: 65px; y: 338px; width: 320px; height: 85px; border-radius: 12px;
                     background: root.sample-fill; border-color: root.sample-edge; border-width: 1px;
-                    animate background { duration: 180ms; }
+                    animate background { duration: Theme.medium; }
                     drop-shadow-blur: 18px; drop-shadow-color: #00000055; drop-shadow-offset-y: 6px;
                     Avatar { x: 20px; y: 22px; size: 40px; initial: root.initial; tint: root.tint; picture: root.picture; }
                     // A message's name stays plain here, as Discord's preview has it.
@@ -1347,7 +1347,7 @@ component NameStyleWindow inherits Rectangle {
                 Rectangle {
                     x: 40px; y: 418px; width: 282px; height: 50px; border-radius: 10px;
                     background: root.sample-fill; border-color: root.sample-edge; border-width: 1px;
-                    animate background { duration: 180ms; }
+                    animate background { duration: Theme.medium; }
                     drop-shadow-blur: 14px; drop-shadow-color: #00000055; drop-shadow-offset-y: 4px;
                     Avatar { x: 10px; y: 9px; size: 32px; initial: root.initial; tint: root.tint; picture: root.picture; }
                     StyledName { x: 52px; y: 14px; height: self.preferred-height; text: root.name; styles: root.style; font-size: 17px; font-weight: 600; }
@@ -1359,7 +1359,7 @@ component NameStyleWindow inherits Rectangle {
                     for mode[index] in [{ light: false, icon: @image-url("icons/moon.svg"), label: "Dark" }, { light: true, icon: @image-url("icons/sun.svg"), label: "Light" }]: Rectangle {
                         x: 4px + index * 36px; y: 4px; width: 32px; height: 32px; border-radius: 9px;
                         background: root.light-preview == mode.light ? #ffffff26 : mode-touch.has-hover ? #ffffff14 : transparent;
-                        animate background { duration: 120ms; }
+                        animate background { duration: Theme.quick; }
                         accessible-role: button; accessible-label: mode.label + " preview";
                         Image { source: mode.icon; width: 16px; image-fit: contain; colorize: root.light-preview == mode.light ? #ffffff : #ffffffa6; }
                         mode-touch := TouchArea { mouse-cursor: MouseCursor.pointer; clicked => { root.light-preview = mode.light; } }
@@ -1489,7 +1489,7 @@ export component ProfileEditorDialog inherits Rectangle {
     property <bool> side-open: true;
     /// How far the left panel is out, from 0 to 1, as Discord's slides.
     property <float> side-out: root.side-open ? 1 : 0;
-    animate side-out { duration: 280ms; easing: ease-in-out; }
+    animate side-out { duration: Theme.slow; easing: ease-in-out; }
     /// Which theme colour's picker is open: 1 the top, 2 the bottom.
     property <int> theme-handle;
     property <bool> themed: root.prompt.main && root.prompt.preview.has-theme;
@@ -1854,7 +1854,7 @@ export component ProfileEditorDialog inherits Rectangle {
                                             tag-chip := Rectangle {
                                                 height: 24px; width: tag-row.preferred-width; border-radius: 7px;
                                                 background: tag-touch.has-hover ? Theme.text.with-alpha(0.12) : Theme.text.with-alpha(0.07);
-                                                animate background { duration: 120ms; }
+                                                animate background { duration: Theme.quick; }
                                                 accessible-role: button; accessible-label: "Change server tag";
                                                 tag-row := HorizontalLayout {
                                                     padding-left: 7px; padding-right: 5px; spacing: 4px;

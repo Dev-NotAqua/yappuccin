@@ -3,7 +3,7 @@
 //! whether "Show results" was clicked, the adapter keeps among `revealed`,
 //! as `{item}/pick{id}` and `{item}/results`.
 
-use yapfast_core::{
+use yappuccino_core::{
     application::{PollEdit, QUESTION_LIMIT},
     chat::Poll,
 };
@@ -17,7 +17,7 @@ use super::*;
 pub(super) fn poll_card(
     item: &str,
     poll: &Poll,
-    emoji: &[yapfast_core::chat::CustomEmoji],
+    emoji: &[yappuccino_core::chat::CustomEmoji],
     revealed: &HashSet<String>,
     now: u64,
     interactive: bool,
@@ -148,7 +148,7 @@ fn pick_key(item: &str, answer: u64) -> String {
 impl Adapter {
     /// The "Create a Poll" dialog. Its answers keep their places by id, so
     /// one removed takes its field with it.
-    pub(super) fn show_poll_draft(&self, window: &YapfastWindow) {
+    pub(super) fn show_poll_draft(&self, window: &YappuccinoWindow) {
         let draft = self.app.state.poll_draft.as_ref();
         // Opening it starts from an empty question.
         if draft.is_some() && !window.get_poll_open() {
@@ -195,7 +195,7 @@ impl Adapter {
     }
 }
 
-pub(super) fn bind(window: &YapfastWindow, adapter: &Rc<RefCell<Adapter>>) {
+pub(super) fn bind(window: &YappuccinoWindow, adapter: &Rc<RefCell<Adapter>>) {
     macro_rules! act {
         ($callback:ident($($arg:ident),*) => $action:expr) => {{
             let state = adapter.clone();
@@ -337,7 +337,7 @@ pub(super) fn bind(window: &YapfastWindow, adapter: &Rc<RefCell<Adapter>>) {
 
 #[cfg(test)]
 mod tests {
-    use yapfast_core::chat::PollAnswer;
+    use yappuccino_core::chat::PollAnswer;
 
     use super::*;
 

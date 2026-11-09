@@ -10,8 +10,8 @@ whole path.
    on https://docs.discord.food. What its client shows and sends around
    them (which menu lists it, defaults, dialogs, query flags such as
    `silent`) is only in Discord's web bundle; see the area doc for what
-   Yapfast already matches.
-2. **The call and the state, in `crates/yapfast-discord`.** The request
+   Yappuccino already matches.
+2. **The call and the state, in `crates/yappuccino-discord`.** The request
    goes in `src/api.rs`, wrapped by a method on `Discord` in
    `src/service.rs`. Anything the UI shows from the gateway is a field of
    `Snapshot` (`src/service.rs`), filled by the tracker
@@ -20,16 +20,16 @@ whole path.
    shape, and the gateway event it dispatches. Record what the client sent
    in a list that a `GET /_control/...` route returns, and describe both in
    the header comment at the top of the file. Then test it in
-   `crates/yapfast-discord/tests/fake_server.rs`, in the test of its area,
+   `crates/yappuccino-discord/tests/fake_server.rs`, in the test of its area,
    and run that test alone, as
    `scripts/test-fake-discord makes_group_dms`.
-4. **The command and its answer, in `crates/yapfast-core/src/chat.rs`.**
+4. **The command and its answer, in `crates/yappuccino-core/src/chat.rs`.**
    Add a `DiscordCommand` variant, and an `Event` that says whether it
    worked. `discord_text/commands.rs` passes a command through each module's
    `command` in turn; handle it in the module of its area
    (`discord_text/account.rs`, `people.rs`, `server_settings.rs`...), which
    spawns the call and sends the event.
-5. **The app, in `crates/yapfast-core/src/application`.** An `Action` (in
+5. **The app, in `crates/yappuccino-core/src/application`.** An `Action` (in
    `application.rs`) for what the person does, state in `AppState` for a
    dialog or list, and the handling of the event, in the module of its area.
    A snapshot field reaches `AppState` in `discord_account.rs`. Test it in
@@ -43,7 +43,7 @@ whole path.
    `menus_offer_what_fits_their_conversation_or_server` in
    `application/tests.rs`.
 7. **The window.** A component in `ui/*.slint`, a property or callback on
-   `YapfastWindow` in `ui/yapfast.slint` passed down to it, its rows filled
+   `YappuccinoWindow` in `ui/yappuccino.slint` passed down to it, its rows filled
    in `src/ui/refresh.rs` (a list model goes in `Models` in `src/ui.rs`;
    a sidebar list joins `SidebarShown::lists`, or its rows never refresh),
    and its callback bound to the action in `src/ui/callbacks.rs`. Before

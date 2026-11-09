@@ -1,14 +1,14 @@
 # Server settings
 
 Server settings, in a server's menu after Hide muted channels and in its
-header's dropdown after Invite, open Yapfast's version of Discord's Server
+header's dropdown after Invite, open Yappuccino's version of Discord's Server
 Settings (`application/server_settings/`): a screen over the window, as
-Yapfast's own settings are, with the server's name heading a sidebar of the
+Yappuccino's own settings are, with the server's name heading a sidebar of the
 pages this account may change and the open page beside it. Discord's
 client offers its settings to anyone with Manage Server, Manage Roles,
 Administrator, Ban Members, Manage Nicknames, either expressions
 permission, Manage Webhooks, View Audit Log or View Server Insights
-(`canAccessGuildSettings`); Yapfast offers them once at least one page it
+(`canAccessGuildSettings`); Yappuccino offers them once at least one page it
 has is open to this account. Each page shows only with its own
 permission:
 
@@ -76,7 +76,7 @@ Engagement and Boost Perks read `GET /guilds/{id}` and save with `PATCH
 `default_message_notifications`, `afk_channel_id` and `afk_timeout`. Its
 four switches each turn a bit of `system_channel_flags` off, as Discord's
 page has them: welcome messages (1), the sticker reply to them (8), boosts
-(2) and setup tips (4); bits Yapfast doesn't show stay as Discord has
+(2) and setup tips (4); bits Yappuccino doesn't show stay as Discord has
 them. The switches wait for a system channel and the timeout for an
 inactive channel, offering Discord's 1, 5, 15 and 30 minutes and 1 hour.
 The channel lists are the server's text channels, without forums and
@@ -141,7 +141,7 @@ field, and one deleted elsewhere closes if it was open.
 
 Roles reads `GET /guilds/{id}` for the roles, boost level and features,
 and `GET /guilds/{id}/roles/member-counts`, and holds them only while it's
-open; members come by id, with names from those Yapfast already knows or
+open; members come by id, with names from those Yappuccino already knows or
 asks the gateway for. It saves with:
 
 - `PATCH /guilds/{id}/roles`, `[{id, position}]`, only the roles that
@@ -158,8 +158,8 @@ asks the gateway for. It saves with:
   by id over the gateway.
 - `PATCH /guilds/{id}/roles/{role}/members`, `{member_ids}`, to add.
 - `PATCH /guilds/{id}/members/{user}`, `{roles}`, with the role left out,
-  to remove, as Discord's client does; Yapfast first asks the gateway for
-  the member's roles, and refuses, "Yapfast doesn't know that member's
+  to remove, as Discord's client does; Yappuccino first asks the gateway for
+  the member's roles, and refuses, "Yappuccino doesn't know that member's
   roles yet. Try again.", if it still doesn't know them.
 
 ## Emoji
@@ -180,7 +180,7 @@ still to come. A name keeps only letters, digits and `_`, at most 32, and
 at least 2, padded with `_`, as Discord's client makes it.
 
 Upload Emoji chooses a file, as Discord's does without its Emoji Studio,
-which Yapfast leaves out with its crop, zoom, rotation and flip: a still
+which Yappuccino leaves out with its crop, zoom, rotation and flip: a still
 picture is cut to its middle square and made at most 128 pixels, a GIF
 goes as it is, and over 256 KB is refused with "That emoji was too big!
 Emoji must be under 256 KB." A dialog shows it at 128, 48 and 22 pixels,
@@ -222,7 +222,7 @@ doesn't say.
 
 Members is Discord's Server Members page for a server that isn't a
 Community one; Discord's client sends a Community server's to a page in
-its channel list, and Yapfast keeps the settings page. Its heading reads
+its channel list, and Yappuccino keeps the settings page. Its heading reads
 "Recent Members", or "Search Results" once a search or an order is chosen.
 Each row has the member's avatar and name, in their highest coloured
 role's colour, with the username under it when it differs; Member Since
@@ -246,7 +246,7 @@ newest or oldest first. Discord sends chunks of 250, or 500 with 100 to a
 page; the page sorts what came and shows 12, 25, 50 or 100 a page, with
 "Showing … members of N", and a page past those fetched asks for the next
 chunk, `after` the last member's join time and id. While Discord indexes
-the server it answers 202; Yapfast says "Before searching, we need to
+the server it answers 202; Yappuccino says "Before searching, we need to
 index this server. Give us a bit.", waits the `retry_after` it gives and
 asks again, three times at most. With no match the page says "No members
 match these search results."; a refused search shows nothing new, as in
@@ -268,7 +268,7 @@ and username with the channel under it, the code, the uses, "3" or "3/10",
 when it expires, counting down each second as "DD:HH:MM:SS", or "∞" for
 never, and the first role it gives with "+2" for more. A row's X revokes
 the invite at once with `DELETE /invites/{code}`, without asking, as
-Discord's does. Create Invite Link opens Yapfast's invite dialog for the
+Discord's does. Create Invite Link opens Yappuccino's invite dialog for the
 server, and the list asks Discord again once it makes the invite.
 
 Pause Invites, or Enable Invites while they're paused, opens Security
@@ -284,7 +284,7 @@ client asks after resuming go only to its analytics, and are left out.
 ## Safety Setup
 
 Safety Setup is Discord's page of that name for a server that isn't a
-Community one, without what Yapfast leaves out: member prune, Activity
+Community one, without what Yappuccino leaves out: member prune, Activity
 Alerts, the mod queue and Member Verification. Each choice goes to Discord
 as it's made, without the bar, and shows while Discord takes it; a refusal
 puts back what Discord has, with its words.
@@ -309,7 +309,7 @@ puts back what Discord has, with its words.
   with `PATCH /guilds/{id}`, `{explicit_content_filter}`.
 
 On a Community server Discord's client spreads these over its own Safety
-Setup pages; Yapfast keeps them on one, with Discord's Community wording.
+Setup pages; Yappuccino keeps them on one, with Discord's Community wording.
 
 ## Audit Log
 
@@ -323,7 +323,7 @@ scrolled to its end or Load More is pressed, while the last page was full.
 Filter by User and Filter by Action ask again from the newest, with
 `user_id` and `action_type`; the actions are Discord's 68, in its order.
 Discord's client waits on a filter while a page is coming, and so does
-Yapfast. With no entries the page says "No Logs Yet"; a refused first page
+Yappuccino. With no entries the page says "No Logs Yet"; a refused first page
 says "This is Awkward", and a refused older one only stops loading, as in
 Discord's client.
 
@@ -364,7 +364,7 @@ They are Discord's, from its web client's templates:
   for a kick, prune or ban, and keys Discord's client hides, such as a
   channel's overwrites or a sticker's asset, stay hidden.
 
-Yapfast differs where Discord's client needs what it doesn't hold: Filter
+Yappuccino differs where Discord's client needs what it doesn't hold: Filter
 by User lists the moderators the fetched entries name, where Discord's
 lists the loaded members with moderation permissions; a row has no action
 icon beside the avatar; a channel's type reads as its kind, where
@@ -378,7 +378,7 @@ A row holds its sentence as one string, with its bold and times marked
 in it, its oldest entry's id as a number, and its moderator as a place in
 the user filter's list, whose avatar its rows share; only the open row's
 lines are made for the screen. Opening either filter's list the first
-time keeps its memory until Yapfast closes, as every list of Slint's
+time keeps its memory until Yappuccino closes, as every list of Slint's
 ComboBox does.
 
 ## Bans
@@ -436,9 +436,9 @@ new owner is ineligible for Server Monetization." Whether the account has
 an email address comes from READY's `user.email`, kept current by
 USER_UPDATE.
 
-Yapfast differs from Discord's client in waiting: Discord's closes each
+Yappuccino differs from Discord's client in waiting: Discord's closes each
 dialog as it sends, and drops any refusal but 50164 unseen, where
-Yapfast's dialogs wait for Discord's answer and show a refusal in them.
+Yappuccino's dialogs wait for Discord's answer and show a refusal in them.
 Once Discord deletes or gives the server away, the settings close. Left
 out: the server's icon beside its name, a nickname's "AKA" in the
 transfer's text, and the Server Monetization notice.
@@ -511,7 +511,7 @@ one for @everyone if the category has none. Discord sends CHANNEL_UPDATE
 after each. The page takes what Discord took at once, and a snapshot from
 before that CHANNEL_UPDATE doesn't undo it. Overwrites changed elsewhere
 show unless the draft changed the same one. The page holds the
-overwrites and the names of the members they're for, which Yapfast asks
+overwrites and the names of the members they're for, which Yappuccino asks
 the gateway for, only while it's open.
 
 ## Two-factor authentication
@@ -526,9 +526,9 @@ data}`, answered with `{token}`), and sends the request again with the
 token in `X-Discord-MFA-Authorization`. It keeps no token: each request
 held back asks again.
 
-Yapfast does the same for member moderation (nicknames, roles, timeouts,
+Yappuccino does the same for member moderation (nicknames, roles, timeouts,
 kicks, bans, and voice), channel changes and server settings' saves:
-`Discord::stepping_up` in `yapfast-discord` runs the request, and on
+`Discord::stepping_up` in `yappuccino-discord` runs the request, and on
 60003 sends `Live::MfaRequired` and waits for the prompt's answer, then
 runs it again inside the token's scope, so whatever asked keeps waiting
 for its usual answer. The prompt (`application/mfa.rs`, `ui/mfa.slint`)
@@ -538,7 +538,7 @@ text, six digits; the password; or a backup code, eight to eleven
 characters, sent without its dashes, after Discord's warning, "Slow down!
 Are you sure?", whose button waits ten seconds each time it shows. A text goes out as its method opens,
 with `POST /auth/mfa/sms/send`, and "Resend Code" sends another. A
-passkey needs a browser, so Yapfast asks to confirm in Discord's app
+passkey needs a browser, so Yappuccino asks to confirm in Discord's app
 instead. A confirmation Discord refuses (60008) leaves the prompt open to
 try again; Cancel fails the request, "Two-factor authentication was
 cancelled." Requests held back at once each get a prompt, one after

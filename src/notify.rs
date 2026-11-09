@@ -4,7 +4,7 @@
 
 use std::path::Path;
 
-use yapfast_core::chat::Alert;
+use yappuccino_core::chat::Alert;
 
 /// How a notification shows.
 #[derive(Clone, Copy)]
@@ -34,7 +34,7 @@ impl Notifier {
             #[cfg(windows)]
             let root = root.to_owned();
             let started = std::thread::Builder::new()
-                .name("yapfast-notify".into())
+                .name("yappuccino-notify".into())
                 .spawn(move || {
                     #[cfg(target_os = "linux")]
                     linux::run(alerts, opened);
@@ -79,7 +79,7 @@ mod linux {
         sync::{Arc, Mutex, mpsc::Receiver},
     };
 
-    use yapfast_core::chat::Alert;
+    use yappuccino_core::chat::Alert;
     use zbus::{
         blocking::{Connection, MessageIterator},
         zvariant::{StructureBuilder, Value},
@@ -112,7 +112,7 @@ mod linux {
         let clicks = connection.clone();
         let rooms = shown.clone();
         let listening = std::thread::Builder::new()
-            .name("yapfast-notify-clicks".into())
+            .name("yappuccino-notify-clicks".into())
             .spawn(move || listen(&clicks, &rooms, opened));
         if let Err(error) = listening {
             tracing::warn!(%error, "notifications can't open their conversations");
@@ -124,9 +124,9 @@ mod linux {
             }
             let mut hints = HashMap::<&str, Value>::new();
             hints.insert("category", Value::from("im.received"));
-            // Yapfast plays its own sounds, and rings for a call itself.
+            // Yappuccino plays its own sounds, and rings for a call itself.
             hints.insert("suppress-sound", Value::from(true));
-            // The server finds Yapfast's name and icon through its desktop entry.
+            // The server finds Yappuccino's name and icon through its desktop entry.
             hints.insert("desktop-entry", Value::from(crate::icon::APP_ID));
             if let Some(picture) = &alert.picture
                 && let Some(image) = image_data(picture)
@@ -135,7 +135,7 @@ mod linux {
             }
             let actions = ["default", "Open"];
             let request = (
-                "Yapfast",
+                "Yappuccino",
                 0u32,
                 "",
                 alert.title.as_str(),
@@ -203,7 +203,7 @@ mod linux {
     }
 
     /// The author's picture, as the specification's `(iiibiiay)` image.
-    fn image_data(picture: &yapfast_core::chat::Picture) -> Option<Value<'static>> {
+    fn image_data(picture: &yappuccino_core::chat::Picture) -> Option<Value<'static>> {
         let width = i32::try_from(picture.width).ok()?;
         let height = i32::try_from(picture.height).ok()?;
         let structure = StructureBuilder::new()
@@ -227,15 +227,15 @@ mod linux {
     }
 }
 
-/// How many toasts a click still reaches Yapfast from: the notification center keeps
+/// How many toasts a click still reaches Yappuccino from: the notification center keeps
 /// as many of an app's.
 #[cfg(windows)]
 const KEPT: usize = 20;
 
-/// The 256-pixel picture in Yapfast's icon file, which is stored as a PNG.
+/// The 256-pixel picture in Yappuccino's icon file, which is stored as a PNG.
 #[cfg(any(windows, test))]
 fn icon_png() -> Option<&'static [u8]> {
-    const ICON: &[u8] = include_bytes!("../packaging/windows/yapfast.ico");
+    const ICON: &[u8] = include_bytes!("../packaging/windows/yappuccino.ico");
     let count = u16::from_le_bytes(ICON.get(4..6)?.try_into().ok()?);
     (0..usize::from(count)).find_map(|index| {
         let entry = ICON.get(6 + index * 16..)?.get(..16)?;
@@ -295,12 +295,12 @@ mod windows {
     };
     use anyhow::Context;
     use image::ImageEncoder;
-    use yapfast_core::chat::{Alert, Picture};
+    use yappuccino_core::chat::{Alert, Picture};
 
     use super::{KEPT, Style};
 
     /// Shows each alert as a toast until the window closes, and opens the conversation
-    /// of one that's clicked while Yapfast runs.
+    /// of one that's clicked while Yappuccino runs.
     pub fn run(alerts: Receiver<(Alert, Style)>, opened: fn(String), root: &Path) {
         let folder = root.join("notifications");
         // Toasts take their pictures by absolute paths.
@@ -340,24 +340,24 @@ mod windows {
         }
     }
 
-    /// Names Yapfast and its icon to Windows by its app ID, which a toast needs from
+    /// Names Yappuccino and its icon to Windows by its app ID, which a toast needs from
     /// an app without a package. The installer's Start menu shortcut can't do it, as
     /// a portable copy hasn't got one.
     fn register(folder: &Path) -> anyhow::Result<ToastNotifier> {
         std::fs::create_dir_all(folder).context("making the notifications folder")?;
         let icon = folder.join("icon.png");
-        let png = super::icon_png().context("Yapfast's icon has no 256-pixel picture")?;
+        let png = super::icon_png().context("Yappuccino's icon has no 256-pixel picture")?;
         if std::fs::read(&icon).ok().as_deref() != Some(png) {
             std::fs::write(&icon, png).context("writing the notification icon")?;
         }
         let key = format!(r"Software\Classes\AppUserModelId\{}", crate::icon::APP_ID);
-        crate::protocol::set_string(&key, Some("DisplayName"), "Yapfast")
-            .context("registering Yapfast's name")?;
+        crate::protocol::set_string(&key, Some("DisplayName"), "Yappuccino")
+            .context("registering Yappuccino's name")?;
         let icon = icon
             .to_str()
             .context("the data folder's path isn't Unicode")?;
         crate::protocol::set_string(&key, Some("IconUri"), icon)
-            .context("registering Yapfast's icon")?;
+            .context("registering Yappuccino's icon")?;
         ToastNotificationManager::CreateToastNotifierWithId(&HSTRING::from(crate::icon::APP_ID))
             .context("starting toasts")
     }
@@ -378,7 +378,7 @@ mod windows {
                 )
             })
             .unwrap_or_default();
-        // Yapfast plays its own sounds, and rings for a call itself.
+        // Yappuccino plays its own sounds, and rings for a call itself.
         let xml = format!(
             r#"<toast><visual><binding template="ToastGeneric">{picture}<text>{}</text><text>{}</text></binding></visual><audio silent="true"/></toast>"#,
             super::xml_text(&alert.title),

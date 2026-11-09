@@ -1,10 +1,10 @@
 //! The window's colours: a full set of what `Theme` in `ui/theme.slint` holds,
-//! which Yapfast sets on the window to change them all at once.
+//! which Yappuccino sets on the window to change them all at once.
 
 use std::{cell::Cell, rc::Rc};
 
 use slint::{Color, ComponentHandle, Model, ModelRc, VecModel};
-use yapfast_ui::YapfastWindow;
+use yappuccino_ui::YappuccinoWindow;
 
 /// Opaque `#rrggbb`.
 const fn rgb(hex: u32) -> Color {
@@ -31,7 +31,7 @@ macro_rules! theme {
         impl Theme {
             /// Sets only the colours that differ from those the window
             /// shows: nothing when it starts in Yap, its defaults.
-            fn set(&self, tokens: &yapfast_ui::Theme<'_>) {
+            fn set(&self, tokens: &yappuccino_ui::Theme<'_>) {
                 if tokens.get_dark() != self.dark {
                     tokens.set_dark(self.dark);
                 }
@@ -54,8 +54,8 @@ macro_rules! theme {
 
             /// The colours the window shows now.
             #[cfg(test)]
-            pub fn shown(window: &YapfastWindow) -> Self {
-                let tokens = window.global::<yapfast_ui::Theme>();
+            pub fn shown(window: &YappuccinoWindow) -> Self {
+                let tokens = window.global::<yappuccino_ui::Theme>();
                 Self { dark: tokens.get_dark(), $($name: tokens.$get(),)* }
             }
         }
@@ -102,7 +102,7 @@ theme! {
     avatar(get_avatar, set_avatar),
 }
 
-/// Yapfast's own colours: layered graphite with a marigold accent. The defaults
+/// Yappuccino's own colours: layered graphite with a marigold accent. The defaults
 /// in `ui/theme.slint` are these, so the first frame shows them.
 pub const YAP: Theme = Theme {
     dark: true,
@@ -146,7 +146,7 @@ pub const YAP: Theme = Theme {
 };
 
 /// Discord's own dark theme (Dark, `.theme-dark` with `.theme-darker` in its
-/// web client's CSS) on Yapfast's surfaces, with blurple for the accent.
+/// web client's CSS) on Yappuccino's surfaces, with blurple for the accent.
 const BONFIRE: Theme = Theme {
     dark: true,
     rail: rgb(0x121214),
@@ -483,7 +483,7 @@ const ROSE_PINE_DAWN: Theme = Theme {
     avatar: rgb(0x9893a5),
 };
 
-/// Yapfast's own: cherry blossom on rice paper, pink on a pale pink ground.
+/// Yappuccino's own: cherry blossom on rice paper, pink on a pale pink ground.
 const SAKURA: Theme = Theme {
     dark: false,
     rail: rgb(0xf6dbe5),
@@ -525,7 +525,7 @@ const SAKURA: Theme = Theme {
     avatar: rgb(0xc08aa2),
 };
 
-/// A theme Yapfast comes with: the id a layout stores and the name Appearance
+/// A theme Yappuccino comes with: the id a layout stores and the name Appearance
 /// shows.
 pub struct BuiltIn {
     pub id: &'static str,
@@ -533,7 +533,7 @@ pub struct BuiltIn {
     pub theme: Theme,
 }
 
-/// The themes Yapfast comes with, as Appearance lists them: the dark ones, then
+/// The themes Yappuccino comes with, as Appearance lists them: the dark ones, then
 /// the light ones. The palettes credited in docs/themes.md are MIT licensed.
 pub const BUILT_IN: [BuiltIn; 10] = [
     BuiltIn {
@@ -662,6 +662,8 @@ pub struct Custom {
     /// any it doesn't name, such as one added since it was saved.
     pub base: &'static str,
     pub theme: Theme,
+    /// An image shown behind the conversation when this theme is chosen, if any.
+    pub background_image: Option<String>,
 }
 
 /// A custom theme in `layout.json`: each colour as text, by its name in
@@ -674,6 +676,8 @@ struct Stored {
     base: String,
     dark: Option<bool>,
     colours: std::collections::BTreeMap<String, String>,
+    #[serde(default)]
+    background_image: Option<String>,
 }
 
 impl From<Stored> for Custom {
@@ -694,6 +698,7 @@ impl From<Stored> for Custom {
             name: stored.name,
             base: base.id,
             theme,
+            background_image: stored.background_image,
         }
     }
 }
@@ -711,6 +716,7 @@ impl From<&Custom> for Stored {
             base: custom.base.to_owned(),
             dark: Some(custom.theme.dark),
             colours,
+            background_image: custom.background_image.clone(),
         }
     }
 }
@@ -727,7 +733,7 @@ impl<'de> serde::Deserialize<'de> for Custom {
     }
 }
 
-/// The number in a custom theme's id, if it's one Yapfast gives.
+/// The number in a custom theme's id, if it's one Yappuccino gives.
 fn custom_number(id: &str) -> Option<u32> {
     id.strip_prefix("custom:")?.parse().ok()
 }
@@ -742,7 +748,7 @@ pub fn new_id(custom: &[Custom]) -> String {
     format!("custom:{}", last + 1)
 }
 
-/// Gives a new id to each custom theme from `layout.json` whose id Yapfast
+/// Gives a new id to each custom theme from `layout.json` whose id Yappuccino
 /// wouldn't have given, or that another has, so that ids stay apart from
 /// the built-in ones and from each other.
 pub fn tidy(custom: &mut [Custom]) {
@@ -764,6 +770,7 @@ pub struct Start<'a> {
     pub base: &'static str,
     pub name: &'a str,
     pub theme: Theme,
+    pub background_image: Option<&'a str>,
 }
 
 /// What a new theme can start as: every theme Appearance offers, in its
@@ -776,12 +783,14 @@ pub fn starts(custom: &[Custom]) -> impl Iterator<Item = Start<'_>> {
             base: built_in.id,
             name: built_in.name,
             theme: built_in.theme,
+            background_image: None,
         })
         .chain(custom.iter().map(|custom| Start {
             id: &custom.id,
             base: custom.base,
             name: &custom.name,
             theme: custom.theme,
+            background_image: custom.background_image.as_deref(),
         }))
 }
 
@@ -811,8 +820,8 @@ pub fn muted_color() -> u32 {
 impl Theme {
     /// Shows the window in these colours. Returns whether colours that rows
     /// carry in their markup change, as rows built before have the old ones.
-    pub fn apply(&self, window: &YapfastWindow) -> bool {
-        self.set(&window.global::<yapfast_ui::Theme>());
+    pub fn apply(&self, window: &YappuccinoWindow) -> bool {
+        self.set(&window.global::<yappuccino_ui::Theme>());
         let rgb = |colour: Color| colour.as_argb_encoded() & 0xff_ffff;
         // Bonfire draws a mention's text as Discord's dark theme does, a light
         // blurple; the other themes use their link colour.
@@ -830,8 +839,8 @@ impl Theme {
 
 /// Appearance's cards: each theme's name and the colours its preview draws
 /// with, the built-in ones first.
-pub fn cards(custom: &[Custom]) -> ModelRc<yapfast_ui::ThemeCard> {
-    let card = |id: &str, name: &str, custom: bool, theme: &Theme| yapfast_ui::ThemeCard {
+pub fn cards(custom: &[Custom]) -> ModelRc<yappuccino_ui::ThemeCard> {
+    let card = |id: &str, name: &str, custom: bool, theme: &Theme| yappuccino_ui::ThemeCard {
         id: id.into(),
         name: name.into(),
         custom,
@@ -862,7 +871,8 @@ pub struct Editor {
     pub editing: Option<String>,
     pub base: &'static str,
     pub theme: Theme,
-    rows: Rc<VecModel<yapfast_ui::ThemeColour>>,
+    pub background_image: Option<String>,
+    rows: Rc<VecModel<yappuccino_ui::ThemeColour>>,
 }
 
 impl Editor {
@@ -871,6 +881,7 @@ impl Editor {
             editing,
             base,
             theme,
+            background_image: None,
             rows: Rc::default(),
         };
         editor.fill();
@@ -884,7 +895,7 @@ impl Editor {
             .enumerate()
             .filter_map(|(index, name)| {
                 let colour = self.theme.colour(index)?;
-                Some(yapfast_ui::ThemeColour {
+                Some(yappuccino_ui::ThemeColour {
                     name: token(name).into(),
                     colour,
                     hex: hex(colour).into(),
@@ -895,7 +906,7 @@ impl Editor {
         self.rows.set_vec(rows);
     }
 
-    pub fn rows(&self) -> ModelRc<yapfast_ui::ThemeColour> {
+    pub fn rows(&self) -> ModelRc<yappuccino_ui::ThemeColour> {
         ModelRc::from(self.rows.clone())
     }
 

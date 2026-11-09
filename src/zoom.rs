@@ -17,8 +17,8 @@ pub const LEVELS: [f32; 26] = [
     1.35, 1.4, 1.45, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0,
 ];
 
-/// The least logical size Yapfast's window lays out in, as `YapfastWindow`'s
-/// `min-width` and `min-height` in `ui/yapfast.slint` say. Zooming in stops
+/// The least logical size Yappuccino's window lays out in, as `YappuccinoWindow`'s
+/// `min-width` and `min-height` in `ui/yappuccino.slint` say. Zooming in stops
 /// before the window would have to grow to fit it.
 const MIN_WIDTH: f32 = 800.;
 const MIN_HEIGHT: f32 = 560.;

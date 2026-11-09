@@ -4,16 +4,16 @@
 Alice reads #general on testing/fake_discord.ts, with a few more servers and
 DMs, while the window is open and idle, after it closed to the tray (which
 drops the window and trims the heap), and after the tray opened it again;
-then the same in the Lounge call, and after leaving it. Only Yapfast's
+then the same in the Lounge call, and after leaving it. Only Yappuccino's
 process is sampled.
 
-Memory is anonymous memory plus swap, which is what Yapfast itself holds and
+Memory is anonymous memory plus swap, which is what Yappuccino itself holds and
 close to the private bytes Windows shows, read as each sample starts and as
 it ends. Heap in use is glibc's, from the window control's `stats`. Startup is
-the time from launch until Yapfast's CPU stays under 5% of a core for a second,
+the time from launch until Yappuccino's CPU stays under 5% of a core for a second,
 the CPU it used until then, and the CPU it used in its first 3 s.
 
-Runs Yapfast through scripts/ui-session --tray, which builds the Discord-only
+Runs Yappuccino through scripts/ui-session --tray, which builds the Discord-only
 `measure` build, or runs --bin, and runs testing/tray_host.rs as the tray, on a
 private display and bus.
 """
@@ -39,12 +39,12 @@ parser.add_argument('--closed-seconds', type=int, default=60, help='sample lengt
 parser.add_argument('--no-call', action='store_true', help='skip the call')
 parser.add_argument('--output', type=Path, required=True)
 parser.add_argument('--no-build', action='store_true', help="run the session's last build")
-parser.add_argument('--bin', type=Path, help='run this Yapfast build instead of building one')
+parser.add_argument('--bin', type=Path, help='run this Yappuccino build instead of building one')
 parser.add_argument('--env', action='append', default=[], metavar='NAME=VALUE',
-                    help="set in Yapfast's environment, such as GLIBC_TUNABLES=glibc.malloc.mmap_threshold=131072")
+                    help="set in Yappuccino's environment, such as GLIBC_TUNABLES=glibc.malloc.mmap_threshold=131072")
 args = parser.parse_args()
 args.output.mkdir(parents=True, exist_ok=True)
-# ui-session hands its environment on to Yapfast.
+# ui-session hands its environment on to Yappuccino.
 os.environ.update(variable.split('=', 1) for variable in args.env)
 
 
@@ -58,8 +58,8 @@ def field(path, key):
 
 
 def heap():
-    """glibc's heap held and in use, in MiB, from the last `stats` in Yapfast's log."""
-    log = SESSION / 'yapfast.log'
+    """glibc's heap held and in use, in MiB, from the last `stats` in Yappuccino's log."""
+    log = SESSION / 'yappuccino.log'
     before = log.stat().st_size
     session('do', 'window stats')
     text = log.read_text(errors='replace')[before:]
@@ -81,7 +81,7 @@ def anonymous(pid):
 
 
 def sample(name, seconds, notes):
-    pid = int((SESSION / 'yapfast.pid').read_text())
+    pid = int((SESSION / 'yappuccino.pid').read_text())
     first = anonymous(pid)
     result = json.loads(subprocess.check_output(['python3', str(ROOT / 'scripts/measure-process'), str(pid),
                                                  '--seconds', str(seconds)], text=True))
@@ -97,7 +97,7 @@ def sample(name, seconds, notes):
 def watch_startup(found):
     """From launch until the CPU stays under 5% of a core for a second: how
     long, and how much CPU. Started before the session, it waits for the PID."""
-    pid_file = SESSION / 'yapfast.pid'
+    pid_file = SESSION / 'yappuccino.pid'
     deadline = time.monotonic() + 240
     while not pid_file.exists() or not pid_file.read_text().strip():
         if time.monotonic() > deadline:
@@ -150,7 +150,7 @@ build = not args.no_build
 try:
     for run in range(1, args.runs + 1):
         subprocess.run([str(ROOT / 'scripts/ui-session'), 'stop'], cwd=ROOT, capture_output=True)
-        (SESSION / 'yapfast.pid').unlink(missing_ok=True)
+        (SESSION / 'yappuccino.pid').unlink(missing_ok=True)
         startup = {'run': run}
         watcher = threading.Thread(target=watch_startup, args=(startup,))
         watcher.start()
@@ -176,7 +176,7 @@ finally:
     subprocess.run([str(ROOT / 'scripts/ui-session'), 'stop'], cwd=ROOT, capture_output=True)
     (args.output / 'results.json').write_text(json.dumps({
         'recorded_on': time.strftime('%Y-%m-%d'),
-        'binary': str(args.bin or ROOT / 'target/measure/yapfast'),
+        'binary': str(args.bin or ROOT / 'target/measure/yappuccino'),
         'environment': args.env,
         'os': f'{platform.system()} {platform.release()}', 'machine': platform.machine(),
         'isolation': 'scripts/ui-session --tray: private headless Weston, PulseAudio and D-Bus, '
