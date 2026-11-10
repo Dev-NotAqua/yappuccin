@@ -14,6 +14,8 @@ pub mod collectibles;
 pub mod components;
 pub mod cookies;
 mod dave;
+#[cfg(windows)]
+mod discord_pipe;
 pub mod embed;
 pub mod event;
 pub mod forum;
