@@ -793,6 +793,8 @@ impl Discord {
         // Sharing waits for READY unless an earlier session's settings said.
         let (show_game, shown) = watch::channel(watcher.borrow().show_game);
         let activity = crate::own_activity::start(api.clone(), watcher.clone(), shown);
+        #[cfg(windows)]
+        crate::discord_pipe::start(api.clone(), watcher.clone());
         tokio::spawn(cache::keep(watcher.clone(), names.clone()));
         tokio::spawn(session::run(
             token,
