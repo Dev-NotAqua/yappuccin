@@ -138,7 +138,7 @@ installs or uninstalls without the window.
 
 ## The app icon
 
-`packaging/icon.svg` is Yappuccino's icon: the logo in marigold, its dots in
+`packaging/icon.svg` is Yappuccino's icon: a mug and its steam in marigold, the coffee in
 on-accent ink, so it reads on a light taskbar as well as a dark one. The UI
 keeps drawing `ui/icons/logo.svg`.
 

@@ -18,3 +18,8 @@ __pycache__/
 /deploy/
 /DESIGN.md
 /PRODUCT.md
+
+# Local build artifacts and packaged app (not source):
+/app/
+/dist/
+
