@@ -66,10 +66,10 @@ fn logo(size: u32, unread: bool) -> Option<slint::SharedPixelBuffer<slint::Rgba8
         .replacen(r##"fill="#fff" mask"##, r##"fill="#ffbf47" mask"##, 1);
     if unread {
         svg = svg
-            .replacen("</mask>", r#"<circle cx="74" cy="74" r="21" /></mask>"#, 1)
+            .replacen("</mask>", r#"<circle cx="79" cy="21" r="21" /></mask>"#, 1)
             .replacen(
                 "</svg>",
-                r##"<circle cx="74" cy="74" r="15" fill="#f0545e" /></svg>"##,
+                r##"<circle cx="79" cy="21" r="15" fill="#f0545e" /></svg>"##,
                 1,
             );
     }

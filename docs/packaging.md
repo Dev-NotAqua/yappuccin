@@ -138,9 +138,10 @@ installs or uninstalls without the window.
 
 ## The app icon
 
-`packaging/icon.svg` is Yappuccino's icon: a mug and its steam in marigold, the coffee in
-on-accent ink, so it reads on a light taskbar as well as a dark one. The UI
-keeps drawing `ui/icons/logo.svg`.
+`packaging/icon.svg` is Yappuccino's icon: a cappuccino seen from above on a
+marigold tile, its foam poured as a speech bubble, so it reads on a light
+taskbar as well as a dark one. The UI draws `ui/icons/logo.svg`, the same cup
+cut from one colour.
 
 On Linux the window's app ID is `io.github.yappuccino.Yappuccino` (`src/icon.rs`).
 Wayland desktops show a window's icon only through the desktop entry of that
