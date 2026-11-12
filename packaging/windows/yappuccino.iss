@@ -26,8 +26,8 @@ AppVersion={#AppVersion}
 AppVerName={#DisplayName} {#AppVersion}
 AppPublisher=Yappuccino
 AppPublisherURL=https://yapfast.com
-AppSupportURL=https://github.com/Dev-NotAqua/yapfast/issues
-AppUpdatesURL=https://github.com/Dev-NotAqua/yapfast/releases
+AppSupportURL=https://github.com/Dev-NotAqua/yappuccino/issues
+AppUpdatesURL=https://github.com/Dev-NotAqua/yappuccino/releases
 VersionInfoVersion={#VersionNumber}
 ; Per user: %LOCALAPPDATA%\Programs\Yappuccino, with no UAC prompt.
 PrivilegesRequired=lowest

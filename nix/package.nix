@@ -83,7 +83,7 @@ rustPlatform.buildRustPackage {
   '';
   meta = {
     description = "Native Discord client that stays light on memory";
-    homepage = "https://github.com/Dev-NotAqua/yapfast";
+    homepage = "https://github.com/Dev-NotAqua/yappuccino";
     license = lib.licenses.gpl3Plus;
     mainProgram = "yappuccino";
     platforms = [ "x86_64-linux" ];

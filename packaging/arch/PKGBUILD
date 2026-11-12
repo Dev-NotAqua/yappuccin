@@ -1,4 +1,4 @@
-# Maintainer: the Yappuccino maintainers <https://github.com/Dev-NotAqua/yapfast/issues>
+# Maintainer: the Yappuccino maintainers <https://github.com/Dev-NotAqua/yappuccino/issues>
 #
 # Builds the Discord-only release the way nix/package.nix does, with Arch's toolchain.
 
@@ -12,7 +12,7 @@ _webrtc=webrtc-51ef663
 _skia=skia-binaries-30669978c3f39a73e8a7-$CARCH-unknown-linux-gnu-ftembed-ganesh-gl-jpegd-jpege-pdf-textlayout.tar.gz
 pkgdesc='Native Discord client that stays light on memory'
 arch=(x86_64)
-url='https://github.com/Dev-NotAqua/yapfast'
+url='https://github.com/Dev-NotAqua/yappuccino'
 license=(GPL-3.0-or-later)
 # The binary links glib2, fontconfig, libpulse, libstdc++, libgcc and glibc; Skia brings its own FreeType. Its one ld-linux entry is
 # real: it imports __tls_get_addr from the loader, which namcap reports as an unused library.
@@ -44,7 +44,7 @@ makedepends=(cargo clang cmake curl git llvm21 nasm pkgconf protobuf python)
 # webrtc-sys compiles C++ with cc; Arch's LTO flags would leave it unlinkable.
 options=(!lto)
 source=(
-  "$pkgname::git+https://github.com/Dev-NotAqua/yapfast.git#tag=v$pkgver"
+  "$pkgname::git+https://github.com/Dev-NotAqua/yappuccino.git#tag=v$pkgver"
   "$_webrtc-linux-x64-release.zip::https://github.com/livekit/rust-sdks/releases/download/$_webrtc/webrtc-linux-x64-release.zip"
   "https://github.com/rust-skia/skia-binaries/releases/download/0.157.0/$_skia"
 )

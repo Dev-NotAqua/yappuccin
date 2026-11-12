@@ -143,13 +143,13 @@ def main():
         shutil.copy2(ROOT / "LICENSE", package / "LICENSE.txt")
         # The source snapshot goes beside the packages, on the release page,
         # rather than into every install; SOURCE.txt says where.
-        source_url = f"https://github.com/Dev-NotAqua/yapfast/releases/tag/v{version}{flavour['suffix']}"
+        source_url = f"https://github.com/Dev-NotAqua/yappuccino/releases/tag/v{version}{flavour['suffix']}"
         (package / "SOURCE.txt").write_text(
             f"The source code of this build of Yappuccino {version}"
             + (", with the exact source of\nthe libraries it includes under the AGPL," if rtc else "")
             + " is published with it:\n\n"
             f"  {source_url}\n  {source_path.name}, SHA-256 in BUILD.json\n\n"
-            "and in the repository, https://github.com/Dev-NotAqua/yapfast. The licenses folder\n"
+            "and in the repository, https://github.com/Dev-NotAqua/yappuccino. The licenses folder\n"
             "holds every dependency's own license and notices.\n",
             encoding="utf-8", newline="\r\n",
         )

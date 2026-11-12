@@ -69,9 +69,9 @@ def main():
         shutil.copy2(ROOT / "LICENSE", doc / "LICENSE")
         (doc / "SOURCE.txt").write_text(
             f"The source code of this build of Yappuccino {version} is published with it:\n\n"
-            f"  https://github.com/Dev-NotAqua/yapfast/releases/tag/v{version}\n"
+            f"  https://github.com/Dev-NotAqua/yappuccino/releases/tag/v{version}\n"
             f"  {source_path.name}, SHA-256 in BUILD.json\n\n"
-            "and in the repository, https://github.com/Dev-NotAqua/yapfast. The licenses folder\n"
+            "and in the repository, https://github.com/Dev-NotAqua/yappuccino. The licenses folder\n"
             "holds every dependency's own license and notices.\n",
             encoding="utf-8",
         )

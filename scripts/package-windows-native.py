@@ -102,7 +102,7 @@ def main():
             f"distribution, as {source_path.name}:\\n\\n"
             f"  {source_path.name}, SHA-256 in BUILD.json\\n\\n"
             "The upstream project it derives from is\\n"
-            "https://github.com/Dev-NotAqua/yapfast. The licenses folder holds\\n"
+            "https://github.com/Dev-NotAqua/yappuccino. The licenses folder holds\\n"
             "every dependency's own license and notices.\\n",
             encoding="utf-8", newline="\r\n",
         )

@@ -5,9 +5,9 @@
 <h1 align="center">Yappuccino</h1>
 
 <p align="center">
-  <a href="https://github.com/Dev-NotAqua/yapfast/releases/latest"><img src="https://img.shields.io/github/v/release/Dev-NotAqua/yapfast?label=beta&color=f0b232" alt="The latest release, a beta"></a>
+  <a href="https://github.com/Dev-NotAqua/yappuccino/releases/latest"><img src="https://img.shields.io/github/v/release/Dev-NotAqua/yappuccino?label=beta&color=f0b232" alt="The latest release, a beta"></a>
   <a href="#get-started"><img src="https://img.shields.io/badge/Windows%20%7C%20Linux-0078D4" alt="Windows and Linux"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/Dev-NotAqua/yapfast?color=blue" alt="License: GPL 3.0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Dev-NotAqua/yappuccino?color=blue" alt="License: GPL 3.0"></a>
   <a href="https://yapfast.com/discord-invite"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Join the Yappuccino Discord server"></a>
 </p>
 
@@ -196,7 +196,7 @@ order I'm working on it.
 
 It's a beta, and it's what I use for Discord every day, so it had better
 be usable. Still, there are rough edges; when you hit one,
-[open an issue](https://github.com/Dev-NotAqua/yapfast/issues) and I'll fix it, or
+[open an issue](https://github.com/Dev-NotAqua/yappuccino/issues) and I'll fix it, or
 come hang out on the [Yappuccino Discord server](https://yapfast.com/discord-invite)
 and tell me there.
 
@@ -242,7 +242,7 @@ Don't want to take my word for it? Fair, the code's all right here.
 ### Windows 10 and 11
 
 1. Download `Yappuccino-…-windows-x64-setup.exe` from the
-   [latest release](https://github.com/Dev-NotAqua/yapfast/releases/latest).
+   [latest release](https://github.com/Dev-NotAqua/yappuccino/releases/latest).
 2. Run it. It installs just for you, with no administrator prompt. The
    installer isn't signed yet, so SmartScreen may get nervous: choose **More
    info**, then **Run anyway**.
@@ -260,7 +260,7 @@ Advanced**.
 
 It runs great on both X11 and Wayland, screen sharing too (Hyprland here).
 Every release has two packages, on the
-[latest release](https://github.com/Dev-NotAqua/yapfast/releases/latest):
+[latest release](https://github.com/Dev-NotAqua/yappuccino/releases/latest):
 
 - **AppImage**, `Yappuccino-…-x86_64.AppImage`, for any distro with glibc 2.39 or
   newer, like Ubuntu 24.04, Fedora 40 or Debian 13. Make it executable
@@ -301,7 +301,7 @@ test it on.
 
 Want what's on `main` right now, without waiting for a release or building it
 yourself? Every now and then I put out a nightly build of the Discord-only app.
-They're on the [releases page](https://github.com/Dev-NotAqua/yapfast/releases),
+They're on the [releases page](https://github.com/Dev-NotAqua/yappuccino/releases),
 marked **Pre-release**, newest first, each with a list of what changed:
 
 - **Windows:** the portable ZIP. Extract it and double-click `yappuccino.exe`.
