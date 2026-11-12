@@ -1013,6 +1013,60 @@ fn developer_mode_is_off_until_turned_on_and_remembered() {
 }
 
 #[test]
+fn mods_are_off_until_turned_on_and_act_only_while_on() {
+    i_slint_backend_testing::init_no_event_loop();
+    let directory = tempfile::tempdir().unwrap();
+    let open = || {
+        let window = YappuccinoWindow::new().unwrap();
+        let adapter = Adapter::new(
+            Arc::new(BackgroundRuntime::new().unwrap()),
+            directory.path().into(),
+            &window,
+        )
+        .unwrap();
+        bind_callbacks(&window, &adapter);
+        (window, adapter)
+    };
+    let clipboard = |window: &YappuccinoWindow| {
+        i_slint_core::window::WindowInner::from_pub(window.window())
+            .context()
+            .platform()
+            .clipboard_text(i_slint_core::platform::Clipboard::DefaultClipboard)
+    };
+    let (window, _adapter) = open();
+    let catalog = window.get_mods();
+    assert_eq!(catalog.row_count(), yappuccino_core::mods::CATALOG.len());
+    let row = catalog.row_data(0).unwrap();
+    assert_eq!(row.id, "message-utilities");
+    assert!(!row.enabled);
+    assert!(!window.get_message_utilities());
+
+    // Off, it copies nothing.
+    window.invoke_copy_text("before".into());
+    window.invoke_copy_message_id("d:99".into());
+    assert_eq!(clipboard(&window).as_deref(), Some("before"));
+
+    window.invoke_mod_toggled("message-utilities".into(), true);
+    assert!(window.get_message_utilities());
+    assert!(window.get_mods().row_data(0).unwrap().enabled);
+    window.invoke_copy_message_id("d:99".into());
+    assert_eq!(clipboard(&window).as_deref(), Some("99"));
+    // A message still sending has no id yet.
+    window.invoke_copy_message_id("t:pending".into());
+    assert_eq!(clipboard(&window).as_deref(), Some("99"));
+    // An unknown mod changes nothing.
+    window.invoke_mod_toggled("gone".into(), true);
+    let saved = || Layout::read(directory.path()).mods;
+    assert!(saved().enabled("message-utilities"));
+
+    let (window, _adapter) = open();
+    assert!(window.get_message_utilities(), "on again at the next start");
+    window.invoke_mod_toggled("message-utilities".into(), false);
+    assert!(!window.get_message_utilities());
+    assert!(!saved().enabled("message-utilities"));
+}
+
+#[test]
 fn custom_games_are_remembered_and_edited_in_place() {
     i_slint_backend_testing::init_no_event_loop();
     let directory = tempfile::tempdir().unwrap();
@@ -6950,6 +7004,7 @@ fn custom_theme_ids_stay_apart_from_built_in_ones_and_each_other() {
         name: id.into(),
         base: "yap",
         theme: theme::YAP,
+        background_image: None,
     };
     let mut themes = vec![
         custom("custom:2"),

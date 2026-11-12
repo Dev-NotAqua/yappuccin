@@ -48,6 +48,7 @@ mod games;
 mod gifs;
 mod menus;
 mod messages;
+mod mods;
 #[cfg(windows)]
 mod move_loop;
 mod name_style;
@@ -1188,6 +1189,8 @@ struct Layout {
     /// Menus offer Copy ID, as Discord's Developer Mode does; off unless
     /// turned on.
     developer_mode: bool,
+    /// The mods turned on, and their settings; see [`mods`].
+    mods: yappuccino_core::mods::Mods,
     /// The desktop draws the window's title bar; unset, Yappuccino draws its own
     /// on desktops that give windows one. See [`title_bar`].
     system_title_bar: Option<bool>,
@@ -1317,6 +1320,9 @@ impl Layout {
             layout.each_sound.insert(Sound::Mention, 0);
         }
         theme::tidy(&mut layout.custom_themes);
+        if let Some(app) = yappuccino_core::mods::Version::parse(env!("CARGO_PKG_VERSION")) {
+            layout.mods.for_app(app);
+        }
         layout
     }
 
@@ -1489,6 +1495,7 @@ impl Layout {
         window.set_close_to_tray(self.close_to_tray.unwrap_or(true));
         window.set_multiple_windows(self.multiple_windows);
         window.set_developer_mode(self.developer_mode);
+        mods::show(window, &self.mods);
         title_bar::show(window, self.system_title_bar);
         let each: Vec<i32> = Sound::ALL
             .iter()

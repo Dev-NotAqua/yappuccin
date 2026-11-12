@@ -8,6 +8,10 @@ commit; this file keeps what a person using the app would notice.
 
 ### Added
 
+- **Mods**: Settings → Mods lists optional features built into Yappuccino,
+  each off until turned on, with the permissions it uses. The first is
+  Message Utilities: Copy Message Link and Copy Message ID in a message's
+  menu.
 - A new logo: a cappuccino seen from above, its foam poured as a speech
   bubble, on a marigold tile. The UI draws the same cup in the theme's accent.
 - `python scripts/prepare-windows-skia.py --build` sets up the whole native

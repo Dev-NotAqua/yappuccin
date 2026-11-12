@@ -31,6 +31,11 @@ code. The Slint files themselves are `ui/*.slint`, and the Rust that fills
 them is `src/ui.rs` and `src/ui/`. The menus a right click opens are in
 `src/ui/menus.rs`.
 
+Mods are compiled in: their manifests, permissions and saved state are
+`crates/yappuccino-core/src/mods.rs`, Settings → Mods and the window parts
+they add are `src/ui/mods.rs` and `ui/mods.slint`. The host asks
+`Mods::allows` before a mod acts; see [plugins](plugins.md).
+
 The Discord connection is `crates/yappuccino-discord/src/service.rs`, with its
 parts in `service/`: `tracker.rs` keeps the account's servers, voice, DMs,
 friends and settings current from gateway events, `publisher.rs` sends out

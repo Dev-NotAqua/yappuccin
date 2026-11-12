@@ -225,6 +225,7 @@ fn show_emoji(adapter: &Rc<RefCell<Adapter>>, window: &YappuccinoWindow, query: 
 
 pub(super) fn bind_callbacks(window: &YappuccinoWindow, adapter: &Rc<RefCell<Adapter>>) {
     super::games::bind(window, adapter);
+    super::mods::bind(window, adapter);
     super::gifs::bind(window, adapter);
     super::polls::bind(window, adapter);
     super::call_link::bind(window, adapter);

@@ -60,6 +60,7 @@ mod matrix_video;
 mod matrix_voice;
 pub mod mention;
 pub mod meter;
+pub mod mods;
 pub mod network;
 pub mod noise;
 pub mod picture;

@@ -202,8 +202,9 @@ and tell me there.
 
 ### Not for you?
 
-- [Vesktop](https://vesktop.dev) if you want plugins. Yappuccino has none yet
-  (they're coming, dw), and Vesktop ships with Vencord's.
+- [Vesktop](https://vesktop.dev) if you want a big plugin catalog today.
+  Yappuccino's [mods](docs/mods.md) are built in and only just started, and
+  Vesktop ships with Vencord's.
 - [Ripcord](https://cancel.fm/ripcord/) if you want something even plainer.
   It's native too, but closed source, and it does Slack on the side.
 

@@ -167,7 +167,8 @@ errors make it taller than the minimum window. SSO and OAuth are still pending.
   reactions, Add reaction, View Reactions, Edit, Reply, Forward, Create Thread
   or View Thread, Copy text, Copy selection, Pin or Unpin, and Delete, with
   Copy Image, Save Image, Copy Link and Open Link on a picture or link
-  (`ui/messages.slint`). View Reactions appears once a message has reactions,
+  (`ui/messages.slint`). With the Message Utilities mod on, a sent message's
+  menu also has Copy Message Link and Copy Message ID ([mods](mods.md)). View Reactions appears once a message has reactions,
   Copy selection while text is selected, and Edit on your own messages only.
   Delete appears on your own messages, and on anyone's for a Discord moderator
   with Manage Messages. Until you have reacted, the most used reactions are 👍,

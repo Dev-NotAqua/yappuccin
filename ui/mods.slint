@@ -1,0 +1,45 @@
+import { Theme, Label } from "theme.slint";
+import { SettingsTitle, SettingsSwitch } from "settings.slint";
+
+/// A mod in Settings → Mods, from its manifest and whether it's on.
+export struct ModRow {
+    id: string,
+    name: string,
+    version: string,
+    summary: string,
+    /// What its permissions let it do, joined with " · ".
+    permissions: string,
+    /// The project whose behaviour it reimplements, or empty.
+    inspiration: string,
+    enabled: bool,
+    /// It failed while it ran, and stays off until Yappuccino restarts.
+    failed: bool,
+}
+
+// Settings: the mods Yappuccino ships, each off until turned on. A mod does
+// only what the permissions listed under it allow.
+export component ModsSettings inherits VerticalLayout {
+    in property <[ModRow]> mods;
+    callback toggled(string, bool);
+    spacing: 16px;
+    SettingsTitle { text: "Mods"; }
+    Label {
+        text: "Extras built into Yappuccino, each off until you turn it on. A mod can do only what's listed under it. None of them download code, send messages for you or change your account on their own.";
+    }
+    for row in root.mods: VerticalLayout {
+        spacing: 6px;
+        SettingsSwitch {
+            text: row.name;
+            description: row.summary;
+            checked: row.enabled;
+            controlled: true;
+            toggled(on) => { root.toggled(row.id, on); }
+        }
+        Label { text: "Version " + row.version + " · " + row.permissions; font-size: 12px; color: Theme.muted; }
+        if row.inspiration != "": Label { text: row.inspiration; font-size: 12px; color: Theme.faint; }
+        if row.failed: Label {
+            text: "Stopped after an error. It starts again when Yappuccino restarts, or when you turn it off and on.";
+            font-size: 12px; color: Theme.danger-text;
+        }
+    }
+}

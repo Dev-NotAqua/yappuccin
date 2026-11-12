@@ -1023,6 +1023,10 @@ export component MessageMenu inherits Rectangle {
     callback reply(string);
     callback start-forward(string);
     callback copy-text(string);
+    /// Message Utilities, a mod, is on: Copy Message Link and Copy Message ID.
+    in property <bool> message-utilities;
+    callback copy-message-link(string);
+    callback copy-message-id(string);
     callback pin-message(string);
     callback request-delete(string);
     /// Asks to make sure before closing this account's poll.
@@ -1086,6 +1090,14 @@ export component MessageMenu inherits Rectangle {
         if root.selection != "": MenuItem {
             text: "Copy selection"; icon: @image-url("icons/text-select.svg");
             clicked => { root.copy-text(root.selection); }
+        }
+        if root.message-utilities && root.menu-message.delivery == "" && !root.preview: MenuItem {
+            text: "Copy Message Link"; icon: @image-url("icons/link.svg");
+            clicked => { root.copy-message-link(root.menu-message.item); }
+        }
+        if root.message-utilities && root.menu-message.delivery == "" && !root.preview: MenuItem {
+            text: "Copy Message ID"; icon: @image-url("icons/id-filled.svg");
+            clicked => { root.copy-message-id(root.menu-message.item); }
         }
         if root.menu-message.has-poll && root.menu-message.poll.can-end: MenuItem {
             text: "End Poll Now"; icon: @image-url("icons/circle-stop.svg");
