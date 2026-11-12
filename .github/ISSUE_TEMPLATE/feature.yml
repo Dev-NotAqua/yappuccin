@@ -1,0 +1,29 @@
+name: Feature or mod idea
+description: Something Yappuccino should do, or a mod it should ship.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you want to do
+      description: The problem first, then the feature you picture. "I can't find old pins quickly" helps more than "add a pin manager".
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - A Discord feature Yappuccino doesn't have yet
+        - Something new in the app
+        - A mod
+        - Settings and personalization
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Discord's Terms
+      options:
+        - label: It doesn't send messages, change my account or act on Discord without me clicking (no self-bots, spam or automation).
+          required: true

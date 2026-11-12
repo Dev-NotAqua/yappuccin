@@ -1,0 +1,757 @@
+# Channels and messages
+
+Yappuccino shows Discord live from its own Discord connection. Every server, channel
+and DM is visible without copying anything into Matrix.
+
+Yappuccino lists the linked account's Discord servers in the rail with their
+channels. Channels the account's roles and channel overwrites keep it out of
+show greyed out with a lock, as in Discord; channels hidden from it appear the
+same way only with the "Show channels you can't access" setting, which is off
+by default. Server text channels are listed under their Discord categories and
+open in Yappuccino's timeline. Clicking a category's heading collapses it, leaving
+the open channel, unread ones and voice channels with people in them, as in
+Discord; Yappuccino remembers which categories are collapsed, per server. History
+loads from Discord 50 messages at a time (`GET /channels/{id}/messages` with
+`before` the oldest loaded message and `limit=50`) as the timeline scrolls near
+its top, one page at a time per channel, until a short page shows the channel's
+first message is there; and new messages, edits, deletions and reactions arrive
+live. A jump to a message that isn't loaded shows the messages around it; see
+[jumping to a message](#jumping-to-a-message). Opening a channel subscribes to
+its server, as the web client does, because Discord sends large servers'
+messages only to subscribers. Yappuccino sends, replies, edits, deletes, reacts
+and sends files through Discord's cloud uploads. Mentions and timestamps show
+as text, custom emoji and stickers as pictures, every attachment shows, images
+with previews scaled by Discord's media proxy, and channels the account can't
+send in are read-only. Reacting follows Add Reactions instead, as in Discord's
+client: a channel the account can't send in, such as an announcement channel,
+still takes reactions, and without Add Reactions it can add to a reaction
+already on a message or take its own back. A timeout, or an archived thread
+it couldn't open again, takes reacting away. Bots and webhooks have an APP tag after their name. An
+author's name takes their highest coloured role's colour, once their roles are
+known: live messages carry them, and for history Yappuccino asks Discord for the
+authors' member profiles.
+
+Yappuccino keeps the open channel's messages in memory, and those of the 40
+channels open before it, so going back to one shows it at once. A closed
+channel keeps its newest 200 messages as metadata and follows new messages,
+edits, deletions and reactions while it's kept. Opening it again shows those
+without asking Discord, as long as it kept up: its latest page came, and no
+live event went by without it since, as when the connection drops for a new
+session (a resume replays what was missed) or Yappuccino falls behind on
+events. Otherwise it loads the latest page in the background and fits it
+in: messages kept within the page's
+span that it lacks were deleted meanwhile, and when a full page starts after
+everything kept, more came than a page holds, so only the page stays. The UI
+keeps the same 40 channels' last timeline and member list, so going back shows
+them before the chat side answers, without "Loading messages...". Channels also
+go to disk, as the startup cache below describes, so a channel opened after a
+restart shows its saved messages while the latest page loads and fits in the
+same way.
+
+All channels share one 8 MiB cache for decoded preview pixels, with least
+recently used eviction. Only messages in or near the timeline viewport
+request previews, and previews show as loading until then; evicted previews
+can be decoded again from the disk cache. The UI drops decoded preview
+handles when closing a channel, so remembered UI timelines do not pin pixels
+outside the shared cache.
+
+The open channel renders each message for the timeline once, with its
+author's name, colour and avatar and its mentions as names, and keeps it. A
+new message, an edit, a reaction or a preview that arrived renders only that
+message again; a change to someone's name, avatar or roles, to the
+server's roles or channel names, or to who's blocked, renders them all. A closed channel drops its rendered messages,
+since they hold its previews.
+
+Unread dots and mention counts follow Discord's read states, mutes and
+@everyone and role suppression, including passive updates from large servers.
+A message that calls on this account is highlighted in the timeline, as in
+Discord: one that mentions it, one of its roles in the server, or @everyone
+or @here, from a message's `mentions`, `mention_roles` and
+`mention_everyone`, which count only what the author may mention. The
+account's settings for the server can suppress @everyone and @here, and
+roles. A reply to its message is highlighted too, whether it pings or not,
+but only while it's new: after the last message read when the channel or
+thread opened, by snowflake. A ping reply puts the account in `mentions`,
+so it's a mention only when its `content` names it, `<@id>` or `<@!id>`.
+Each server in the rail shows its mentions as a count, and the DM button
+counts DM mentions and the friend requests waiting for an answer.
+Reading an unread channel marks it read, as Discord's client does: once its
+newest message is in view, with the window in front and the "New" divider
+placed, so opening a channel at its divider and leaving it doesn't. A
+channel whose new messages don't show, deleted, of a kind Yappuccino leaves out
+or hidden as blocked, has no divider once its newest page has come, and reads
+then. With the "Mark messages read on Discord" setting, on by default,
+Yappuccino acknowledges it on Discord within a second.
+Reads within that second go together: one channel as its own
+acknowledgement, several, as when a server is marked read from its menu, in
+one `POST /read-states/ack-bulk` of up to 100 channels, as the official
+client does.
+Before it does, Yappuccino notes the channel's last read message, from READY's read
+state or the last acknowledgement since, and the "New" divider goes above the
+first message after it from someone else. Snowflakes order messages, so the
+divider finds its place even when the last read message was deleted. When
+every loaded message is unread, the 50 around the last read one load in
+place of the newest, as a window of older messages that opens at the
+divider; when even those are all newer, the divider goes above the oldest.
+An unread channel that shows nothing yet, neither kept in memory nor on
+disk, asks for the 50 around the last read one together with the newest 50,
+so it opens at the divider after one round trip rather than two. When the
+messages kept on disk reach back to the last read one, they're what shows
+around it, at once, and only the newest page is asked for. The divider waits
+for that page, which may bring newer messages, and until then nothing reads
+the channel; offline, it goes in from what's kept. A page around it with
+fewer than half a page from it on reaches the newest message, as Discord's
+client takes it, so it shows as the newest rather than as a window.
+The open text channel lists its members on the right as Discord's sidebar
+does: under hoisted roles, then online, then offline, with offline members
+faded. Each shows a status dot for online, idle or do not disturb, their name
+in their highest coloured role's colour, and their custom status or what
+they're playing below it. Yappuccino shows the list's first 100 rows, headings
+included. Discord keeps one list for all channels with the same readers, and
+its id says who they are: `everyone` when @everyone sees the channel and no
+overwrite hides it, else a MurmurHash3 of the overwrites that allow or deny
+seeing it, as Discord's client computes it. Yappuccino keys its lists by that id, so
+moving between such channels shows the same list and asks Discord for
+nothing, and an update applies only to the list it names. Yappuccino keeps the last
+40 lists. An INVALIDATE, by which Discord stops sending rows, leaves them as
+they were, to show when their channel is again. One Discord still sends, or
+sent within 10 minutes, shows without asking again. An older one shows at
+once while Yappuccino subscribes, and Discord's sync replaces it. A list
+on screen that Discord doesn't send is asked for again once it's 10 minutes
+old. When no list comes within 8 seconds of opening a channel, the panel
+says Discord didn't send one instead of loading on, and the header says
+"Members" until a count is known. A build without Matrix shows the Discord
+account's name, avatar and connection in the bottom-left panel.
+
+Yappuccino starts from Discord as it last saw it, kept in the data directory by
+`yappuccino_discord::cache`, and Discord's answers replace it as they arrive:
+
+- `discord-account.json` holds the account's name and avatar, its servers
+  with their channels, roles and emoji, its DMs, friends, friend requests and
+  status. It also holds the names Yappuccino learned (users, server nicknames,
+  server avatars and members' roles), which messages and member lists show
+  people by, and the member lists shown lately. Every message Discord sends
+  from any server teaches Yappuccino its author, so it keeps the 20,000 people it
+  learned most lately and forgets a quarter of them, those learned longest
+  ago, once there are more. It's written at most every 20
+  seconds while connected. Calls and who is in voice aren't saved. On the
+  next start Yappuccino shows it all at once, identifies with the saved status, and
+  READY replaces it. A saved member list shows at once, even before Yappuccino
+  connects, and Discord's sync replaces it. The list on screen is kept with
+  them when the connection drops, so it shows again at once after
+  reconnecting.
+- `discord-messages/` holds, for each channel shown lately, its newest 100
+  messages, written within 20 seconds of a change, when the channel leaves
+  the 40 kept in memory, and when Yappuccino closes. The 300 channels used last are
+  kept. Opening a channel shows its saved messages, and the latest page fits
+  in as it does for a channel kept in memory.
+- `discord-pictures/` holds avatars, server icons, emoji and stickers, and the
+  media proxy's previews of attachments and links, up to 8 MiB each. Discord
+  gives each version of a picture its own address, so a kept one is never
+  stale; the proxy's signature (`ex`, `is` and `hm`) isn't part of the key,
+  so a picture signed again is found. Past 256 MiB the least recently shown
+  go. Attachments' own files aren't kept.
+- `discord-build-number` holds the web client's build number as its page
+  last gave it, which Yappuccino sends with every request and the gateway's
+  identify, as the web client does. A start with it kept connects at once
+  and reads the page meanwhile, keeping what it finds for the next start;
+  without it, the page is read before connecting.
+
+The files are readable only by the user and aren't encrypted. Each names its
+login by a SHA-256 hash of the token, so another linked account starts empty,
+and unlinking deletes them all. A file is written beside its own and then
+swapped in; when its folder is gone, as when a cleaner deletes the data folder
+while Yappuccino runs, the write makes the folder again. While Discord is
+unreachable, an open channel shows what was saved, waits, and loads once
+Yappuccino is back, rather than showing an error.
+
+- Discord servers appear in the server rail with a Discord badge, and Discord
+  DMs appear in the DM list with the same badge. A build without Matrix leaves
+  the badge off, since everything in it is Discord's.
+- A build without Matrix leaves out the composer's line about encryption and
+  keys, since everything in it is Discord's; what stops sending still shows
+  there. The account's dot in the bottom-left shows its Discord status: idle,
+  do not disturb, or the grey ring when invisible or disconnected.
+- Discord servers keep the order the account's server list has in Discord,
+  from `guild_folders` in its settings, and follow it when it changes
+  elsewhere. A server the settings don't list yet, such as one just joined,
+  goes first.
+- Folders show in the rail as in Discord. Closed, a folder is a tile of its
+  colour holding its first four servers' icons, with the pill, unread dot
+  and mention count of all its servers; its tooltip is its name, or its
+  servers' names when it has none. Clicking opens it: a folder icon in its
+  colour, its servers below it on a strip of that colour. Yappuccino remembers the
+  open folders on this device, in `layout.json`, as Discord's client keeps
+  them per device. Settings entries with an id are folders, read with their
+  name and colour (`GuildFolder` fields 2 to 4, each in a wrapper); one
+  without is a server on its own. Folders can't be made or changed in Yappuccino
+  yet.
+- A server out of reach in a Discord outage (`GUILD_DELETE` with
+  `unavailable`, or READY listing it so) stays in the rail, faded, as last
+  known, until its `GUILD_CREATE` brings it back. Only a `GUILD_DELETE`
+  without `unavailable`, as when the account leaves, removes it.
+- Server icons and avatars come from Discord's CDN, which needs no login.
+  Yappuccino asks for each one once it shows: in the rail, beside people in a
+  voice channel of the open server, in the call, or beside a message. A
+  member's server avatar wins over their own. Yappuccino decodes them at 128px
+  before the UI sees them. Once more than 400 have arrived, those off
+  screen go, and Yappuccino asks for them again, from disk, when they show.
+  Custom emoji stay, since the picker asks for hundreds at once.
+  Initials show until a picture arrives or when it fails. A download that
+  may work later, when the CDN is out of reach, fails or answers 429, is
+  tried up to six times; every download then waits together, 10 seconds
+  and doubling up to five minutes, so a CDN in trouble hears from Yappuccino
+  rarely. One Discord refuses, such as a 404, isn't tried again. A server
+  without an icon keeps its initials, and a person without
+  an avatar gets Discord's default avatar for their account.
+- Who reacted comes as Discord's client asks for it: `GET
+  /channels/{c}/messages/{m}/reactions/{emoji}?limit=3&type=0` for a
+  reaction's tooltip, and `limit=100` with `after`, the last user id, for each
+  page of the Reactions window. Users come by id; those not known in the
+  server are asked for over the gateway first, so the names are server
+  nicknames, as Discord's client shows them. A moderator removes someone's
+  reaction with `DELETE …/reactions/{emoji}/0/{user}?location=Message&burst=false`.
+  Super reactions aren't listed apart yet.
+- Messages support text, replies, edits, deletions, reactions, mentions and
+  attachments. Up to ten files go with a message, uploaded to Discord's
+  storage first and then named in the message. As in Discord's client,
+  each file asks `POST /channels/{id}/attachments` for its upload URL and
+  then `PUT`s itself there, all files at once; if one fails, the others
+  are deleted. Each file is limited as
+  Discord limits it: 20 MB without Nitro, 50 MB with
+  Nitro Basic or the old Nitro Classic, and 500 MB with Nitro, by the
+  account's `premium_type`. A server boosted to level 2 allows 50 MB and one
+  at level 3 100 MB to everyone, whichever is higher. Discord sends the
+  server's `premium_tier` in READY and GUILD_UPDATE, and the account's
+  `premium_type` in READY and USER_UPDATE. The web client's own constant
+  without Nitro is still 10 MiB, but `getMaxFileSize` raises every limit to
+  at least 20 MiB (`Math.max(0x1400000, …)`) before it checks a file or names
+  the limit, so 20 MB is what it enforces.
+- Link previews and bots' cards show from the embeds Discord adds to a
+  message: Discord's servers read the linked page's Open Graph tags, often a
+  moment after sending, and the preview arrives in a message update. A card
+  shows the site, author, title, description, fields and footer behind a bar
+  of its colour, with its picture large for articles and videos and small
+  beside the text otherwise. A video the media proxy has (`video.proxy_url`)
+  plays in place, as an attached one does, under the card's thumbnail as its
+  poster, whatever the card's type: vxtwitter's posts come as `rich` cards
+  with one. Others, such as YouTube's, open in the browser. Other pictures open in the image viewer, where a right click on the picture
+  offers Copy Image, Save Image, Copy Link and Open Link, as the message's
+  menu does. A linked image or GIF
+  shows with the message's images, without its address when that's all the
+  message says. Pictures come through Discord's
+  media proxy (`images-ext-*.discordapp.net`), so Yappuccino never contacts the
+  linked site, and embeds of a message marked to hide them don't show.
+- Discord's own links to a server, channel, message or person open that
+  place in Yappuccino, DM links included; an invite opens Join a Server first,
+  an event link shows the scheduled event with its Interested button
+  ([Event links](servers.md#event-links)), and a gift link
+  (`discord.gift/…`, `/gifts/…`) shows the gift and redeems it on the click,
+  never from opening the link (`link.rs`, `gift.rs`). A gift code drops the
+  dashes that may group it, as Discord's client reads it. A gift that needs
+  a payment source, or is from a promotion, offers its link in the browser
+  instead, since only Discord redeems those. A dialog closed while its gift
+  is redeeming and opened again shows it still redeeming, and Discord's
+  answer. The same reader takes web, `discord://` and `yappuccino://` links
+  handed to a start. Only Discord's own hosts and snowflake ids match, so a
+  look-alike stays an ordinary web link. Discord pages Yappuccino has no screen for, such
+  as the shop and server templates, still open in the browser, as does a
+  link Yappuccino can't show: to a server the account isn't in, or any while
+  Discord is offline (`AppState::opens_discord_route`).
+- An authorization link (`/oauth2/authorize`) shows what the application
+  asks for, in the words of Discord's page, and authorizes it only on the
+  click, in the server picked (`link.rs`, `oauth.rs`). A red line warns of
+  the `rpc` scope, which controls the Discord client, and of a bot asking
+  for Administrator; a bot's permissions no role switch names count as
+  "N more". A link that locks its server shows that server and can't be
+  moved to another: if the account can't add apps there, the dialog says so
+  and offers no Authorize. Like Discord's client, Yappuccino sends only the
+  fields it read (`client_id`, `scope`, `response_type`, `redirect_uri`,
+  `state`, `nonce`, the PKCE pair, `integration_type`), rebuilt into each
+  query, with the server and permissions in the body; a link naming one of
+  them twice opens in the browser, as do links without scopes (install
+  links, whose scopes Discord's page reads from the application), links
+  asking for `webhook.incoming` (which needs a channel picked) and links
+  with a scope Yappuccino can't describe. Afterwards Yappuccino goes where
+  Discord's answer (`location`) says: a page of Discord's own ends the
+  dialog at "Authorized", a web page opens in the browser, and any other
+  address, such as an app's `myapp://`, is shown to copy and never opened,
+  as no link in a message starts another program (`links::openable`).
+- Animated GIFs, APNGs and animated WebPs play, in messages, as stickers and in
+  the image viewer. The media proxy keeps GIFs as GIFs; other pictures come as
+  WebP, asked for with `animated=true` as Discord's client does, so an animated
+  one, such as vxtwitter's AVIF GIFs, stays animated rather than turning into
+  its first frame. An animation keeps its first frame in memory, and its file
+  in `discord-pictures/`, or in memory when it isn't kept there, as one over 8
+  MB isn't. Its frames decode one at a time on the UI thread as they show,
+  reading the file, and a second after it last showed, as when its row scrolls
+  away, it lets its decoder go. Decoded whole, a few seconds of a GIF take tens
+  of megabytes. Frames shorter than 20 ms play at 100 ms, as browsers do. Tenor
+  and Giphy links arrive as MP4 "gifv" embeds, which play the same way, silent
+  and looping, from the proxy's copy of the MP4 (`video.proxy_url`): up to a
+  minute of it, decoded by the FFmpeg, libvpx and dav1d inside libwebrtc
+  (`native/video.c`). One that can't be decoded shows its still picture. It's
+  named and saved as its video, not its picture.
+- Attached videos show their poster, which the media proxy makes from the
+  first frame (`proxy_url?format=webp`), with a play button; they play in
+  place, with sound, under a bar to pause, move through them, mute and show
+  them full screen. Full screen, as the image viewer shows a picture, the
+  video is enlarged to fit the window with its bar under it; Space plays or
+  pauses it, the arrow keys move five seconds, and Escape brings it back to
+  its cell. A right click on it offers Save Video, Copy Link and Open Link. The worker draws its pictures at the size they show: playing,
+  the next ones come at a new size; paused, the one showing is redrawn,
+  which moving back to it would hold up while playing. MP4, MOV and WebM
+  play, with H264, VP8, VP9 or AV1 pictures in 4:2:0, 4:2:2 or 4:4:4 at
+  8 or 10 bits, or 4:2:0 at 12, and AAC, Opus, MP3, Vorbis or FLAC sound;
+  HEVC, which iPhones record, doesn't, as libwebrtc's FFmpeg lacks it.
+  A WebM's transparency shows, at 8 bits: it's a second video, in each block's
+  BlockAdditional, whose brightness is the picture's alpha, which
+  `native/video.c` decodes with a second libvpx decoder when a packet has one.
+  The file downloads into `discord-videos/` beside the account file, and
+  plays as it arrives: the worker's reads wait for the download. It goes
+  when the video stops, as when its channel, or its thread beside the
+  channel, closes. Sound plays on the
+  call's speakers through `audio_io.rs`, on Linux and Windows. Over the
+  mute button a slider sets how loud, as does the wheel; its travel is
+  squared, so its middle sounds about half as loud. Turning it to nothing
+  mutes, and unmuting brings back the level it had. The next video plays as
+  loud, until Yappuccino closes.
+- Markdown shows as Discord's client shows it. Bold, italics, strikethrough,
+  inline code, lists and links are Slint's Markdown. Headings (`#` to `###`),
+  subtext (`-# `), quotes (`> ` lines, or `>>> ` and the rest) and code fenced
+  by three backticks are blocks that `blocks.rs` in `yappuccino-core` splits out
+  by Discord's rules, read from its web client, before anything else changes
+  the text. Each is then drawn apart, spaced as Discord's client spaces them,
+  with its mentions, emoji and spoilers. Code shows as typed, in the system's
+  monospace font, without highlighting. Discord shows headings and lists only
+  in messages from 22 March 2023; Yappuccino shows them in older ones too. Rules
+  (`---`) and lines under a line (`===`), which Discord doesn't have, show as
+  typed. Embeds' descriptions and field values, pinned messages and search
+  results show blocks too, a found message's up to 8 lines each. A reply's
+  quote of the message above shows it on one line.
+- Spoilers, `||like this||`, show under an opaque cover that a click lifts.
+  The cover is drawn by Yappuccino's patched Slint text renderer over a link to
+  `yappuccino:spoiler/{item}/{n}`; see [building](../building.md). A spoiler in a reply
+  or a notification reads "(spoiler)". Attachments named `SPOILER_...` or
+  flagged as spoilers, and pictures linked inside a spoiler, show blurred with
+  a "Spoiler" label until clicked. Revealing lasts while Yappuccino runs. The eye
+  on a file waiting in the composer marks it as a spoiler, which blurs its
+  thumbnail; Yappuccino uploads it as `SPOILER_` and its name, as Discord's client
+  does. Matrix has no spoiler for a file, so its rooms don't offer the eye.
+- Custom emoji show as pictures: in messages, as reactions and in the emoji
+  picker, which lists them by server after the frequently used ones, the open
+  server's first. In messages Yappuccino draws them as text: each emoji whose
+  picture arrived gets a code point in the Supplementary Private Use Area B,
+  and each batch of them a colour bitmap (CBDT) font made on the fly, which
+  text falls back to after Satoshi, so they wrap and select like letters.
+  A message's Unicode emoji are drawn the same way, from Twemoji's pictures,
+  in the top of that area, counting down so the two stay apart. They need no
+  font at runtime: `build.rs` makes one font of all of them, which the program
+  carries and maps rather than copies, so an emoji is as cheap as a letter. An
+  emoji of one character answers to its own code point as well as to the one
+  the rewrite gives it, so text that keeps it as typed, as the composer's draft
+  does, draws Twemoji's picture too; a sequence, which this font can't join,
+  draws its picture once rewritten and the system font's until then. A
+  `:shortcode:` sent without taking its completion draws as its emoji. A
+  picture is 22px in the 16px text, and 48px in the large text a message of
+  emoji alone shows. That is taller than the line, so a `StyledText` and the
+  composer let text past its box by 4px rather than cutting an emoji off, and
+  each bitmap has a transparent margin, as Skia scales one without smoothing its
+  edges. A click on an emoji, custom or Unicode, opens its card: its name
+  between colons, a line saying what it is, and, for a server's, the server it
+  is from, which opens on a click. `GET /guilds/{guild.id}/preview` says how
+  many of the server's members are online and whether Discover lists it, so
+  the card shows "3,999 Online" beside "Discoverable Server". It is asked
+  for once for each server and kept; until it answers the count is left out,
+  and the note follows whether Yappuccino has the server as a Community. An
+  emoji of a server that can't be reached, one this account never joined or
+  one that's gone, draws no server: its card says it is from a server that is
+  either invite-only or unavailable, as Discord's does. The card
+  follows the emoji through a link
+  text falls back to (`yappuccino:emoji/` and the emoji's code points, or `c/`
+  and a custom emoji's id), as a mention follows its own.
+  The picker, suggestions and reaction buttons show the picture itself, so
+  the hundreds a picker lists add no fonts; a quiet square holds each place
+  until its picture arrives. A message of only
+  emoji, up to 30, shows them large, as Discord does. Without Nitro, the
+  picker offers only the open server's emoji, none animated, and sending
+  turns `:name:` into Discord's `<:name:id>` only for those. Animated emoji
+  play in message text, in a reaction chip and in the picker's grid. In the
+  text the current frame is drawn over the glyph already there, so no
+  paragraph is shaped again for a frame. Frames decode off the thread that
+  draws, ahead of the draw: the ones a refresh shows first, one decode for
+  each picture however many messages and cells show it, and a job for an
+  emoji that scrolled away before it started is dropped. The cache keeps 6 MB
+  of frames, letting go the least recently shown, never one on screen. An
+  emoji shows its still first frame until its frames arrive, and if they
+  never do.
+- The emoji picker's Favorites and the start of its Frequently used are the
+  account's own, as every Discord client of it shows them: `favorite_emojis`,
+  `emoji_frecency` and, for a reaction's picker, `emoji_reaction_frecency` in
+  `FrecencyUserSettings`, the second settings protobuf. They come with the
+  favourite GIFs' request when Discord connects, and through
+  USER_SETTINGS_PROTO_UPDATE, where a partial update's missing field keeps what
+  Yappuccino had. They're ranked when they come, as Discord's client ranks them
+  (`rank_emojis`, the top 42), which weighs a use by its age otherwise than a
+  place's. This computer's reaction counts follow them. The settings name a
+  custom emoji by its id, shown greyed if it's locked here and not at all if
+  the account has left its server, and a Unicode emoji by Discord's name, such
+  as `slight_smile`; `src/discord_emoji_names.rs`, which
+  `scripts/discord-emoji-names` writes from emojibase-data (MIT, whose licence
+  packages carry), holds those that differ from GitHub's shortcodes, which the
+  `emojis` crate knows. A flag comes from its country's two letters. Yappuccino
+  doesn't change them yet.
+- Stickers show as pictures at 160px, PNG and APNG stickers from the CDN and
+  GIF ones from the media proxy. Lottie stickers render locally from the
+  CDN's JSON with ThorVG, one frame at a time, and follow the same animation
+  playback setting as GIF stickers. Only a Lottie sticker's address
+  (`ready::lottie_sticker`) decodes as Lottie; other pictures never reach
+  ThorVG's parser, whatever their bytes.
+- Messages from people this account blocked show collapsed as "Blocked
+  message", which "Show it" opens, and they don't notify or show typing.
+  Yappuccino learns the blocked from READY's relationships (type 2) and keeps them
+  current from RELATIONSHIP_ADD and RELATIONSHIP_REMOVE.
+- A reply's quoted line jumps to the original and highlights it for a
+  moment, as described under [jumping to a message](#jumping-to-a-message).
+  It says the original was deleted only when `referenced_message` is
+  `null`. A message without the field, such as the update that brings a
+  link's preview, didn't look the original up, so an update keeps the quote
+  it had. A reply never seen with it looks the original up once it's on
+  screen: from the messages loaded, or else with
+  `GET /channels/{id}/messages?limit=1&around={id}`, as Discord's client
+  does, since user accounts can't ask for one message by its id. Any other
+  message in the answer means the original is gone. Replies ask one after
+  another, with one request for an original at a time; if Discord doesn't
+  answer, the line says it couldn't be loaded and still jumps there, and asks
+  again the next time the channel opens.
+  In Discord's style the quote reads "@Name" in the author's role colour
+  (`Reply.color`, from the member's roles when the original is known), in
+  regular weight, before 13px text in the secondary colour.
+- A picture in a message sits straight on the message background: a
+  transparent PNG or GIF shows no backdrop, as in Discord. Only the
+  loading skeleton draws a fill.
+- The context menus (channel, server, member and message) use Discord's
+  shades (`Theme.menu`, `Theme.menu-line`, `Theme.danger-text`), a 255px
+  minimum width, icons only on the rows Discord gives them, and a greyed
+  "Mark as read" first row when there is nothing to read.
+- Desktop notifications follow the person's Discord settings: each channel's,
+  category's or server's level (every message, mentions only or nothing),
+  falling back to the server's default, with mutes leaving only mentions. DMs
+  notify unless muted; message requests and spam don't. Apps' answers to
+  slash commands and context menu commands notify as people's messages do;
+  joins, pins and call notices don't. Nothing notifies while the account's
+  status is Do Not Disturb. They show while Yappuccino
+  isn't in front, titled with who wrote where, and clicking one opens the
+  conversation. On Linux they go to the freedesktop notification service; on
+  Windows they're toasts ([Windows](../windows-beta.md#notifications-on-windows)).
+  Each also plays Yappuccino's message sound, or its mention sound, unless it's in
+  the conversation in front; see [voice](../voice.md#sounds).
+- Mentions in messages are links on a light fill, in the role's colour or the
+  person's name colour, as Discord shows them. A person's opens their profile
+  card beside the mention, and a role's lists the members Yappuccino has seen with it (from member lists, messages
+  and member requests), each opening their card in turn.
+- Typing `@` suggests who to mention: the channel's listed members, those who
+  wrote lately, and server members a search by name finds (the gateway's
+  member request with a query, as Discord's client does), then the roles
+  anyone may mention, and every role with @everyone and @here for those
+  allowed to mention everyone. Sending turns each `@Name` into Discord's
+  `<@id>` or `<@&id>`.
+- Typing `#` in a server channel suggests the server's text and voice
+  channels this account can see, in Discord's order, under CHANNELS, voice
+  channels with a speaker. Sending turns each `#name` into Discord's `<#id>`;
+  of channels whose names differ only in case, the one written so, and of two
+  written alike, the first listed. A `<#id>` of a channel in the message's
+  server shows as a mention, and clicking it opens the channel, a voice
+  channel's chat without joining its call. Any other shows as `#channel`.
+- Who else is typing shows above the composer, for ten seconds after Discord
+  last said so or until their message arrives. Writing tells Discord Alice is
+  typing, at most every eight seconds, unless a setting turns it off.
+- Clicking the account's avatar or name, bottom left, opens a menu of Online,
+  Idle, Do Not Disturb and Invisible, as in Discord. Yappuccino saves the choice in
+  the settings below and sends it with opcode 3. Do Not Disturb holds back
+  Yappuccino's message notifications. Closing Yappuccino takes the person offline, like
+  closing the Discord app.
+- The same menu ends with Edit Profile, which opens the [main profile's
+  editor](people.md#editing-ones-main-profile), as Edit profile in My account does.
+- The custom status shows under the account's name. "Change custom status" in
+  that menu, or "Set a custom status" in My account, sets it: an emoji from the
+  picker, words, and when it clears (never, 30 minutes, an hour, four hours,
+  or at midnight). Discord keeps it in the account's settings, a protobuf
+  (`PreloadedUserSettings`, field 11), which arrive in READY as
+  `user_settings_proto` and change in USER_SETTINGS_PROTO_UPDATE. Yappuccino reads
+  only the status and custom status from it, and changes either with `PATCH
+  /users/@me/settings-proto/1`, whose body sets nothing else. Each session
+  shows the status to others itself, so Yappuccino sends it with opcode 3 once
+  connected, whenever the settings change, and clears it when it ends. A
+  custom emoji in a status needs Nitro.
+
+## GIFs
+
+The GIF button left of the emoji button, or Ctrl+G, opens a picker with two
+tabs, GIFs and Emoji, as Discord's does; Ctrl+E opens it on Emoji. The two
+share the window: its left edge drags it wider, and each tab fits what it shows
+to that width. Discord finds GIFs through Klipy, and Yappuccino asks Discord as
+its desktop client does:
+
+- The home is `GET /gifs/trending?media_format=tinywebp&locale=en-US`:
+  trending terms, each with a picture, and one trending GIF. It shows a
+  Favorites tile, a "Trending GIFs" tile and the terms, 110px tall, two to a
+  row. A term searches for itself; Trending GIFs lists `GET
+  /gifs/trending-gifs`.
+- Typing searches with `GET /gifs/search?q=` a quarter second after the last
+  key, as Discord's does. Results come in Discord's masonry: columns at
+  least 200px wide with 12px gutters, each GIF going to the shortest. Within
+  1180px of the end, `GET /gifs/suggest?q=&limit=5` offers other terms, as
+  buttons under the results ("Your perfect GIF is in another castle").
+- A click sends the GIF's page URL as a message, keeping a reply that was
+  being written, and a search's pick is reported with `POST /gifs/select`
+  `{id, q}`. Discord unfurls the URL into a gifv embed, whose picture Yappuccino
+  plays. Shift and a click puts the URL in the message instead.
+- A favourite's thumbnail is kept in `discord-gifs/`: a video, or a file up to
+  256 KiB, as it came, and any other as a VP9 WebM at the tile's width, which
+  keeps its frames and timing. One whose GIF is no longer
+  favourited goes when Discord's list comes at a start, and past 200 MiB the
+  least lately shown go.
+- A start fetches ahead, in the background, four at a time, the favourites
+  missing that need no encoding, up to 150 MiB in all: videos up to 8 MiB,
+  named by their address, and other files up to 256 KiB. Most favourites are
+  Discord's media proxy of a file, so these downloads come from Discord, though
+  outside its API's rate limits. A larger GIF is left for its tile, which
+  downloads and encodes it when it first shows: encoding every favourite at a
+  start would take hundreds of MiB. One too large or gone gets a `.skip` file,
+  so later starts don't ask for it. A host answering 429 ends the fetching until
+  the next start, and the log counts what it came to.
+- The first GIF of each of the home's trending terms is kept in
+  `discord-gif-home/`, fetched when the home's answer comes and pruned to what it
+  then offers, so those tiles animate from the disk. Nothing else of the home is
+  kept: the Favorites tile shows a favourite, which `discord-gifs/` holds, and
+  the Trending GIFs tile loads as it shows. The answer itself is kept beside
+  those pictures in `discord-gif-home.json` with the time it came, and a start
+  within a day shows it without asking Discord at all, whose trending terms move
+  daily. The favourites and the home are asked for once at a start, before the
+  picker is opened; if either fails, opening the picker tries again.
+- Discord's GIF endpoints take no page cursor — `/gifs/search` gives "as many as
+  Discord gives at once" — so trending and search show one page, as Discord's own
+  picker does, and there is nothing further to scroll for.
+- Only the GIFs in sight, and a screen either side, load and play; they come
+  from Klipy's or Tenor's media hosts, at the size they show, and go when the
+  picker closes. Dragging the picker wider moves and stretches the tiles
+  already shown; a quarter second after the width stops changing, a picture
+  whose tile grew by more than a tenth, and that filled its old tile, is
+  fetched again at the new size, the old one showing until it comes.
+- Favourites are kept as Discord's are, in the second settings protobuf
+  (`FrecencyUserSettings`, field 2): a map from each GIF's page to its
+  picture, size, format and order. `GET /users/@me/settings-proto/2` reads
+  them, the first time the picker opens or a star is pointed at, and `PATCH`
+  writes all of them back; USER_SETTINGS_PROTO_UPDATE with type 2 brings
+  changes made elsewhere. A star at a tile's top right, or at the top left of
+  a GIF in a message, adds or takes one out; a new one gets the highest
+  order, and the Favorites view lists the newest first, searchable by name.
+  A message's picture has the star when it moves: a gifv embed, or an
+  attachment or image embed whose picture Discord flags `IS_ANIMATED` or
+  serves as `image/gif`, or one named `.gif`. As in Discord's client, the
+  star keys it by the gifv embed's page, an image embed's own link, as when
+  a favourite saved under a direct link to its file is sent, or the
+  attachment's address. An address on Discord's CDN or media proxy under
+  `/attachments/` or `/ephemeral-attachments/` loses its `ex`, `is` and
+  `hm`, the signature that expires; any other stays as it is.
+- Favourites show at once, without waiting on Discord or the GIF providers.
+  Yappuccino keeps the list on disk, shows it when the picker opens and replaces
+  it when Discord answers; a star used meanwhile shows at once and is
+  applied to Discord's list once it comes, so a change made on another
+  device stays. Each favourite shown gets a thumbnail in `discord-gifs/`,
+  50 MB at most, the least lately shown going first:
+  - Tenor's own small MP4 when the GIF is Tenor's: its links name the
+    format with a code, `AAAP1` for that MP4.
+  - The picture itself, when it's a video or no larger than 64 KB, which
+    keeps a small GIF's transparency.
+  - Otherwise a VP9 WebM of it at the tiles' width, made once, off the UI
+    thread, with the VP9 encoder already in Yappuccino's libwebrtc. It's about
+    a fifth of an animated WebP at the same quality, and a fifth of its
+    decoding work. A transparent GIF goes over the panel's tone, as VP9
+    keeps no transparency.
+
+  The picture downloads to disk as it comes, so a full-size GIF of tens of
+  megabytes takes no memory, and the thumbnail plays from its file.
+
+## Jumping to a message
+
+A reply's quote, a pin, a search result and the bar over the "New" divider
+jump to a message. A loaded one scrolls into view. Otherwise Yappuccino asks for
+`GET /channels/{id}/messages?around={id}&limit=50`, as Discord's client does,
+and the messages around it show in place of the timeline: a window of older
+messages, with "You're viewing older messages" and "Jump to present" in a bar
+over its end. Discord answers around a snowflake even when no message has it,
+so a deleted message's place shows, and Yappuccino says it couldn't find the
+message. A jump into another channel opens that channel at the message.
+
+Scrolling down the window loads the 50 `after` its newest message, and up,
+the 50 `before` its oldest, a page at a time. Discord sends at most half a
+page from before the snowflake, and as its client does, Yappuccino takes fewer
+than that, less one (under 24), as the channel's start, so a window around
+the first unread message of a new channel asks for nothing before it.
+Otherwise it learns where the channel starts from a page before. It learns
+that the window reached the newest message from a short page after, or once
+it reaches the newest messages Yappuccino kept.
+
+While the window shows, the channel's newest messages wait beside it, at
+most 200 as a closed channel keeps, and follow new messages, edits,
+deletions and reactions; edits, deletions and reactions show in the window
+too, but new messages don't go in it. The channel stays unread, and isn't
+marked read, until the newest show. Jump to present, sending a message, or a
+page that reaches them shows them again without asking Discord, and the
+window goes. Leaving the channel lets the window go too, and only the
+newest go to disk. Pages loading for a window that a newer jump or the
+present replaced are dropped when they come.
+
+The window holds what was asked for, not every page between it and the
+present. Growing upwards past 200 messages, it lets go of its newest,
+below the screen, which load again; growing downwards it keeps its oldest,
+which are above the rows on screen and would move them if they went, until
+it joins the newest messages.
+
+## Forwarding
+
+Forward, in a message's menu or with F on it, opens "Forward To", as
+Discord's client has it: a search of the conversations the message can go
+to, a checkbox on each, the message as a quote, and "Add an optional
+message...". Up to five can be chosen, after which the rest grey out and
+the heading says "Maximum 5 places at once." Send, or Enter in the
+message field, closes the dialog and forwards to each in parallel; with
+one chosen, that conversation opens.
+
+Each forward is `POST /channels/{target}/messages` with no content and a
+`message_reference` of type 1 (FORWARD) naming the original's message,
+channel and server, with `X-Context-Properties` of `{"location":
+"forwarding"}`, as Discord's client sends it. Discord copies the original
+into the new message's `message_snapshots`, which Yappuccino shows under
+"Forwarded". Discord takes no text with a forward (error 160011), so the
+message added goes after it as one of its own, with the same location, to
+each conversation the forward reached. A slowmode channel this account
+doesn't bypass gets the forward alone, as the dialog warns, since the
+second message would wait out the slowmode. `@silent` at the start of the
+message added notifies nobody of either.
+
+Messages forward as Discord's client allows: those written, by a person or
+an app's command, with no poll, call or activity, and none of the flags it
+doesn't forward, such as an ephemeral answer; forwards and voice messages
+forward again. In a server, the account needs Read Message History in the
+channel, and the server mustn't list `FORWARDING_DISABLED` among its
+features. Targets are the DMs, group DMs, channels and threads this account
+may send in, but not forums, whose posts start with a title, nor Matrix
+rooms. Once each conversation answers, Yappuccino says "Message forwarded.",
+or opens the dialog again with those it failed in chosen, the message
+added kept, and Discord's reason, so Send retries them. If the forward went
+but the message added didn't, a notice says where.
+
+The dialog lists places in the order Discord's client does. Before a
+search, it lists those chosen, the latest first, as they were when the
+search last changed; then the last eight conversations opened this
+session; then those this account uses most. It shows fifteen at most, and
+not the conversation the message is in, unless it's chosen. "Uses most" is
+Discord's frecency: `guild_and_channel_frecency`, field 12 of the
+`FrecencyUserSettings` that GET `/users/@me/settings-proto/2` returns,
+fetched when a Discord message is first forwarded or the quick switcher
+first opens ([chat UI](../chat-ui.md#implemented-behavior)), and kept up
+to date by USER_SETTINGS_PROTO_UPDATE. It maps each channel's id to how
+often it was used and the times of the last ten uses. A use counts 100 on
+its day, 70 a day later, 50 at two or three days, 30 up to a week, then 10; a
+place's frecency is its uses in all times that sum, over the number of
+recent uses. Each conversation opened in Yappuccino counts as a use, added
+again to each count that comes, as Discord's client does until it saves
+its own. Yappuccino doesn't save them.
+
+A search lists every place whose name matches, ranked as Discord's search
+ranks them. A channel or group DM scores 10 for its whole name, 7 for its
+start, 5 for a part, 3 when each word is in its name or server's name,
+and 1 for its letters in order; a dash in a channel's name matches a
+space. A person's DM scores 10 for the start of their name, 1 for its
+letters in order. Each score is raised by up to double for a place used
+most, and a person's by 0.2 more for a friend and 0.1 for the DM. `@`
+searches people only, `#` channels only. Choosing a place clears the
+search. Discord's search also finds people with no DM yet and opens one
+to forward to; Yappuccino lists only DMs that exist.
+
+Discord's client also greys out a channel where the original's files,
+embeds or stickers couldn't be posted, and an age-restricted one. Yappuccino
+lists those, and Discord's refusal shows when the forward fails there.
+Mentions and custom emoji in the message added go as typed.
+
+## Notification settings
+
+Discord keeps the account's notification settings per server, and one set
+for DMs: READY lists them in `user_guild_settings`, and
+USER_GUILD_SETTINGS_UPDATE replaces a server's
+(`yappuccino_discord::notifications`). Each holds the server's mute, with
+`mute_config`'s `end_time` when it ends, its level (every message, mentions
+only, nothing, or the server's own default, `default_message_notifications`),
+whether @everyone and @here, and role mentions, call on the account, whether
+muted channels hide, and `channel_overrides`: each channel's and
+category's own mute and level, where 3 means the category's or server's.
+Yappuccino publishes each server's settings with the server, shared between
+snapshots until Discord changes them, and marks each channel muted when it
+or its category is. A muted channel shows faint, as a muted DM does, and a
+server set to hide muted channels leaves them out of the channel list, but
+for the open one and those that mention the account, whose count the rail
+shows. A mute with an end lifts by itself then: the session wakes at the
+soonest end and publishes again.
+
+`PATCH /users/@me/guilds/{guild}/settings` changes them, with `@me` for DMs.
+The body names only what changes, and Discord keeps the rest; a channel's or
+category's goes in `channel_overrides`, keyed by its id rather than listed:
+`{"channel_overrides": {"<id>": {"muted": true, "mute_config":
+{"selected_time_window": 900, "end_time": "..."}}}}`. A mute for good is
+`selected_time_window` -1 and no end, as Discord's client sends it, and a
+level is `message_notifications`. `Action::ChangeNotifications` asks for a
+change to a server, by its server id, or to a channel or category, by its
+room id: a mute for one of the DM menu's times, a level, or one of the
+server's switches. A server's menu and its header's dropdown offer the
+server's own.
+
+A server text channel and a category offer their own mute and level, as
+Discord's do, built alike in `src/ui/menus.rs` (`Notify`):
+
+- The bell in the channel's header opens a menu of "Mute channel", whose
+  submenu mutes for 15 minutes, 1, 3, 8 or 24 hours, or until unmuted, or
+  "Unmute channel" with when the mute ends, then the levels: "Use category
+  default", or "Use server default" outside a category, under which the
+  level it follows shows, then All messages, Only @mentions and Nothing,
+  the chosen one checked. The bell is slashed while the channel is muted,
+  itself or through its category.
+- Right-clicking the channel offers the same: "Mute channel" with its times,
+  or "Unmute channel", and "Notification settings", whose second line is the
+  level that applies and whose submenu lists the levels.
+- Right-clicking a category's heading, or the Menu key on it, offers "Mute
+  category" or "Unmute category" and "Notification settings", for the
+  category's own override; a muted category's channels show muted. The
+  heading names its first channel, and Yappuccino finds the channel's category
+  (`Application::category_of`); an empty category's heading names the
+  category itself.
+
+## Writing without permission
+
+In Discord mode, in a channel the account can read but not write in (no
+`SEND_MESSAGES`, a locked thread or an archived one), the composer is one
+disabled bar in place of the box and its toolbar, with Discord's words "You do
+not have permission to send messages in this channel."
+A timed-out account keeps its own banner.
+
+## Dates
+
+A day divider reads 12px semibold. With a 12-hour clock dates are month-first
+as in en-US ("November 4, 2026"); with a 24-hour clock they are day-first,
+unless Settings chooses a date format. The chat header
+puts a 4px round dot between the channel name and its topic.
+
+## Apps' buttons
+
+Bots put buttons under their messages, such as a giveaway's Enter. A link
+button opens its page. Pressing any other one sends Discord an interaction,
+`POST /interactions` of type 3, as Discord's client does: the server, channel
+and message, the app (the bot's user id), this gateway session and the
+button's `custom_id`. The app answers through the gateway, usually by
+editing its message or with a message only this account sees. A disabled
+button can't be pressed. A menu of options opens a list under it, and
+picking one sends the same interaction with `component_type` 3 and the
+option's value in `values`. A menu of people, roles or channels still shows
+as disabled.

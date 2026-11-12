@@ -1,0 +1,44 @@
+# Sourced before building a binary people download: `source scripts/release-env
+# TARGET`, then plain `cargo build --target TARGET`. Rust embeds source paths for panic messages, and C's __FILE__ ends
+# up in error messages too; they'd name the folders of the machine that built
+# it, its owner's home folder among them. These flags name none.
+# CARGO_ENCODED_RUSTFLAGS replaces .cargo/config.toml's rustflags, so a
+# target's own come along here.
+yappuccino_release_target=${1:?usage: source scripts/release-env TARGET}
+yappuccino_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+# Widest first: rustc and Clang take the last mapping that matches.
+yappuccino_maps=("$HOME=/home" "${CARGO_HOME:-$HOME/.cargo}=/cargo" "$yappuccino_root=/yappuccino")
+yappuccino_rust=()
+yappuccino_c=()
+for map in "${yappuccino_maps[@]}"; do
+  yappuccino_rust+=("--remap-path-prefix=$map")
+  yappuccino_c+=("-ffile-prefix-map=$map")
+done
+case "$yappuccino_release_target" in
+  x86_64-pc-windows-msvc)
+    # Match LiveKit's Windows runtime linkage, as .cargo/config.toml does.
+    yappuccino_rust=(-Ctarget-feature=+crt-static "${yappuccino_rust[@]}")
+    # cargo-xwin compiles C with clang-cl, which takes Clang's flags this way.
+    yappuccino_c=("${yappuccino_c[@]/#//clang:}") ;;
+  x86_64-unknown-linux-gnu) ;;
+  *) echo "scripts/release-env: no flags known for $yappuccino_release_target" >&2; return 2 ;;
+esac
+CARGO_ENCODED_RUSTFLAGS=$(IFS=$'\x1f'; printf '%s' "${yappuccino_rust[*]}")
+export CARGO_ENCODED_RUSTFLAGS
+# The cc crate reads only the first of CFLAGS_<target> and its fallbacks, and
+# `cargo xwin build` sets that one, so take its environment, which adds to
+# these rustflags, and add the C flags to what it sets.
+yappuccino_target_flags=${yappuccino_release_target//-/_}
+if [[ "$yappuccino_release_target" == *-windows-msvc ]]; then
+  eval "$(cargo xwin env --target "$yappuccino_release_target")"
+  # thorvg-sys tells bindgen's libclang `--target=x86_64-none-elf` on every
+  # cross build, which can't read the MSVC headers. bindgen adds these
+  # arguments after a build script's, and Clang takes the last target.
+  yappuccino_bindgen="BINDGEN_EXTRA_CLANG_ARGS_$yappuccino_target_flags"
+  export "$yappuccino_bindgen=${!yappuccino_bindgen:-} --target=$yappuccino_release_target"
+fi
+yappuccino_cflags="CFLAGS_$yappuccino_target_flags" yappuccino_cxxflags="CXXFLAGS_$yappuccino_target_flags"
+export "$yappuccino_cflags=${!yappuccino_cflags:-} ${yappuccino_c[*]}"
+export "$yappuccino_cxxflags=${!yappuccino_cxxflags:-} ${yappuccino_c[*]}"
+unset yappuccino_release_target yappuccino_root yappuccino_maps yappuccino_rust yappuccino_c map \
+  yappuccino_target_flags yappuccino_cflags yappuccino_cxxflags yappuccino_bindgen

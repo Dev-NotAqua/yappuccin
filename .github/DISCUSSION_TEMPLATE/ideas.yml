@@ -1,0 +1,10 @@
+title: "[Idea] "
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What it would let you do, and how you picture it in the app.
+    validations:
+      required: true

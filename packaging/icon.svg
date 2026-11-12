@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd875" /><stop offset="1" stop-color="#ff9f1a" /></linearGradient>
+    <radialGradient id="glow" cx=".28" cy=".2" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".38" /><stop offset="1" stop-color="#fff" stop-opacity="0" /></radialGradient>
+    <linearGradient id="china" x1=".15" y1=".1" x2=".85" y2=".9"><stop offset="0" stop-color="#fff" /><stop offset="1" stop-color="#eadbc6" /></linearGradient>
+    <linearGradient id="wall" x1=".15" y1=".1" x2=".85" y2=".9"><stop offset="0" stop-color="#cdb89c" /><stop offset="1" stop-color="#fdf8f0" /></linearGradient>
+    <radialGradient id="coffee" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#8a4f24" /><stop offset=".8" stop-color="#63351a" /><stop offset="1" stop-color="#a86a34" /></radialGradient>
+    <linearGradient id="foam" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#fffaf0" /><stop offset="1" stop-color="#f7dfba" /></linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="13" /></filter>
+    <filter id="mist" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" /></filter>
+    <clipPath id="in"><circle cx="250" cy="250" r="130" /></clipPath>
+  </defs>
+  <path d="M501.9,320.3c0,9.5 -0.1,18.9 -0.3,28.4c-0.2,8.1 -0.4,16.3 -0.8,24.4c-1.9,35.4 -6.4,76.9 -35.3,101.3c-5.1,4.3 -10.6,7.9 -16.6,10.8c-12.2,6.1 -25.7,9.6 -39.1,11.8c-20.2,3.3 -40.7,4.1 -61.1,4.5c-30.9,0.6 -61.8,0.4 -92.7,0.4c-16.2,0 -32.5,0 -48.7,0c-12,0 -24.1,-0.1 -36.1,-0.2c-9,-0.1 -18,-0.3 -27,-0.7c-37.6,-1.6 -82.7,-5.5 -108,-37.2c-4.2,-5.2 -7.6,-11 -10.5,-17c-16.5,-35 -15.2,-77.6 -15.6,-115.2c-0.2,-25.2 -0.1,-50.4 -0.1,-75.6c0,-30.9 -0.2,-61.8 0.4,-92.7c0.4,-20.4 1.2,-40.9 4.5,-61.1c2.2,-13.5 5.7,-26.9 11.8,-39.1c3,-5.9 6.6,-11.5 10.8,-16.6c24.5,-28.9 65.9,-33.5 101.3,-35.3c8.1,-0.4 16.3,-0.7 24.4,-0.8c9.5,-0.2 18.9,-0.3 28.4,-0.3c37.7,-0.2 75.3,-0.1 113,0c12,0 24.1,0.1 36.1,0.2c9,0.1 18,0.3 27,0.7c36.9,1.6 81,5.2 106.7,35.6c22.4,26.4 25.2,64.7 26.6,97.7c0.4,9 0.6,18 0.7,27c0.2,12 0.2,24.1 0.2,36.1c0,16.2 0.1,75.3 0,113z" fill="url(#tile)" />
+  <path d="M501.9,320.3c0,9.5 -0.1,18.9 -0.3,28.4c-0.2,8.1 -0.4,16.3 -0.8,24.4c-1.9,35.4 -6.4,76.9 -35.3,101.3c-5.1,4.3 -10.6,7.9 -16.6,10.8c-12.2,6.1 -25.7,9.6 -39.1,11.8c-20.2,3.3 -40.7,4.1 -61.1,4.5c-30.9,0.6 -61.8,0.4 -92.7,0.4c-16.2,0 -32.5,0 -48.7,0c-12,0 -24.1,-0.1 -36.1,-0.2c-9,-0.1 -18,-0.3 -27,-0.7c-37.6,-1.6 -82.7,-5.5 -108,-37.2c-4.2,-5.2 -7.6,-11 -10.5,-17c-16.5,-35 -15.2,-77.6 -15.6,-115.2c-0.2,-25.2 -0.1,-50.4 -0.1,-75.6c0,-30.9 -0.2,-61.8 0.4,-92.7c0.4,-20.4 1.2,-40.9 4.5,-61.1c2.2,-13.5 5.7,-26.9 11.8,-39.1c3,-5.9 6.6,-11.5 10.8,-16.6c24.5,-28.9 65.9,-33.5 101.3,-35.3c8.1,-0.4 16.3,-0.7 24.4,-0.8c9.5,-0.2 18.9,-0.3 28.4,-0.3c37.7,-0.2 75.3,-0.1 113,0c12,0 24.1,0.1 36.1,0.2c9,0.1 18,0.3 27,0.7c36.9,1.6 81,5.2 106.7,35.6c22.4,26.4 25.2,64.7 26.6,97.7c0.4,9 0.6,18 0.7,27c0.2,12 0.2,24.1 0.2,36.1c0,16.2 0.1,75.3 0,113z" fill="url(#glow)" />
+  <g fill="#7a3a00" opacity=".42" filter="url(#soft)" transform="translate(14 22)">
+    <circle cx="250" cy="250" r="160" />
+    <rect x="380" y="221" width="80" height="58" rx="22" transform="rotate(24 250 250)" />
+  </g>
+  <rect x="380" y="221" width="80" height="58" rx="22" transform="rotate(24 250 250)" fill="url(#china)" />
+  <circle cx="250" cy="250" r="160" fill="url(#china)" />
+  <circle cx="250" cy="250" r="143" fill="url(#wall)" />
+  <circle cx="250" cy="250" r="130" fill="url(#coffee)" />
+  <g clip-path="url(#in)">
+    <circle cx="259" cy="262" r="138" fill="none" stroke="#2b1206" stroke-width="22" opacity=".4" filter="url(#mist)" />
+    <path d="M162,244c0,-42 39.4,-76 88,-76c48.6,0 88,34 88,76c0,42 -39.4,76 -88,76c-10,0 -19.6,-1.4 -28.6,-4.1c-21.3,4 -41.2,5.4 -59.8,4.4c5.4,-12.8 8.6,-26.9 9.6,-42.4c-5.9,-10.2 -9.3,-21.8 -9.3,-34z" fill="#e2b077" opacity=".75" filter="url(#mist)" />
+  </g>
+  <path d="M162,244c0,-42 39.4,-76 88,-76c48.6,0 88,34 88,76c0,42 -39.4,76 -88,76c-10,0 -19.6,-1.4 -28.6,-4.1c-21.3,4 -41.2,5.4 -59.8,4.4c5.4,-12.8 8.6,-26.9 9.6,-42.4c-5.9,-10.2 -9.3,-21.8 -9.3,-34z" fill="url(#foam)" />
+  <g fill="#6b3a1c"><circle cx="214" cy="244" r="12.5" /><circle cx="250" cy="244" r="12.5" /><circle cx="286" cy="244" r="12.5" /></g>
+</svg>

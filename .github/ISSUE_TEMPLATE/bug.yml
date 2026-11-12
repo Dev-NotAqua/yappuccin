@@ -1,0 +1,59 @@
+name: Bug
+description: Something in Yappuccino doesn't work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. Never paste a Discord token, password or
+        recovery code here; redact them from logs.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a server's text channel
+        2. …
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Settings → About, or the release or nightly you installed.
+      placeholder: 0.4.0-nightly.20261109.1
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows 11
+        - Windows 10
+        - Linux (AppImage)
+        - Linux (Nix)
+        - Linux (Arch package)
+        - Linux (built from source)
+    validations:
+      required: true
+  - type: dropdown
+    id: renderer
+    attributes:
+      label: Renderer
+      description: Settings → Advanced → Render with the GPU.
+      options:
+        - Software (default)
+        - GPU
+        - Not sure
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: Run Yappuccino with `YAPPUCCINO_LOG=debug`, reproduce, and paste the end of the output. Redact anything private.
+      render: text

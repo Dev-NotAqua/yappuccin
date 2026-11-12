@@ -1,0 +1,52 @@
+# Formatting, doc links, Clippy, tests, a smoke run and the Discord service
+# tests, on every pull request and push to main. The Windows build is the
+# nightly's cross-build (nightly.yml); macOS has no build yet.
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      # The runner's preinstalled SDKs leave too little room for the build.
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+      - uses: actions/checkout@v5
+        with:
+          # Nix refuses a shallow Git repository as a flake.
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ github.token }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: check-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'rust-toolchain.toml', 'nix/flake.lock') }}
+          restore-keys: check-${{ runner.os }}-
+      - name: Fetch the toolchain and crates
+        run: nix develop path:./nix --command cargo fetch --locked
+      - name: Format, doc links, Clippy, tests, smoke run
+        run: scripts/check --fast
+      - name: Discord service tests
+        run: scripts/test-fake-discord
+      - name: Keep the check logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-logs
+          path: target/check/*.log
