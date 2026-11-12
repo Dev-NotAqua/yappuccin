@@ -556,8 +556,8 @@ mod tests {
         assert!(plain.as_slice().iter().any(marigold));
         assert!(!plain.as_slice().iter().any(red));
         assert!(unread.as_slice().iter().any(marigold));
-        // The dot is in the bottom-right corner.
-        let corner = (24 * 32 + 24) as usize;
+        // The dot is in the top-right corner, beside the cup's handle.
+        let corner = (7 * 32 + 25) as usize;
         assert!(red(&unread.as_slice()[corner]));
     }
 }
