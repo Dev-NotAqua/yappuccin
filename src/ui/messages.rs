@@ -879,8 +879,9 @@ fn card_row<'a>(
                     .unwrap_or_default(),
                 thumbnail_loading: thumbnail.is_some_and(|(_, _, preview)| preview.is_none()),
                 thumbnail_index: thumbnail.map_or(-1, |(index, _, _)| index as i32),
-                thumbnail_spoiler: thumbnail
-                    .is_some_and(|(index, attachment, _)| attachment.spoiler && covered(index)),
+                thumbnail_spoiler: thumbnail.is_some_and(|(index, attachment, _)| {
+                    super::pictures::covers(attachment) && covered(index)
+                }),
                 has_thumbnail: thumbnail.is_some(),
                 has_button: button.is_some(),
                 button: button.unwrap_or_default(),

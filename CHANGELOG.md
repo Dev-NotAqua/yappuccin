@@ -12,6 +12,10 @@ commit; this file keeps what a person using the app would notice.
   each off until turned on, with the permissions it uses. The first is
   Message Utilities: Copy Message Link and Copy Message ID in a message's
   menu.
+- **Notification Tweaks** mod: muted words and quiet hours for message
+  notifications, with mentions coming through unless turned off.
+- **Privacy Shield** mod: every picture and video starts covered, as a
+  spoiler, until clicked.
 - A new logo: a cappuccino seen from above, its foam poured as a speech
   bubble, on a marigold tile. The UI draws the same cup in the theme's accent.
 - `python scripts/prepare-windows-skia.py --build` sets up the whole native

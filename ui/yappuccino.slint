@@ -48,7 +48,7 @@ import { ServerRow, RoomRow, StatusDot, ServerRail, ServerHeader, RoomList, Serv
 import { StagedFile, StagedTile, Composer, MentionRow, MentionList, EmojiSuggestions, RequestBar } from "composer.slint";
 import { EmojiCell, EmojiRow, EmojiSection, EmojiCard, EmojiCardView, MessageRow, ReactionToggle, EmojiButton, EmojiPicker, MessageMenu, MessageGallery, MessageStickers, FileCard, MessageContent, EmbedView, BotTag, NoConversation, ConversationStart, HistoryEdge, UnreadBar, PresentBar, ImageViewer, VideoViewer, VideoPlayer, Polls } from "messages.slint";
 import { Choices, SettingsRow, SettingsScreen, AccountSettings, AppearanceSettings, ThemeCard, ThemeColour, VoiceSettings, MessageSettings, NotificationSettings, SoundSettings, AdvancedSettings, DiscordLinkSettings, DiscordSettings, BlockedRow, GameActivitySettings, GameExecutable } from "settings.slint";
-import { ModsSettings, ModRow } from "mods.slint";
+import { ModsSettings, ModRow, ModSetting } from "mods.slint";
 import { MemberRow, MemberActivityRow, ProfileData, BadgeTipCard, ProfileServerRow, MemberPanel, ProfileCard, ProfileModal, ServerCard, RoleCard } from "people.slint";
 import { RequestRow, FriendRow, ActiveNowRow, FriendsScreen, BlockedScreen, HeaderTab, RequestsScreen, AddFriendDialog } from "friends.slint";
 import { ContactRow, PlaceRow, ReactionPill, ReactorRow, StatusDialog, NewDmDialog, ForwardDialog, QuickSwitcher, ReactionsDialog, StatusMenu, PersonPrompt, PersonDialog, LeavingDialog, PollAnswerDraft, PollDialog } from "dialogs.slint";
@@ -432,6 +432,8 @@ export component YappuccinoWindow inherits Window {
     /// Settings → Mods; see src/ui/mods.rs.
     in property <[ModRow]> mods;
     callback mod-toggled(string, bool);
+    callback mod-text-saved(string, string, string) -> bool;
+    callback mod-switch-changed(string, string, bool);
     /// Message Utilities is on: message menus offer Copy Message Link and ID.
     in property <bool> message-utilities;
     callback copy-message-link(string);
@@ -4033,6 +4035,8 @@ export component YappuccinoWindow inherits Window {
         if root.settings-section == 9: ModsSettings {
             mods: root.mods;
             toggled(id, on) => { root.mod-toggled(id, on); }
+            text-saved(id, key, text) => { return root.mod-text-saved(id, key, text); }
+            switch-changed(id, key, on) => { root.mod-switch-changed(id, key, on); }
         }
         if root.settings-section == 4 && !root.discord-linked: DiscordLinkSettings {
             link-phase: root.link-phase; link-code: root.link-code; link-name: root.link-name; link-note: root.link-note;

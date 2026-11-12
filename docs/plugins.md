@@ -48,9 +48,22 @@ Mods lists each mod's permissions under it, in words.
 | --- | --- |
 | `MessageMenu` | Add items to a message's menu |
 | `Clipboard` | Put text on the clipboard when the person picks one of those items |
+| `Notifications` | Keep a message's sound, desktop notification and taskbar flash on this device; never a call's ringing (`Effect::Notify` in `src/ui.rs`) |
+| `MediaDisplay` | Cover pictures and videos in messages until clicked (`pictures::covers`) |
 
 New permissions come with the first mod that needs them, each with its
 check at the one place the host does that thing.
+
+## Settings
+
+A manifest lists its `settings`, each a `Setting` with a key, label,
+description and kind: `Text { placeholder }`, a line of at most 500
+characters, or `Switch { default }`. Settings → Mods shows them under the
+mod while it's on; a text keeps its value on Save or Enter.
+`Mods::set_setting` takes only what the manifest declares, of the right
+kind, on one line, and reports anything else as `ModError::Invalid`, which
+the page shows. `Mods::text` and `Mods::switch` read them back, with the
+manifest's default for a switch never set.
 
 ## State
 
@@ -58,8 +71,10 @@ check at the one place the host does that thing.
 
 ```json
 "mods": {
-  "enabled": ["message-utilities"],
-  "settings": { "message-utilities": { "format": "markdown" } }
+  "enabled": ["message-utilities", "notification-tweaks"],
+  "settings": {
+    "notification-tweaks": { "quiet_hours": "22:00-07:00", "mentions_through": false }
+  }
 }
 ```
 

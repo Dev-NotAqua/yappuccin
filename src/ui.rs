@@ -2589,6 +2589,8 @@ impl Adapter {
                         self.link_run += 1;
                     }
                 }
+                // Notification Tweaks, a mod, keeps some messages quiet.
+                Effect::Notify(alert) if mods::silenced(&self.layout.mods, &alert) => {}
                 Effect::Notify(alert) => {
                     // A message sounds unless it's in the conversation in front;
                     // a call rings instead.

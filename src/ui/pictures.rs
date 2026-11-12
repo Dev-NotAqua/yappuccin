@@ -154,8 +154,26 @@ pub(super) fn set_moving_collectibles(moving: bool) {
     MOVING_COLLECTIBLES.set(moving);
 }
 
+/// Privacy Shield, a mod: every picture and video in messages starts covered,
+/// as a spoiler does, until it's clicked.
+pub(super) fn set_cover_media(cover: bool) {
+    COVER_MEDIA.set(cover);
+}
+
+/// Whether an attachment starts covered: a spoiler, or any while Privacy
+/// Shield is on.
+pub(super) fn covers(attachment: &yappuccino_core::chat::Attachment) -> bool {
+    attachment.spoiler || COVER_MEDIA.get()
+}
+
+#[cfg(test)]
+pub(super) fn covering_media() -> bool {
+    COVER_MEDIA.get()
+}
+
 thread_local! {
     static MOVING_COLLECTIBLES: Cell<bool> = const { Cell::new(true) };
+    static COVER_MEDIA: Cell<bool> = const { Cell::new(false) };
 }
 
 /// The frames and delays of the animation at `url`, once it has arrived and
@@ -712,7 +730,7 @@ fn gallery_cells(previews: &[Preview<'_>], covered: &dyn Fn(usize) -> bool) -> (
                 ..Default::default()
             };
         };
-        let spoiler = attachment.spoiler && covered(index);
+        let spoiler = covers(attachment) && covered(index);
         if spoiler {
             return ImageCell {
                 index: index as i32,

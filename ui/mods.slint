@@ -1,5 +1,20 @@
 import { Theme, Label } from "theme.slint";
 import { SettingsTitle, SettingsSwitch } from "settings.slint";
+import { ActionButton, TextField } from "controls.slint";
+
+/// One of a mod's settings: a line of text, or a switch.
+export struct ModSetting {
+    key: string,
+    label: string,
+    description: string,
+    /// A line of text; a switch otherwise.
+    text: bool,
+    placeholder: string,
+    /// The text as saved.
+    value: string,
+    /// The switch.
+    on: bool,
+}
 
 /// A mod in Settings → Mods, from its manifest and whether it's on.
 export struct ModRow {
@@ -14,13 +29,47 @@ export struct ModRow {
     enabled: bool,
     /// It failed while it ran, and stays off until Yappuccino restarts.
     failed: bool,
+    settings: [ModSetting],
+}
+
+// A mod's text setting: Save, or Enter, keeps it; the mod says when it doesn't
+// fit, such as quiet hours that aren't a span.
+component ModTextSetting inherits VerticalLayout {
+    in property <string> label;
+    in property <string> description;
+    in property <string> placeholder;
+    in property <string> value;
+    callback save(string) -> bool;
+    private property <string> draft;
+    private property <bool> dirty;
+    private property <bool> invalid;
+    function keep() {
+        root.invalid = !root.save(root.draft);
+        root.dirty = root.invalid;
+    }
+    spacing: 6px;
+    Text { text: root.label; color: Theme.text; font-size: 15px; }
+    Label { text: root.description; }
+    HorizontalLayout {
+        spacing: 8px;
+        TextField {
+            text: root.value; label: root.label; placeholder: root.placeholder; text-size: 14px;
+            edited(text) => { root.draft = text; root.dirty = true; root.invalid = false; }
+            accepted => { if root.dirty { root.keep(); } }
+        }
+        ActionButton { text: "Save"; enabled: root.dirty; clicked => { root.keep(); } }
+    }
+    if root.invalid: Label { text: "That doesn't fit: check the example above."; color: Theme.danger-text; }
 }
 
 // Settings: the mods Yappuccino ships, each off until turned on. A mod does
-// only what the permissions listed under it allow.
+// only what the permissions listed under it allow; its settings show while
+// it's on.
 export component ModsSettings inherits VerticalLayout {
     in property <[ModRow]> mods;
     callback toggled(string, bool);
+    callback text-saved(string, string, string) -> bool;
+    callback switch-changed(string, string, bool);
     spacing: 16px;
     SettingsTitle { text: "Mods"; }
     Label {
@@ -40,6 +89,21 @@ export component ModsSettings inherits VerticalLayout {
         if row.failed: Label {
             text: "Stopped after an error. It starts again when Yappuccino restarts, or when you turn it off and on.";
             font-size: 12px; color: Theme.danger-text;
+        }
+        if row.enabled && row.settings.length > 0: VerticalLayout {
+            padding-left: 16px; padding-top: 6px; spacing: 12px;
+            for setting in row.settings: VerticalLayout {
+                if setting.text: ModTextSetting {
+                    label: setting.label; description: setting.description;
+                    placeholder: setting.placeholder; value: setting.value;
+                    save(text) => { return root.text-saved(row.id, setting.key, text); }
+                }
+                if !setting.text: SettingsSwitch {
+                    text: setting.label; description: setting.description;
+                    checked: setting.on; controlled: true;
+                    toggled(on) => { root.switch-changed(row.id, setting.key, on); }
+                }
+            }
         }
     }
 }

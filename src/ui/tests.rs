@@ -1064,6 +1064,59 @@ fn mods_are_off_until_turned_on_and_act_only_while_on() {
     window.invoke_mod_toggled("message-utilities".into(), false);
     assert!(!window.get_message_utilities());
     assert!(!saved().enabled("message-utilities"));
+
+    // A mod's settings show while it's on, and keep only what fits.
+    let row = |id: &str| {
+        let mods = window.get_mods();
+        (0..mods.row_count())
+            .filter_map(|index| mods.row_data(index))
+            .find(|row| row.id == id)
+            .unwrap()
+    };
+    window.invoke_mod_toggled("notification-tweaks".into(), true);
+    let settings = row("notification-tweaks").settings;
+    assert_eq!(settings.row_count(), 3);
+    assert!(settings.row_data(0).unwrap().text);
+    assert!(
+        settings.row_data(2).unwrap().on,
+        "mentions come through by default"
+    );
+    assert!(!window.invoke_mod_text_saved(
+        "notification-tweaks".into(),
+        "quiet_hours".into(),
+        "10pm".into()
+    ));
+    assert!(window.invoke_mod_text_saved(
+        "notification-tweaks".into(),
+        "quiet_hours".into(),
+        " 22:00-07:00 ".into()
+    ));
+    window.invoke_mod_switch_changed(
+        "notification-tweaks".into(),
+        "mentions_through".into(),
+        false,
+    );
+    let mods = saved();
+    assert_eq!(
+        mods.text("notification-tweaks", "quiet_hours"),
+        "22:00-07:00"
+    );
+    assert!(!mods.switch("notification-tweaks", "mentions_through"));
+    assert_eq!(
+        row("notification-tweaks")
+            .settings
+            .row_data(1)
+            .unwrap()
+            .value,
+        "22:00-07:00"
+    );
+
+    // Privacy Shield covers every picture while it's on.
+    assert!(!pictures::covering_media());
+    window.invoke_mod_toggled("privacy-shield".into(), true);
+    assert!(pictures::covering_media());
+    window.invoke_mod_toggled("privacy-shield".into(), false);
+    assert!(!pictures::covering_media());
 }
 
 #[test]
