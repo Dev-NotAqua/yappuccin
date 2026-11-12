@@ -169,7 +169,9 @@ fn find_clang_cl() -> Option<PathBuf> {
                     "-products",
                     "*",
                     "-find",
-                    r"**\Llvm\**\clang-cl.exe",
+                    // Only the x64 host's: Visual Studio also ships ARM64's,
+                    // which vswhere lists first and an x64 Windows can't run.
+                    r"VC\Tools\Llvm\x64\bin\clang-cl.exe",
                 ])
                 .output()
                 .ok()?;

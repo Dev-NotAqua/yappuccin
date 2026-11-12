@@ -603,7 +603,12 @@ def find_sdk(vs_environment):
 
 
 def find_llvm():
-    clang = find_executable('clang-cl.exe', 'install LLVM for Windows and add its bin directory to PATH')
+    # LLVM's installer leaves its bin off PATH unless asked; look where it installs.
+    installed = Path(os.environ.get('ProgramFiles', r'C:\Program Files')) / 'LLVM/bin/clang-cl.exe'
+    if not shutil.which('clang-cl.exe') and installed.is_file():
+        clang = installed.resolve()
+    else:
+        clang = find_executable('clang-cl.exe', 'install LLVM for Windows and add its bin directory to PATH')
     llvm_bin = clang.parent
     root = llvm_bin.parent
     required = ['lld-link.exe', 'llvm-nm.exe', 'llvm-objcopy.exe', 'llvm-readobj.exe', 'libclang.dll']
@@ -905,15 +910,33 @@ def print_environment():
     print("$env:SKIA_BINARIES_URL = '" + archive_uri() + "'")
 
 
-def run_application_build(cargo):
-    # SKIA_BINARIES_URL is this process's only addition: .cargo/config.toml
-    # already asks for the static CRT, and the build scripts choose the
-    # compiler, so the build sees the environment a plain `cargo build` does.
-    # Not the Skia builder's: skia-bindings would take its SKIA_SOURCE_DIR over
-    # the archive and compile Skia again, without the renamed JPEG table.
+def find_nasm():
+    candidates = [shutil.which('nasm.exe'),
+                  Path(os.environ.get('LOCALAPPDATA', '')) / 'bin/NASM/nasm.exe',  # winget's
+                  Path(os.environ.get('ProgramFiles', r'C:\Program Files')) / 'NASM/nasm.exe']
+    for candidate in candidates:
+        if candidate and Path(candidate).is_file():
+            return Path(candidate).resolve()
+    fail('nasm.exe was not found; install it with `winget install NASM.NASM`')
+
+
+def run_application_build(cargo, llvm):
+    # The same few additions every time, so Cargo's cache stays valid between
+    # builds: a changed PATH, NASM or CC reruns the C crates' build scripts and
+    # recompiles FFmpeg, x264, ring and aws-lc. The build scripts choose the
+    # compiler (clang-cl from this LLVM, first on PATH), and .cargo/config.toml
+    # asks for the static CRT. Not the Skia builder's environment: skia-bindings
+    # would take its SKIA_SOURCE_DIR over the archive and compile Skia again,
+    # without the renamed JPEG table.
+    nasm = find_nasm()
     environment = dict(os.environ)
     environment['SKIA_BINARIES_URL'] = archive_uri()
-    say('Building the application with the prepared archive (SKIA_BINARIES_URL is process-local)')
+    environment['NASM'] = str(nasm)
+    environment['LIBCLANG_PATH'] = str(llvm['bin'])
+    environment['PATH'] = os.pathsep.join([str(llvm['bin']), str(nasm.parent), environment.get('PATH', '')])
+    # LLVM's own linker, the one the Skia archive was prepared with.
+    environment['CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER'] = str(llvm['lld'])
+    say('Building the application with the prepared archive (the environment is process-local)')
     subprocess.run([str(cargo), 'build', '--release'], cwd=ROOT, env=environment, check=True)
 
 
@@ -973,7 +996,7 @@ def main():
         print(prepared)
 
     if args.build:
-        run_application_build(cargo)
+        run_application_build(cargo, llvm)
 
 
 if __name__ == '__main__':

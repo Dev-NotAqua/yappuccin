@@ -524,7 +524,9 @@ connection is needed once for the pinned Skia source and libwebrtc archive.
 `vendor/ffmpeg-src/build.rs` and `crates/yappuccino-core/build.rs` select
 `clang-cl` for MSVC targets only when `CC`/`CXX` are unset, because FFmpeg's x86
 assembly and the camera shim's Clang warning flags need it; an explicitly
-selected compiler wins.
+selected compiler wins. They take the first `clang-cl` on `PATH`, else Visual
+Studio's x64 one (`VC\Tools\Llvm\x64\bin`; its ARM64 one doesn't run on x64
+Windows), else `C:\Program Files\LLVM`'s.
 
 Prepare a static-CRT Skia archive from the pinned source and seven
 checksum-pinned externals; it is cached in `.local/windows/skia/` and takes
@@ -542,10 +544,15 @@ cargo build --release
 ```
 
 Or prepare Skia and build in one step with
-`python scripts/prepare-windows-skia.py --build`, which sets the archive URL
-and nothing else: the build that follows sees the environment the script ran
-in, so `clang-cl`, `llvm-rc` and `LIBCLANG_PATH` have to be set here too, as
-for a plain `cargo build --release`. The downloadable package
+`python scripts/prepare-windows-skia.py --build`. Once the archive is
+prepared, it skips straight to `cargo build --release` with the same
+additions every time: the archive URL, `NASM` (from `PATH`, winget's
+`%LOCALAPPDATA%\bin\NASM` or `C:\Program Files\NASM`; `winget install
+NASM.NASM`), `LIBCLANG_PATH`, and LLVM's and NASM's `bin` first on `PATH`.
+LLVM is the one on `PATH`, else `C:\Program Files\LLVM`. Keeping them the same
+keeps Cargo's cache: a changed `PATH`, `NASM` or `CC` reruns the C crates'
+build scripts and recompiles FFmpeg, x264, ring and aws-lc. The build links
+with LLVM's `lld-link` rather than `link.exe`. The downloadable package
 needs none of these tools to run.
 
 Before accepting the Windows build, check text entry, selection, copy/paste,
